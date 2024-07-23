@@ -4,9 +4,9 @@ import { SucursalService } from './sucursal.service';
 @Controller('sucursal')
 export class SucursalController {
   constructor(private readonly sucursalService: SucursalService) {}
-  @Get()
-  findAll() {
-    return this.sucursalService.findAll();
+  @Get(':id')
+  findAll(@Param()id:string ) {
+    return this.sucursalService.findAll(id);
   }
 
 }
