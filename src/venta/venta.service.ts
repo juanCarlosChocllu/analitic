@@ -27,28 +27,20 @@ export class VentaService {
    
 ){}
   async findAll(ventaDto:VentaDto) { 
-    const totalVenta:any[]=[] 
       const gafas= await this.ventaPorProducto(tipoProductoI.GAFA, ventaDto.fechaInicio, ventaDto.FechaFin)
       const lc= await this.ventaPorProducto(tipoProductoI.LENTE_DE_CONTACTO,ventaDto.fechaInicio, ventaDto.FechaFin)
       const monturas= await this.ventaPorProducto(tipoProductoI.MONTURA,ventaDto.fechaInicio, ventaDto.FechaFin)
      
-      
-      const gafaPorSucursal= await this.ventaPorProductoSucursal(tipoProductoI.MONTURA, ventaDto.fechaInicio, ventaDto.FechaFin, ventaDto)
-     const monturaPorSucursal= await this.ventaPorProductoSucursal(tipoProductoI.MONTURA, ventaDto.fechaInicio, ventaDto.FechaFin, ventaDto)
-     const lcPorSucursal= await this.ventaPorProductoSucursal(tipoProductoI.LENTE_DE_CONTACTO,ventaDto.fechaInicio, ventaDto.FechaFin, ventaDto)
+      const dataVenta= await this.ventaPorProductos([tipoProductoI.MONTURA,tipoProductoI.LENTE_DE_CONTACTO,tipoProductoI.GAFA ],ventaDto.fechaInicio, ventaDto.FechaFin)
+      const dataPorSucursal= await this.ventaPorProductoSucursal([tipoProductoI.MONTURA,tipoProductoI.LENTE_DE_CONTACTO,tipoProductoI.GAFA ],ventaDto.fechaInicio, ventaDto.FechaFin, ventaDto)
       const  total= gafas.total + lc.total + monturas.total 
       const respuesta={
           data:{
             fecha:{inicio:ventaDto.fechaInicio, fin:ventaDto.FechaFin},
-            total,
-            gafas,
-            monturas,
-            lc
+            dataVenta
           },
           dataSucursal:{
-            gafaPorSucursal,
-            monturaPorSucursal,
-            lcPorSucursal
+           dataPorSucursal
           }
       }
 
@@ -75,74 +67,6 @@ export class VentaService {
   return tkPromedio ? tkPromedio: 0
  }
 
-
-
-/*async ventaGafas() {
-  const sucursales = ['5acd28b0accb805e243adb81', '5b3fe968accb807d6936e303','5b442aefaccb8041c359e293','5b442b4aaccb8042942226e3'];
-  const resultados = [];
-
-  for (let sucursalId of sucursales) {
-      try {
-       
-          const sucursal = await this.SucursalService.buscarScursal(new Types.ObjectId(sucursalId));
-          const gafas:VentaPorProductoI[] = await this.DetalleVenta.aggregate([
-              {
-                  $lookup: {
-                      from: 'Producto',
-                      localField: 'producto',
-                      foreignField: '_id',
-                      as: 'productoInfo'
-                  }
-              },
-              {
-                  $match: {'productoInfo.tipoProducto': tipoProductoI.GAFA}
-              },
-              {
-                  $lookup: {
-                      from: 'Venta',
-                      localField: 'venta',
-                      foreignField: '_id',
-                      as: 'ventaInfo'
-                  }
-              },
-              {
-                  $match: {'ventaInfo.sucursal': new Types.ObjectId(sucursalId)}
-              },
-              {
-                  $project: {
-                      _id: 1,
-                      producto: {
-                          nombre: { $arrayElemAt: ['$productoInfo.tipoProducto', 0] }, // Obtener el primer nombre
-                          venta: '$ventaInfo._id',
-                          sucursal: '$ventaInfo.sucursal',
-                          preciototal: '$preciototal',
-                          cantidad: '$cantidad'
-                      }
-                  }
-              }
-          ]);
-          for(let g of gafas ){
-           
-            
-          }
-          const totalCantidad = gafas.reduce((total, item) => total + item.producto.cantidad, 0);
-          const totalPrecio = gafas.reduce((total, item) => total + item.producto.preciototal, 0);
-
-          const resultado = {
-              productoNombre: gafas.length > 0 ? gafas[0].producto.nombre : '', 
-              cantidad: totalCantidad,
-              total: totalPrecio,
-              sucursal: sucursal
-          };
-
-          resultados.push(resultado);
-      } catch (error) {
-          console.error(`Error al procesar la sucursal ${sucursalId}: ${error.message}`);
-      }
-  }
-
-  return resultados;
-}*/
 
 
 async ventaPorProducto(tipo:tipoProductoI, fechaInicio:string, FechaFin:string){
@@ -196,78 +120,138 @@ async ventaPorProducto(tipo:tipoProductoI, fechaInicio:string, FechaFin:string){
 
 
 
-
-
-
-async ventaPorProductoSucursal(tipo:tipoProductoI, fechaInicio:string, FechaFin:string, ventaDto:VentaDto){
-  const resultadoData:any[]=[]
-  for (let suscursal of ventaDto.sucursal){
-    
-    const suscursalProdcuto = await this.SucursalService.buscarScursal(new Types.ObjectId(suscursal))  
-    const producto:VentaPorProductoI[]= await this.DetalleVenta.aggregate([
-      {
-        $lookup:{
-          from:'Producto',
-          localField:'producto',
-          foreignField:'_id',
-          as :'productoInfo'
-        }
+async ventaPorProductos(tipo:tipoProductoI[], fechaInicio:string, FechaFin:string){
+    const ventaProducto:any[]=[]
+    for( let tipoProducto of tipo){
+      const producto:VentaPorProductoI[]= await this.DetalleVenta.aggregate([
+        {
+          $lookup:{
+            from:'Producto',
+            localField:'producto',
+            foreignField:'_id',
+            as :'productoInfo'
+          }
+        },
+        {
+          $match:{'productoInfo.tipoProducto':tipoProducto}
+     
+        },
+        {
+         $match:{
+           fechains:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}
+         }
+        },
+        {
+          $project: {
+              _id: 1,
+              producto: {
+                  nombre: '$productoInfo.tipoProducto', 
+                  venta:'$ventaInfo._id',
+                  sucursal:'$ventaInfo.sucursal',
+                  preciototal: '$preciototal', 
+                  cantidad: '$cantidad',
+                  
+              }
+          }
       },
-      {
-        $match:{'productoInfo.tipoProducto':tipo}
-   
-      },
-      {
-       $match:{
-         fechains:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}
-       },
-       
-      },
-      {
-       $lookup: {
-           from: 'Venta',
-           localField: 'venta',
-           foreignField: '_id',
-           as: 'ventaInfo'
-       }
-   },
-   {
-       $match: {'ventaInfo.sucursal': new Types.ObjectId(suscursal)}
-   },
-      {
-        $project: {
-            _id: 1,
-            producto: {
-                nombre: '$productoInfo.tipoProducto', 
-                venta:'$ventaInfo._id',
-                sucursal:'$ventaInfo.sucursal',
-                preciototal: '$preciototal', 
-                cantidad: '$cantidad',
-                
-            }
-        }
-    },
-   
-      ])
-      const productoNombre= producto.map((item) => item.producto.nombre)
-      const total= producto.reduce((total, item) => total + item.producto.preciototal, 0)
-      const cantidad= producto.reduce((total, item) => (total + item.producto.cantidad), 0)   
-       const ticketPromedio= this.ticketPromedio(total, cantidad)
+     
+        ])
+        const productoNombre= producto.map((item) => item.producto.nombre)
+        const total= producto.reduce((total, item) => total + item.producto.preciototal, 0)
+        const cantidad= producto.reduce((total, item) => (total + item.producto.cantidad), 0)   
+         const ticketPromedio= this.ticketPromedio(total, cantidad)
+        
+        const resultado={
+         producto:productoNombre[0] ?productoNombre[0] : tipoProducto ,
+         cantidad:cantidad,
+         total:total,
+         ticketPromedio 
       
+        }
+        ventaProducto.push(resultado)
        
-      const resultado={
-        suscursal:suscursalProdcuto,
-       producto:productoNombre[0],
-       cantidad:cantidad,
-       total:total,
-       ticketPromedio 
-    
-      }
-      resultadoData.push(resultado)
-  }
+    }
+    return ventaProducto
+}
 
+
+
+
+
+
+
+async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFin:string, ventaDto:VentaDto){
+  const resultadoData:any[]=[]
+  for(let tipoProducto of tipo){
+    for (let suscursal of ventaDto.sucursal){
+      const suscursalProdcuto = await this.SucursalService.buscarScursal(new Types.ObjectId(suscursal))  
+      const producto:VentaPorProductoI[]= await this.DetalleVenta.aggregate([
+        {
+          $lookup:{
+            from:'Producto',
+            localField:'producto',
+            foreignField:'_id',
+            as :'productoInfo'
+          }
+        },
+        {
+          $match:{'productoInfo.tipoProducto':tipoProducto}
+     
+        },
+        {
+         $match:{
+           fechains:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}
+         },
+         
+        },
+        {
+         $lookup: {
+             from: 'Venta',
+             localField: 'venta',
+             foreignField: '_id',
+             as: 'ventaInfo'
+         }
+     },
+     {
+         $match: {'ventaInfo.sucursal': new Types.ObjectId(suscursal)}
+     },
+        {
+          $project: {
+              _id: 1,
+              producto: {
+                  nombre: '$productoInfo.tipoProducto', 
+                  venta:'$ventaInfo._id',
+                  sucursal:'$ventaInfo.sucursal',
+                  preciototal: '$preciototal', 
+                  cantidad: '$cantidad',
+                  
+              }
+          }
+      },
+     
+        ])
+        const productoNombre= producto.map((item) => item.producto.nombre)
+        const total= producto.reduce((total, item) => total + item.producto.preciototal, 0)
+        const cantidad= producto.reduce((total, item) => (total + item.producto.cantidad), 0)   
+         const ticketPromedio= this.ticketPromedio(total, cantidad)    
+        const resultado={
+          suscursal:suscursalProdcuto,
+         producto: productoNombre[0] ?productoNombre[0] : tipoProducto ,
+         cantidad:cantidad,
+         total:total,
+         ticketPromedio 
+      
+        }
+        resultadoData.push(resultado)
+    }
+      
+      
+  }  
+ 
   return resultadoData
 }
+
+
 
 
 }
