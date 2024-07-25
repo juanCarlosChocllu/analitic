@@ -6,7 +6,9 @@ import { DetalleVenta, DetalleVentaSchema, Venta, VentaSchema } from './schemas/
 import { SucursalModule } from 'src/sucursal/sucursal.module';
 
 @Module({
-  imports:[MongooseModule.forFeature([
+  imports:[
+   
+    MongooseModule.forFeature([
     {name:Venta.name, schema:VentaSchema},
     {name:DetalleVenta.name, schema:DetalleVentaSchema}
   ]), SucursalModule],

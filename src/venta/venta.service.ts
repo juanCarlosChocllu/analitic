@@ -1,4 +1,4 @@
-import { HttpCode, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Type  } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DetalleVenta, Venta } from './schemas/venta.schema';
 import { Model, Types} from 'mongoose';
@@ -6,124 +6,78 @@ import { Model, Types} from 'mongoose';
 import { VentaDto } from './dto/venta.dto';
 
 import { SucursalService } from 'src/sucursal/sucursal.service';
-import { log } from 'console';
-import { verify } from 'crypto';
-import { VentaPorProductoI, VentaTotalI } from './interfaces/venta.interface';
-import { SucursalInterface } from 'src/sucursal/interfaces/sucursal.interface';
-import { SucursalVentasI } from 'src/sucursal/interfaces/venta.interface';
-import { RespuestaData, respuestaI } from './interfaces/respuesta.interface';
+
+import { VentaPorProductoI} from './interfaces/venta.interface';
+
 import { tipoProductoI } from 'src/productos/enums/productos.enum';
+
+
+import { respuestaI } from './interfaces/respuesta.interface';
+import { CACHE_MANAGER,Cache } from '@nestjs/cache-manager';
+import { count } from 'console';
+import { LenteI } from './interfaces/lente.interface';
 import { Producto } from 'src/productos/schema/producto.schema';
-import { flag } from './enums/flag.enum';
-import { constants } from 'buffer';
 
 @Injectable()
 export class VentaService {
 
   constructor(
-    @InjectModel(Venta.name) private  readonly  VentaSchema:Model<Venta>,
+   @Inject(CACHE_MANAGER) private cacheMagager:Cache,
     private readonly SucursalService:SucursalService,
-    @InjectModel(DetalleVenta.name) private readonly DetalleVenta:Model<DetalleVenta>
+    @InjectModel(DetalleVenta.name) private readonly DetalleVentaSchema:Model<DetalleVenta>,
+    @InjectModel(Venta.name) private readonly VentaSchema:Model<Venta>
    
 ){}
+
   async findAll(ventaDto:VentaDto) { 
-      const gafas= await this.ventaPorProducto(tipoProductoI.GAFA, ventaDto.fechaInicio, ventaDto.FechaFin)
-      const lc= await this.ventaPorProducto(tipoProductoI.LENTE_DE_CONTACTO,ventaDto.fechaInicio, ventaDto.FechaFin)
-      const monturas= await this.ventaPorProducto(tipoProductoI.MONTURA,ventaDto.fechaInicio, ventaDto.FechaFin)
-     
-      const dataVenta= await this.ventaPorProductos([tipoProductoI.MONTURA,tipoProductoI.LENTE_DE_CONTACTO,tipoProductoI.GAFA ],ventaDto.fechaInicio, ventaDto.FechaFin)
+
+
+    //  const dataChache= await this.cacheMagager.get('data')
+      //if(dataChache){        
+       // return dataChache
+      //}
+
+      const dataVenta= await this.ventaPorProductos([tipoProductoI.MONTURA,tipoProductoI.LENTE_DE_CONTACTO,tipoProductoI.GAFA ],ventaDto.fechaInicio, ventaDto.FechaFin,ventaDto)
       const dataPorSucursal= await this.ventaPorProductoSucursal([tipoProductoI.MONTURA,tipoProductoI.LENTE_DE_CONTACTO,tipoProductoI.GAFA ],ventaDto.fechaInicio, ventaDto.FechaFin, ventaDto)
-      const  total= gafas.total + lc.total + monturas.total 
+
+      const ventaTotal= this.ventaTotal(dataVenta)
+      const ventaPorSucursal=this.ventaTotal(dataPorSucursal)
       const respuesta={
           data:{
             fecha:{inicio:ventaDto.fechaInicio, fin:ventaDto.FechaFin},
+            ventaTotal,
             dataVenta
           },
           dataSucursal:{
+            fecha:{inicio:ventaDto.fechaInicio, fin:ventaDto.FechaFin},
+            ventaPorSucursal,
+            cantidadSucursales:ventaDto.sucursal.length,
            dataPorSucursal
           }
       }
+  
+     // await this.cacheMagager.set('data', respuesta, 1000* 30)
+    
+      return  respuesta;
+  }
 
-    return respuesta
-}
 
 
 
- private sacarTotalVenta(venta:SucursalVentasI[]){//saca en dinero
-  const totalVenta:number=venta.reduce((total, venta)=> total + venta.totalVenta,0)
-  return totalVenta
- }
- private sacarTotalVentaCantidad(venta:SucursalVentasI[]){ //saca la cantidad de ventas
-  const totalCantidadVenta:number= venta.reduce((total,venta)=>total + venta.cantidadVentas,0)
-  return totalCantidadVenta
- }
- private cantidaSucursal(venta:SucursalVentasI[]){
-   const sucursal:number= venta.length
-   return sucursal
- }
+
 
  private ticketPromedio(totalVenta:number, cantidadTotaVenta:number){
   const tkPromedio= totalVenta/ cantidadTotaVenta
   return tkPromedio ? tkPromedio: 0
  }
-
-
-
-async ventaPorProducto(tipo:tipoProductoI, fechaInicio:string, FechaFin:string){
-  const producto:VentaPorProductoI[]= await this.DetalleVenta.aggregate([
-   {
-     $lookup:{
-       from:'Producto',
-       localField:'producto',
-       foreignField:'_id',
-       as :'productoInfo'
-     }
-   },
-   {
-     $match:{'productoInfo.tipoProducto':tipo}
-
-   },
-   {
-    $match:{
-      fechains:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}
-    }
-   },
-   {
-     $project: {
-         _id: 1,
-         producto: {
-             nombre: '$productoInfo.tipoProducto', 
-             venta:'$ventaInfo._id',
-             sucursal:'$ventaInfo.sucursal',
-             preciototal: '$preciototal', 
-             cantidad: '$cantidad',
-             
-         }
-     }
- },
-
-   ])
-   const productoNombre= producto.map((item) => item.producto.nombre)
-   const total= producto.reduce((total, item) => total + item.producto.preciototal, 0)
-   const cantidad= producto.reduce((total, item) => (total + item.producto.cantidad), 0)   
-    const ticketPromedio= this.ticketPromedio(total, cantidad)
-   
-   const resultado={
-    producto:productoNombre[0],
-    cantidad:cantidad,
-    total:total,
-    ticketPromedio 
- 
-   }
-  return resultado
-}
-
-
-
-async ventaPorProductos(tipo:tipoProductoI[], fechaInicio:string, FechaFin:string){
+ private ventaTotal(venta:respuestaI[]){  
+    const total:number= venta.reduce((total, venta)=>total + venta.total,0) 
+    return  total
+ }
+ private async  ventaPorProductos(tipo:tipoProductoI[], fechaInicio:string, FechaFin:string, ventaDto:VentaDto){
     const ventaProducto:any[]=[]
     for( let tipoProducto of tipo){
-      const producto:VentaPorProductoI[]= await this.DetalleVenta.aggregate([
+      const producto:VentaPorProductoI[]= await this.DetalleVentaSchema.aggregate([
         {
           $lookup:{
             from:'Producto',
@@ -141,6 +95,20 @@ async ventaPorProductos(tipo:tipoProductoI[], fechaInicio:string, FechaFin:strin
            fechains:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}
          }
         },
+        {
+          $lookup: {
+              from: 'Venta',
+              localField: 'venta',
+              foreignField: '_id',
+              as: 'ventaInfo'
+          }
+      },
+      {
+          $match: { 
+           'ventaInfo.flag': ventaDto.flag,
+           'ventaInfo.tipoVenta':new Types.ObjectId(ventaDto.tipoVenta[0])
+         }
+      },
         {
           $project: {
               _id: 1,
@@ -161,7 +129,7 @@ async ventaPorProductos(tipo:tipoProductoI[], fechaInicio:string, FechaFin:strin
         const cantidad= producto.reduce((total, item) => (total + item.producto.cantidad), 0)   
          const ticketPromedio= this.ticketPromedio(total, cantidad)
         
-        const resultado={
+        const resultado:respuestaI={
          producto:productoNombre[0] ?productoNombre[0] : tipoProducto ,
          cantidad:cantidad,
          total:total,
@@ -171,21 +139,20 @@ async ventaPorProductos(tipo:tipoProductoI[], fechaInicio:string, FechaFin:strin
         ventaProducto.push(resultado)
        
     }
+
+    const lente= await this.lentes(fechaInicio, FechaFin, ventaDto)
+    ventaProducto.push(lente)
     return ventaProducto
 }
 
+ 
 
-
-
-
-
-
-async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFin:string, ventaDto:VentaDto){
+async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFin:string, ventaDto:VentaDto){  
   const resultadoData:any[]=[]
   for(let tipoProducto of tipo){
     for (let suscursal of ventaDto.sucursal){
       const suscursalProdcuto = await this.SucursalService.buscarScursal(new Types.ObjectId(suscursal))  
-      const producto:VentaPorProductoI[]= await this.DetalleVenta.aggregate([
+      const producto:VentaPorProductoI[]= await this.DetalleVentaSchema.aggregate([
         {
           $lookup:{
             from:'Producto',
@@ -213,7 +180,12 @@ async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFi
          }
      },
      {
-         $match: {'ventaInfo.sucursal': new Types.ObjectId(suscursal)}
+         $match: {
+          'ventaInfo.sucursal': new Types.ObjectId(suscursal),
+
+          'ventaInfo.flag':ventaDto.flag,
+          'ventaInfo.tipoVenta':new Types.ObjectId(ventaDto.tipoVenta[0])
+        }
      },
         {
           $project: {
@@ -229,7 +201,7 @@ async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFi
           }
       },
      
-        ])
+        ])        
         const productoNombre= producto.map((item) => item.producto.nombre)
         const total= producto.reduce((total, item) => total + item.producto.preciototal, 0)
         const cantidad= producto.reduce((total, item) => (total + item.producto.cantidad), 0)   
@@ -242,18 +214,95 @@ async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFi
          ticketPromedio 
       
         }
+        
+        
         resultadoData.push(resultado)
+      
     }
-      
-      
+   
+    
   }  
- 
+  const lente =await this.lentesPorSucursal(fechaInicio, FechaFin, ventaDto.sucursal, ventaDto)
+  resultadoData.push(...lente)
   return resultadoData
 }
 
 
+ private async  lentes(fechaInicio:string, FechaFin:string, ventaDto:VentaDto){  
+      const lente:LenteI[] =await this.VentaSchema.aggregate([
+        {
+          $match:{$or:[{lente1 :{ $exists: true }},{lente2 :{ $exists: true }} ]}
+        },
+        {
+          $match:{fecha:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}, flag:ventaDto.flag}
+        },
+        {$project:{
+          _id:1,
+          precioTotal:1,
+        }},
+       
+      ])
+
+      const total = lente.reduce((total, lente)=>total+ lente.precioTotal,0)
+      const tkPromedio= this.ticketPromedio(total, lente.length) 
+      const resultado:respuestaI={
+        producto:'Lente',
+        total:total,
+        cantidad:lente.length,
+        ticketPromedio:tkPromedio
+      }
+      
+      
+     return resultado
+  }
+  
+  private async  lentesPorSucursal(fechaInicio:string, FechaFin:string, sucursal:string[], ventaDto:VentaDto){  
+    const resultadoData:any[]=[]    
+    console.log(fechaInicio, FechaFin);
+    
+    for (let sucur of sucursal){
+
+      const suscursalProdcuto = await this.SucursalService.buscarScursal(new Types.ObjectId(sucur))  
+      const lente:LenteI[] =await this.VentaSchema.aggregate([
+        {
+          $match:{$or:[{lente1 :{ $exists: true }},{lente2 :{ $exists: true }}],
+          fecha:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)},
+          tipoVenta:new Types.ObjectId(ventaDto.tipoVenta[0])
+          }
+        },
+    
+        {$project:{
+          _id:1,
+          precioTotal:1,
+        }},
+       
+      ])
+      console.log(lente);
+      
+      const total = lente.reduce((total, lente)=>total+ lente.precioTotal,0)
+      const tkPromedio= this.ticketPromedio(total, lente.length) 
+      const resultado:respuestaI={
+        sucursal:suscursalProdcuto,
+        producto:'Lente',
+        total:total,
+        cantidad:lente.length,
+        ticketPromedio:tkPromedio
+      }
+
+      resultadoData.push(resultado)
+
+
+    }
+    
+    
+   return resultadoData
+}
 
 
 }
+
+
+
+
 
 
