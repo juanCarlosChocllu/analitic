@@ -1,75 +1,69 @@
-import { Inject, Injectable, Type  } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { DetalleVenta, Venta } from './schemas/venta.schema';
+import { DetalleVenta, SuscursalExcel, Venta, VentaExcel } from './schemas/venta.schema';
 import { Model, Types} from 'mongoose';
-
-import { VentaDto } from './dto/venta.dto';
-
+import { VentaDto, VentaExcelDto } from './dto/venta.dto';
 import { SucursalService } from 'src/sucursal/sucursal.service';
-
 import { VentaPorProductoI} from './interfaces/venta.interface';
-
 import { tipoProductoI } from 'src/productos/enums/productos.enum';
-
-
 import { respuestaI } from './interfaces/respuesta.interface';
-import { CACHE_MANAGER,Cache } from '@nestjs/cache-manager';
-import { count } from 'console';
 import { LenteI } from './interfaces/lente.interface';
-import { Producto } from 'src/productos/schema/producto.schema';
-
+import { CacheData } from './interfaces/cache.interface';
+import { HttpAxiosService } from 'src/providers/http.service';
+import { VentaExcelI } from './interfaces/ventaExcel.interface';
+import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class VentaService {
-
+  private readonly logger = new Logger(VentaExcel.name);
   constructor(
-   @Inject(CACHE_MANAGER) private cacheMagager:Cache,
     private readonly SucursalService:SucursalService,
     @InjectModel(DetalleVenta.name) private readonly DetalleVentaSchema:Model<DetalleVenta>,
-    @InjectModel(Venta.name) private readonly VentaSchema:Model<Venta>
+    @InjectModel(Venta.name) private readonly VentaSchema:Model<Venta>,
+    @InjectModel(VentaExcel.name) private readonly VentaExcelSchema:Model<VentaExcel>,
+    @InjectModel(SuscursalExcel.name) private readonly sucursalExcelSchema:Model<SuscursalExcel>,
+    private readonly httpAxiosService:HttpAxiosService
    
 ){}
 
-  async findAll(ventaDto:VentaDto) { 
 
-
-    //  const dataChache= await this.cacheMagager.get('data')
-      //if(dataChache){        
-       // return dataChache
-      //}
-
-      const dataVenta= await this.ventaPorProductos([tipoProductoI.MONTURA,tipoProductoI.LENTE_DE_CONTACTO,tipoProductoI.GAFA ],ventaDto.fechaInicio, ventaDto.FechaFin,ventaDto)
-      const dataPorSucursal= await this.ventaPorProductoSucursal([tipoProductoI.MONTURA,tipoProductoI.LENTE_DE_CONTACTO,tipoProductoI.GAFA ],ventaDto.fechaInicio, ventaDto.FechaFin, ventaDto)
-
-      const ventaTotal= this.ventaTotal(dataVenta)
-      const ventaPorSucursal=this.ventaTotal(dataPorSucursal)
-      const respuesta={
-          data:{
-            fecha:{inicio:ventaDto.fechaInicio, fin:ventaDto.FechaFin},
-            ventaTotal,
-            dataVenta
-          },
-          dataSucursal:{
-            fecha:{inicio:ventaDto.fechaInicio, fin:ventaDto.FechaFin},
-            ventaPorSucursal,
-            cantidadSucursales:ventaDto.sucursal.length,
-           dataPorSucursal
-          }
-      }
+/*async findAll(ventaDto: VentaDto) {
   
-     // await this.cacheMagager.set('data', respuesta, 1000* 30)
-    
-      return  respuesta;
-  }
+ 
+
+  // Si no hay datos en caché o los datos no son válidos, consulta la base de datos
+  const dataVenta = await this.ventaPorProductos(
+    [tipoProductoI.MONTURA, tipoProductoI.LENTE_DE_CONTACTO, tipoProductoI.GAFA],
+    ventaDto.fechaInicio,
+    ventaDto.FechaFin,
+    ventaDto
+  );
+  const dataPorSucursal = await this.ventaPorProductoSucursal(
+    [tipoProductoI.MONTURA, tipoProductoI.LENTE_DE_CONTACTO, tipoProductoI.GAFA],
+    ventaDto.fechaInicio,
+    ventaDto.FechaFin,
+    ventaDto
+  );
+
+  const ventaTotal = this.ventaTotal(dataVenta);
+  const ventaPorSucursal = this.ventaTotal(dataPorSucursal);
+
+  const respuesta: CacheData = {
+    data: {
+      fecha: { inicio: ventaDto.fechaInicio, fin: ventaDto.FechaFin },
+      ventaTotal,
+      dataVenta
+    },
+    dataSucursal: {
+      fecha: { inicio: ventaDto.fechaInicio, fin: ventaDto.FechaFin },
+      ventaPorSucursal,
+      cantidadSucursales: ventaDto.sucursal.length,
+      dataPorSucursal
+    }
+  };
 
 
-
-
-
-
- private ticketPromedio(totalVenta:number, cantidadTotaVenta:number){
-  const tkPromedio= totalVenta/ cantidadTotaVenta
-  return tkPromedio ? tkPromedio: 0
- }
+  return respuesta;
+}
  private ventaTotal(venta:respuestaI[]){  
     const total:number= venta.reduce((total, venta)=>total + venta.total,0) 
     return  total
@@ -257,9 +251,7 @@ async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFi
   }
   
   private async  lentesPorSucursal(fechaInicio:string, FechaFin:string, sucursal:string[], ventaDto:VentaDto){  
-    const resultadoData:any[]=[]    
-    console.log(fechaInicio, FechaFin);
-    
+    const resultadoData:any[]=[]        
     for (let sucur of sucursal){
 
       const suscursalProdcuto = await this.SucursalService.buscarScursal(new Types.ObjectId(sucur))  
@@ -277,7 +269,7 @@ async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFi
         }},
        
       ])
-      console.log(lente);
+
       
       const total = lente.reduce((total, lente)=>total+ lente.precioTotal,0)
       const tkPromedio= this.ticketPromedio(total, lente.length) 
@@ -297,7 +289,184 @@ async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFi
     
    return resultadoData
 }
+*/
+    async allExcel(){
+     const dataExcel = await this.httpAxiosService.reporte()
+     const ventaSinServicio= this.quitarServiciosVentas(dataExcel)
+     const ventaSinParaguay= this.quitarSucursalParaguay(ventaSinServicio)
+     const ventaLimpia= this.quitarDescuento(ventaSinParaguay)
+   
+      this.extraeSucursales(ventaLimpia)
+    
+    this.guardaVentaLimpiaEnLaBBDD(ventaLimpia)
+     return {status:HttpStatus.CREATED}
+}
 
+  private quitarServiciosVentas(venta:VentaExcelI[]):VentaExcelI[]{
+      const nuevaVenta = venta.filter((ventas)=> ventas.producto !== 'SERVICIO' )
+      return nuevaVenta
+    
+  }
+  private quitarSucursalParaguay(venta:VentaExcelI[]):VentaExcelI[]{
+    const nuevaVenta = venta.filter((ventas)=> ventas.sucursal !== 'OPTICENTRO PARAGUAY')
+    return nuevaVenta
+
+  }
+  private quitarDescuento(venta:VentaExcelI[]){
+    const nuevaVenta = venta.filter((ventas)=> ventas.producto !== 'DESCUENTO')
+    return nuevaVenta    
+  }
+
+  private async guardaVentaLimpiaEnLaBBDD(Venta:VentaExcelI[]){
+    try {
+      for(let data of Venta){
+        await this.VentaExcelSchema.create(data)
+       }
+    } catch (error) {
+         throw new BadRequestException()
+    }
+
+  }
+
+   async ventaExel(ventaDto:VentaExcelDto){
+        const venta = await this.ventaExcel(ventaDto)
+        const ventaSucursal = await this.ventaExcelSucursal(ventaDto)
+        
+        const total = venta.reduce((total, ve)=> total + ve.montoTotal ,0)
+        const cantidad = venta.reduce((total, ve)=> total +  ve.cantidad, 0)
+        const ticketPromedio = this.ticketPromedio(total, cantidad)
+        const resultado ={
+          total,
+          cantidad,
+          ticketPromedio,
+          venta,
+          ventaSucursal
+        }
+        return resultado
+    }
+
+
+
+  private async ventaExcel(ventaDto:VentaExcelDto){
+    const venta = await this.VentaExcelSchema.aggregate([
+      {
+        $match:{
+          fecha:{$gte: new Date(ventaDto.fechaInicio), 
+            $lte: new Date(ventaDto.FechaFin)}}
+      },
+      {
+        $group:{
+          _id: '$producto',
+          cantidad:{$sum:'$cantidad'},
+          montoTotal:{$sum:'$montoTotal'}
+        },
+      },
+     ])
+    return venta
+  }
+
+  private async  ventaExcelSucursal(ventaDto:VentaExcelDto){
+    const ventaSucursal:any[]=[]
+    for(let sucursal of ventaDto.sucursal){  
+      const venta = await this.VentaExcelSchema.aggregate([
+        {
+          $match:{
+            fecha:{$gte: new Date(ventaDto.fechaInicio), 
+              $lte: new Date(ventaDto.FechaFin)},
+             sucursal:sucursal
+            
+            }
+        },
+        {
+          $group:{
+            _id:'$producto',
+            cantidad:{$sum:'$cantidad'},
+            montoTotal:{$sum:'$montoTotal'}
+          },
+        },
+        {
+          $project: {
+            producto: '$_id.producto',
+            sucursal: '$_id.sucursal',
+            cantidad: 1,
+            montoTotal: 1
+          }
+        }
+     ])
+     const resultado = {
+       sucursal:sucursal,
+        data:venta.map((elemeto=>{
+          return{
+            producto:elemeto._id,
+            cantidad:elemeto.cantidad,
+            montoTotal:elemeto.montoTotal
+          }
+        })) 
+        }
+        ventaSucursal.push(resultado)
+    }
+    const data=  this.calcularDatosSucursal(ventaSucursal)
+    const resultado = {
+      data,
+      ventaSucursal
+    }
+    return   resultado
+  }
+
+
+  private calcularDatosSucursal(ventaPorSucursal:any[]){
+    const totalVenta:number[]=[]
+    const cantidadTotal:number[]=[]
+     for( let venta of ventaPorSucursal){
+        const total= venta.data.reduce((total:number, venta:VentaExcelI)=>total  + venta.cantidad, 0)
+        const cantidad =venta.data.reduce((total:number, venta:VentaExcelI)=>total  + venta.cantidad, 0)
+        totalVenta.push(total)
+        cantidadTotal.push(cantidad)     
+     }
+     const total = totalVenta.reduce((total, venta)=> total + venta,0)
+     const  cantidad = cantidadTotal.reduce((total, cantidad)=> total + cantidad,0)
+     const ticketPromedio =  this.ticketPromedio(total, cantidad)
+      this.ticketPromedio 
+     const resultado= {
+       total ,
+       cantidad ,
+        ticketPromedio 
+     }
+     return resultado
+  }
+
+     private async extraeSucursales(venta:VentaExcelI[]){
+      const suscursales = venta.map((v)=> v.sucursal)
+    const sucursalesSinRepetir = [...new Set(suscursales)]
+    await  this.guardarScucursal(sucursalesSinRepetir)
+      
+  } 
+
+    private async guardarScucursal(sucursal:string[]){
+    for( let nombre of sucursal){
+      const sucursalBBDD= await this.sucursalExcelSchema.findOne({nombre:nombre})
+       if(!sucursalBBDD){
+        const sucursal =  await this.sucursalExcelSchema.create({nombre:nombre})
+        sucursal.save()      
+       }
+    }
+  }
+ 
+  private ticketPromedio(totalVenta:number, cantidadTotaVenta:number){
+    const tkPromedio= totalVenta/ cantidadTotaVenta
+    return tkPromedio ? tkPromedio: 0
+   }
+  
+  /*  @Cron(CronExpression.EVERY_10_SECONDS)
+  handleCron() {
+    this.allExcel()
+    this.logger.debug('descarga completa');
+  }*/
+
+  async sucursalExcel(){
+   const suscursales = await  this.sucursalExcelSchema.find()
+   return suscursales
+  }
 
 }
 
