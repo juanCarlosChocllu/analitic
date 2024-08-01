@@ -31,7 +31,7 @@ export class VentaController {
  async  allExcel() { 
    return await this.ventaService.allExcel();
 }
-@Get('sucursalEcel')
+@Get('sucursalExcel')
 async  sucursalExcel() { 
   return await this.ventaService.sucursalExcel();
 }
