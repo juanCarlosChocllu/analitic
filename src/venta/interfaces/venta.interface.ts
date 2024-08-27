@@ -1,3 +1,4 @@
+import exp from 'constants';
 import { ObjectId } from 'mongodb';
 
 export interface VentaTotalI {
@@ -17,4 +18,19 @@ export interface VentaPorProductoI {
       preciototal: number;
       cantidad: number;
   };
+}
+
+
+export interface ProductoVentaI {
+    producto:string ;
+    cantidad: number;
+    total: number;
+}
+
+export interface VentaI {
+    montura: ProductoVentaI;
+    lenteDeContacto: ProductoVentaI;
+    lente: ProductoVentaI;
+    gafa: ProductoVentaI;
+    otroProducto: ProductoVentaI;
 }

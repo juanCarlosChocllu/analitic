@@ -1,6 +1,8 @@
 import { IsDateString, IsEnum, IsMongoId, IsOptional, IsString } from "class-validator"
 import { flag } from "../enums/flag.enum"
+import { Types } from "mongoose"
 export class VentaDto {
+
     @IsMongoId({each:true})
     sucursal:string[]
     @IsMongoId({each:true})
@@ -18,8 +20,13 @@ export class VentaDto {
 
 
 export class VentaExcelDto {
-    @IsString({each:true})
-    sucursal:string[]
+    @IsMongoId()
+    @IsOptional()
+    empresa:string
+    @IsMongoId({each:true})
+    @IsOptional()
+    sucursal:Types.ObjectId[]
+    
     @IsOptional()
     @IsDateString()
     fechaInicio:string

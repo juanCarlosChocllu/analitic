@@ -4,10 +4,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Producto } from './schema/producto.schema';
 import { Model } from 'mongoose';
 import { tipoProductoI } from './enums/productos.enum';
+import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 @Injectable()
 export class ProductosService {
-    constructor(@InjectModel(Producto.name) private readonly ProductoSchema:Model<Producto> ){}
+    constructor(@InjectModel(Producto.name,NombreBdConexion.mia) private readonly ProductoSchema:Model<Producto> ){}
   async buscarMontura(){
     const productoDetalle = await this.ProductoSchema.aggregate([
       {

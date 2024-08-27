@@ -1,27 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSucursalDto } from './dto/create-sucursal.dto';
-import { UpdateSucursalDto } from './dto/update-sucursal.dto';
+
 import { InjectModel } from '@nestjs/mongoose';
 import { Sucursal } from './schema/sucursal.schema';
 import { Model, Types } from 'mongoose';
-import { SucursalInterface, sucursalNombreI } from './interfaces/sucursal.interface';
 import { Flag } from './enums/flag.enum';
-import { Venta } from 'src/venta/schemas/venta.schema';
 import { SucursalVentasI } from './interfaces/venta.interface';
 import { VentaDto } from 'src/venta/dto/venta.dto';
-import { Type } from 'class-transformer';
-import { log } from 'util';
+import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 @Injectable()
 export class SucursalService {
-  constructor(@InjectModel(Sucursal.name) private  readonly SucursalSchema : Model<Sucursal> ){}
+  constructor(@InjectModel(Sucursal.name,NombreBdConexion.mia) private  readonly SucursalSchema : Model<Sucursal> ){}
 
   findAll(id:string){
     const sucursal = this.SucursalSchema.find({empresa:new Types.ObjectId(id) ,flag:Flag.nuevo}, 'nombre ciudad, flag').exec();
     return sucursal
   }
 
-  
    async buscarSucursalVentas(ventaDto:VentaDto) {
     let ventas:SucursalVentasI[]=[]
      for(let sucursal of ventaDto.sucursal){

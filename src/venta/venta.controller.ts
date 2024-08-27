@@ -17,12 +17,16 @@ export class VentaController {
     return await this.ventaService.findAll(ventaDto);
   }*/
   @Post('excel/actual')
-   async ventaExcelActual(@Body() ventaDto:VentaExcelDto) { 
+   async ventaExcelActual(@Body() ventaDto:VentaExcelDto) {    
+
      return await this.ventaService.ventaExel(ventaDto);
   }
 
   @Post('excel/anterior')
   async ventaExcelAnterior(@Body() ventaDto:VentaExcelDto) { 
+
+    console.log(await this.ventaService.ventaExel(ventaDto));
+    
     return await this.ventaService.ventaExel(ventaDto);
  }
 
@@ -31,10 +35,30 @@ export class VentaController {
  async  allExcel() { 
    return await this.ventaService.allExcel();
 }
-@Get('sucursalExcel')
-async  sucursalExcel() { 
-  return await this.ventaService.sucursalExcel();
+
+@Get('Empresa')
+async  empresaExcel() { 
+  return await this.ventaService.EmpresaExcel();
 }
  
+@Get('sucursalExcel/:id')
+async  sucursalExcel(@Param() id:string ) { 
+  return await this.ventaService.sucursalExcel(id);
+}
+ 
+@Post('excel/sucursal')
+async ventaSucursalExcelActual(@Body() ventaDto:VentaExcelDto) {    
+  return await this.ventaService.ventaSucursalExcel(ventaDto);
+}
+
+
+ 
+@Post('excel/gestion')
+async gestionExcel(@Body() ventaDto:VentaExcelDto) {    
+  return await this.ventaService.gestionExcel(ventaDto);
+}
+
+
+
 
 }
