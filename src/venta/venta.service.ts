@@ -24,6 +24,9 @@ import { SucursalModule } from 'src/sucursal/sucursal.module';
 
 import { parseNumber } from './util/validar.numero.util';
 import { Empresa } from 'src/empresa/schemas/empresa.schema';
+import { diasHAbiles } from './util/dias.habiles.util';
+import { FechasDto } from './dto/fechas.dto';
+import { Type } from 'class-transformer';
 
 @Injectable()
 export class VentaService {
@@ -308,12 +311,12 @@ async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFi
 async allExcel(){
   const dataAnio = diasDelAnio(2023);
   
- // for (let data of dataAnio) {
-  //  const [mes, dia] = data.split('-');
-   // console.log(mes , dia, 2023);
+  for (let data of dataAnio) {
+    const [mes, dia] = data.split('-');
+    console.log(mes , dia, 2023);
     
     try {
-      const dataExcel = await this.httpAxiosService.reporte('08', '03', 2023);
+      const dataExcel = await this.httpAxiosService.reporte(mes, dia, 2023);
       const ventaSinServicio =  this.quitarServiciosVentas(dataExcel);
       const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
       const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
@@ -326,12 +329,12 @@ async allExcel(){
     } catch (error) {
 
       if (error instanceof NotFoundException) {
-       // console.log(`Archivo no encontrado para la fecha ${dia}/${mes}/2023. Continuando con el siguiente día.`);
-       // continue;
+        console.log(`Archivo no encontrado para la fecha ${dia}/${mes}/2023. Continuando con el siguiente día.`);
+        continue;
       } else {
         throw error;
       }
-   // }
+    }
   }
   
   return {status: HttpStatus.CREATED};
@@ -403,11 +406,11 @@ async allExcel(){
 
    async ventaExel(ventaDto:VentaExcelDto){
         const venta = await this.ventaExcel(ventaDto)
-     
         const ventaSucursal = await this.ventaExcelSucursal(ventaDto)
        const total = venta.reduce((total, ve)=> total + ve.montoTotal ,0)       
         const cantidad = venta.reduce((total, ve)=> total +  ve.cantidad, 0)
         const ticketPromedio = this.ticketPromedio(total, cantidad)
+    
         const resultado ={
           cantidadSucursal:ventaDto.sucursal.length,
           fechaInicio:ventaDto.fechaInicio,
@@ -505,9 +508,7 @@ async allExcel(){
      
         
      ])
-     console.log(venta);
-     
-     
+
      const resultado = {
              sucursal: await this.extraerSucursal(sucursal),
         data:venta.map((elemeto=>{          
@@ -523,7 +524,7 @@ async allExcel(){
     }
    
     
-    const data=  this.calcularDatosSucursal(ventaSucursal)
+    const data=  this.calcularDatosSucursal(ventaSucursal, ventaDto)
     const resultado = {
       data,
       ventaSucursal
@@ -532,7 +533,10 @@ async allExcel(){
   }
 
 
-  private calcularDatosSucursal(ventaPorSucursal:any[]){
+  private calcularDatosSucursal(ventaPorSucursal:any[], ventaDto:VentaExcelDto){
+    const dias = diasHAbiles(ventaDto.fechaInicio, ventaDto.FechaFin)
+
+    
     const totalVenta:number[]=[]
     const cantidadTotal:number[]=[]
      for( let venta of ventaPorSucursal){
@@ -544,10 +548,12 @@ async allExcel(){
      const total = totalVenta.reduce((total, venta)=> total + venta,0).toFixed(2)
      const  cantidad = cantidadTotal.reduce((total, cantidad)=> total + cantidad,0)
      const ticketPromedio =  this.ticketPromedio(parseFloat(total), cantidad)
+     const ventaPorDia =  parseFloat((parseFloat(total)/dias).toFixed(2))   
       this.ticketPromedio 
      const resultado= {
        total ,
        cantidad ,
+      ventaPorDia,
         ticketPromedio 
      }
      return resultado
@@ -756,7 +762,7 @@ async allExcel(){
             ticketPromedio: {
               $cond: {
                 if: { $ne: ['$totalTicket', 0] },
-                then: { $divide: ['$ventaTotal', '$totalTicket'] },
+                then: { $round:[{$divide: ['$ventaTotal', '$totalTicket']}, 2] },
                 else: 0
               }
             },
@@ -771,7 +777,7 @@ async allExcel(){
             unidadPorTicket:{
               $cond:{
                 if:{$ne:['$cantidad' ,0]},
-                then:{$divide:['$cantidad','$totalTicket']},
+                then:{$round:[{$divide:['$cantidad','$totalTicket']},2]},
                 else:0
               }
             },
@@ -808,20 +814,26 @@ async allExcel(){
   }
 
     private async extraerSucursal(sucursal:Types.ObjectId){
+      
         const su = await this.sucursalExcelSchema.findOne({_id:sucursal}).select('nombre')
         return su.nombre
     }
+
+
+
     public async gestionExcel(ventaDto:VentaExcelDto){
+     const dias:number =  diasHAbiles(ventaDto.fechaInicio, ventaDto.FechaFin)
+  
       const data={
         sucursales:0,
         totalVentas:0,
         tcPromedio:0,
-        ventaDiariaPorLoca:0,
+        ventaDiariaPorLocal:0,
         unidadPorTickect:0
     }
-      const dataSucursal:any[]=[]
+   const dataSucursal:any[]=[]
         for(let  idsucursal of ventaDto.sucursal){
-          const sucursal  = await this.extraerSucursal(idsucursal) 
+          const sucursal  = await this.sucursalExcelSchema.findOne({_id:idsucursal})
           const sucusarsalData = await  this.VentaExcelSchema.aggregate([
             {
               $match:{
@@ -931,9 +943,9 @@ async allExcel(){
             precioPromedio: 0
           };
           
-
           const data={
-            sucursal:sucursal,
+            sucursal:sucursal.nombre,
+            id:sucursal._id,
             ...resultadoFinal,
           }
           
@@ -941,9 +953,11 @@ async allExcel(){
         } 
         const cantidad = dataSucursal.reduce((total ,item)=>total + item.cantidad, 0)
         const ticket = dataSucursal.reduce((total ,item)=>total + item.totalTicket, 0)
+        const totalVenta=  dataSucursal.reduce((total , item)=>total + item.ventaTotal,0)
         data.sucursales = ventaDto.sucursal.length
-        data.totalVentas = dataSucursal.reduce((total , item)=>total + item.ventaTotal,0)
+        data.totalVentas = totalVenta
         data.unidadPorTickect = parseFloat((cantidad/ticket).toFixed(2))
+        data.ventaDiariaPorLocal = parseFloat((totalVenta/dias).toFixed(2))
         const resultado={
           ...data,
           dataSucursal
@@ -951,6 +965,71 @@ async allExcel(){
         
         return resultado
     }
+
+
+
+
+    public async sucursalVentaInformacion(id:string, fechasDto:FechasDto){
+     
+      const ventaSucursal =  await this.VentaExcelSchema.aggregate([
+        {
+          $match:{sucursal:new Types.ObjectId(id),
+            fecha: {
+              $gte: new Date(fechasDto.fechaInicio),
+              $lte: new Date(fechasDto.fechaFin),
+            },
+            
+          }
+        },
+        {
+          $group:{
+            _id:'$producto',
+            totalTicket:{
+              $sum:{
+                $cond:{
+                  if:{$eq: ['$aperturaTicket','1']},
+                  then:1,
+                  else:0
+                }
+              }
+            },
+            cantidad:{
+              $sum:{
+                $cond:{
+                  if:{$ne:['$producto', 'DESCUENTO']}, 
+                    then:'$cantidad',
+                    else:0
+                }
+              }
+            },
+
+            totalVenta:{
+              $sum:{
+                $cond:{
+                  if:{$eq: ['$aperturaTicket','1']},
+                  then:'$montoTotal',
+                  else:0
+
+                }
+              }
+            }
+
+          }
+
+        }
+
+
+
+      ])
+
+
+
+      console.log(ventaSucursal);
+      
+      
+    }
+
+
   }
   
   
