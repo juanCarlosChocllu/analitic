@@ -4,29 +4,22 @@ import { AsesorExcel, DetalleVenta, EmpresaExcel, SuscursalExcel, Venta, VentaEx
 import { Model, set, Types} from 'mongoose';
 import { VentaDto, VentaExcelDto } from './dto/venta.dto';
 import { SucursalService } from 'src/sucursal/sucursal.service';
-import { ProductoVentaI, VentaI, VentaPorProductoI, VentaTotalI} from './interfaces/venta.interface';
-import { tipoProductoI } from 'src/productos/enums/productos.enum';
-import { respuestaI } from './interfaces/respuesta.interface';
-import { LenteI } from './interfaces/lente.interface';
-import { CacheData } from './interfaces/cache.interface';
-import { HttpAxiosService } from 'src/providers/http.service';
+
+import { HttpAxiosVentaService } from 'src/providers/http.Venta.service';
 import { VentaExcelI } from './interfaces/ventaExcel.interface';
-import { Cron, CronExpression } from '@nestjs/schedule';
+
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 import { dataEmpresa } from './data.empresas';
-import { log } from 'util';
+
 import { diasDelAnio } from 'src/providers/util/dias.anio';
-import { productos } from './enums/productos.enum';
-import { Producto } from 'src/productos/schema/producto.schema';
-import { constants } from 'buffer';
+
 import { AsesorExcelI } from './interfaces/asesor.interface';
-import { SucursalModule } from 'src/sucursal/sucursal.module';
+
 
 import { parseNumber } from './util/validar.numero.util';
-import { Empresa } from 'src/empresa/schemas/empresa.schema';
+
 import { diasHAbiles } from './util/dias.habiles.util';
 import { FechasDto } from './dto/fechas.dto';
-import { Type } from 'class-transformer';
 
 @Injectable()
 export class VentaService {
@@ -39,7 +32,7 @@ export class VentaService {
     @InjectModel(SuscursalExcel.name,NombreBdConexion.oc) private readonly sucursalExcelSchema:Model<SuscursalExcel>,
     @InjectModel(EmpresaExcel.name,NombreBdConexion.oc) private readonly EmpresaExcelSchema:Model<SuscursalExcel>,
     @InjectModel(AsesorExcel.name,NombreBdConexion.oc) private readonly AsesorExcelSchema:Model<AsesorExcel>,
-    private readonly httpAxiosService:HttpAxiosService
+    private readonly httpAxiosVentaService:HttpAxiosVentaService
    
 ){}
 
@@ -311,12 +304,14 @@ async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFi
 async allExcel(){
   const dataAnio = diasDelAnio(2023);
   
-  for (let data of dataAnio) {
-    const [mes, dia] = data.split('-');
-    console.log(mes , dia, 2023);
-    
+ // for (let data of dataAnio) {
+   // const [mes, dia] = data.split('-');
+   // console.log(mes , dia, 2023);
+    const mes:string='08'
+    const dia:string='27'
+    const aqo:number=2024
     try {
-      const dataExcel = await this.httpAxiosService.reporte(mes, dia, 2023);
+      const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
       const ventaSinServicio =  this.quitarServiciosVentas(dataExcel);
       const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
       const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
@@ -330,12 +325,12 @@ async allExcel(){
 
       if (error instanceof NotFoundException) {
         console.log(`Archivo no encontrado para la fecha ${dia}/${mes}/2023. Continuando con el siguiente día.`);
-        continue;
+      //  continue;
       } else {
         throw error;
       }
     }
-  }
+//  }
   
   return {status: HttpStatus.CREATED};
 }
@@ -379,7 +374,8 @@ async allExcel(){
                 importe: parseNumber(data.importe) ,
                 cantidad: data.cantidad,
                 montoTotal: data.montoTotal,
-                asesor: asesor._id
+                asesor: asesor._id,
+                flagVenta:data.flagVenta
               }
               
               await this.VentaExcelSchema.create(dataVenta)
@@ -935,6 +931,7 @@ async allExcel(){
           
           const resultadoFinal = sucusarsalData.length > 0 ? sucusarsalData[0] : {
             _id:null,
+            trafico:0,
             ventaTotal: 0,
             totalTicket: 0,
             cantidad:0,
@@ -973,60 +970,49 @@ async allExcel(){
      
       const ventaSucursal =  await this.VentaExcelSchema.aggregate([
         {
-          $match:{sucursal:new Types.ObjectId(id),
+          $match:{
+            sucursal:new Types.ObjectId(id),
             fecha: {
               $gte: new Date(fechasDto.fechaInicio),
               $lte: new Date(fechasDto.fechaFin),
+             
             },
-            
+            producto: { $ne: 'DESCUENTO'}
           }
         },
         {
           $group:{
             _id:'$producto',
-            totalTicket:{
-              $sum:{
-                $cond:{
-                  if:{$eq: ['$aperturaTicket','1']},
-                  then:1,
-                  else:0
-                }
-              }
-            },
             cantidad:{
               $sum:{
                 $cond:{
-                  if:{$ne:['$producto', 'DESCUENTO']}, 
+                  if:{  $ne: ['$producto', 'DESCUENTO']}, 
                     then:'$cantidad',
                     else:0
                 }
               }
             },
-
-            totalVenta:{
+            totalImporte:{
               $sum:{
                 $cond:{
-                  if:{$eq: ['$aperturaTicket','1']},
-                  then:'$montoTotal',
+                  if:{$ne:['$producto','DESCUENTO']},
+                  then:'$importe',
                   else:0
-
                 }
               }
             }
-
+          },
+        },
+        {
+          $project:{
+            _id:1,
+            cantidad:1,
+            totalImporte:1
           }
-
         }
 
-
-
       ])
-
-
-
-      console.log(ventaSucursal);
-      
-      
+      return ventaSucursal
     }
 
 

@@ -35,6 +35,8 @@ export class VentaController {
    return await this.ventaService.allExcel();
 }
 
+
+
 @Get('Empresa')
 async  empresaExcel() { 
   return await this.ventaService.EmpresaExcel();

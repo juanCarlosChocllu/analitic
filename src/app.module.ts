@@ -8,6 +8,7 @@ import { ProductosModule } from './productos/productos.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ProvidersModule } from './providers/providers.module';
 import { NombreBdConexion } from './enums/nombre.db.enum';
+import { AbonoModule } from './abono/abono.module';
 
 @Module({
   imports: [ 
@@ -17,7 +18,7 @@ import { NombreBdConexion } from './enums/nombre.db.enum';
     MongooseModule.forRoot('mongodb://localhost:27017/analitic',{
       connectionName: NombreBdConexion.oc
     }),
-     VentaModule, TipoVentaModule, SucursalModule, EmpresaModule, ProductosModule, ProvidersModule,],
+     VentaModule, TipoVentaModule, SucursalModule, EmpresaModule, ProductosModule, ProvidersModule, AbonoModule,],
   controllers: [],
   providers: [],
 })

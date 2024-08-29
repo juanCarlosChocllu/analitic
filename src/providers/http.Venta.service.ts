@@ -2,21 +2,22 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
-import { diasDelAnio } from './util/dias.anio';
-import { log } from 'console';
+import { flag } from 'src/venta/enums/flag.enum';
 @Injectable()
-export class HttpAxiosService {
+export class HttpAxiosVentaService {
   constructor(private readonly httpService:HttpService ){}
   public async reporte(mes: string, dia: string, anio: number, retries = 3): Promise<any> {
-    const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
-
+    // const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
+    const url= 'http://localhost/opticentro/web/cibeles20240829.csv'
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await firstValueFrom(
           this.httpService.get(url, { timeout: 30000 })
         );
+      
         const venta = this.extracionDeInformacionValida(response.data);
         venta.shift(); // Elimina el primer elemento del array donde obtiene los nombres de cada celda
+   
         return venta;
 
       } catch (error) {
@@ -47,12 +48,11 @@ export class HttpAxiosService {
 
 
   private extracionDeInformacionValida(data:any){
-    const lineas:any[] = data.trim().split('\n');  
+    const lineas:any[] = data.trim().split('\n');   
     const venta= lineas.map((linea)=>{
       const columnas = linea.split(';');
       const fechaCSV = columnas[0].split(' ');
-      
-      
+    
       const resultado:VentaExcelI={
         fecha:fechaCSV[0],
         aperturaTicket:columnas[2],
@@ -63,6 +63,8 @@ export class HttpAxiosService {
         cantidad:Number(columnas[19]),
         montoTotal:Number(columnas[28]),
         asesor:columnas[21],
+        flagVenta: columnas[29] ? columnas[29]: flag.FINALIZADO
+        
       }
       
    

@@ -17,12 +17,14 @@ import { NombreBdConexion } from 'src/enums/nombre.db.enum';
     {name:DetalleVenta.name, schema:DetalleVentaSchema},
     {name:VentaExcel.name, schema:VentaExcelSchema},
   ],NombreBdConexion.mia), 
+  
     MongooseModule.forFeature([
       {name:SuscursalExcel.name, schema:SuscursalExcelSchema},
       {name:VentaExcel.name, schema:VentaExcelSchema},
       {name:EmpresaExcel.name, schema:EmpresaExcelSchema},
       {name:AsesorExcel.name, schema:AsesorExcelSchema},
     ], NombreBdConexion.oc ),
+
   SucursalModule, ProvidersModule],
   controllers: [VentaController],
   providers: [VentaService],

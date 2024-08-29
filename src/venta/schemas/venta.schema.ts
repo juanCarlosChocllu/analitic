@@ -55,10 +55,18 @@ export class VentaExcel {
     @Prop({type:Date})
     fecha:Date
 
+    @Prop()
+    flagVenta:string
+
     @Prop({type:Date, default:Date.now()})
     fechaCreacion:Date  
 }
 export const VentaExcelSchema= SchemaFactory.createForClass(VentaExcel)
+//indices 
+VentaExcelSchema.index({sucursal:1})
+VentaExcelSchema.index({empresa:1})
+VentaExcelSchema.index({asesor:1})
+
 
 @Schema()
 export class SuscursalExcel{

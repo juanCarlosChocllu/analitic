@@ -19,4 +19,6 @@ export interface VentaExcelI {
     montoTotal:number
 
     fecha:string
+
+    flagVenta :string 
 }
