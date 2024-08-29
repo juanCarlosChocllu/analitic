@@ -825,7 +825,8 @@ async allExcel(){
         totalVentas:0,
         tcPromedio:0,
         ventaDiariaPorLocal:0,
-        unidadPorTickect:0
+        unidadPorTickect:0,
+        ticketPromedio:0
     }
    const dataSucursal:any[]=[]
         for(let  idsucursal of ventaDto.sucursal){
@@ -953,8 +954,9 @@ async allExcel(){
         const totalVenta=  dataSucursal.reduce((total , item)=>total + item.ventaTotal,0)
         data.sucursales = ventaDto.sucursal.length
         data.totalVentas = totalVenta
-        data.unidadPorTickect = parseFloat((cantidad/ticket).toFixed(2))
+        data.unidadPorTickect = parseFloat((cantidad/ticket).toFixed(2)) ? parseFloat((cantidad/ticket).toFixed(2)) : 0
         data.ventaDiariaPorLocal = parseFloat((totalVenta/dias).toFixed(2))
+        data.ticketPromedio = 0
         const resultado={
           ...data,
           dataSucursal
