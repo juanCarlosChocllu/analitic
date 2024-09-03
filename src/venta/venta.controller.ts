@@ -64,4 +64,10 @@ sucursalVentaInformacion(@Param('id') id:string, @Body() fechasDto:FechasDto ){
   return this.ventaService.sucursalVentaInformacion(id, fechasDto)
 }
 
+
+@Get('finalizar')
+finalizarVenta(){
+  return this.ventaService.finalizarVentas()
+}
+
 }

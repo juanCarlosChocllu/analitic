@@ -54,10 +54,10 @@ export class HttpAxiosAbonoService{
           const fechaCSV = columnas[0].split(' ');
           const resultado:abonoI={
             fecha:fechaCSV[0],
-            aperturaTicket:columnas[1],
+            numeroTicket:columnas[1],
             monto:Number(columnas[2]),
             flag:columnas[3]            
-          }       
+          }  
           return resultado
         })  
         return venta

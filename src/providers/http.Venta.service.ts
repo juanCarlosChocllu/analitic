@@ -3,12 +3,13 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { firstValueFrom } from 'rxjs';
 import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
 import { flag } from 'src/venta/enums/flag.enum';
+import { log } from 'node:console';
 @Injectable()
 export class HttpAxiosVentaService {
   constructor(private readonly httpService:HttpService ){}
   public async reporte(mes: string, dia: string, anio: number, retries = 3): Promise<any> {
     // const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
-    const url= 'http://localhost/opticentro/web/cibeles20240829.csv'
+    const url= 'http://localhost/opticentro/web/cibeles20240903.csv'
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await firstValueFrom(
@@ -51,23 +52,24 @@ export class HttpAxiosVentaService {
     const lineas:any[] = data.trim().split('\n');   
     const venta= lineas.map((linea)=>{
       const columnas = linea.split(';');
-      const fechaCSV = columnas[0].split(' ');
-    
+      const fechaCSV = columnas[0].split(' ');     
+
       const resultado:VentaExcelI={
         fecha:fechaCSV[0],
+        numeroTicket:columnas[1],
         aperturaTicket:columnas[2],
         sucursal:columnas[3],
-        numeroTicket:columnas[1],
         producto:columnas[12],
-        importe:columnas[20],
         cantidad:Number(columnas[19]),
-        montoTotal:Number(columnas[28]),
+        importe:columnas[20],
         asesor:columnas[21],
-        flagVenta: columnas[29] ? columnas[29]: flag.FINALIZADO
+        montoTotal:Number(columnas[28]),
+        tipoVenta:columnas[29] ? columnas[29]:'CONTADO',
+        acompanantes: columnas[30] ? columnas[30]: 0,
+        flagVenta: columnas[31] ? columnas[31]: flag.FINALIZADO
         
       }
-      
-   
+
       return resultado
     })  
     return venta

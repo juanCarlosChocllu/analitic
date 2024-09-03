@@ -2,7 +2,7 @@
 
 export interface abonoI{
     fecha:string,
-    aperturaTicket:string
+    numeroTicket:string
     monto:number
     flag:string
 }

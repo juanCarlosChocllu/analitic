@@ -1,4 +1,4 @@
-import { Module} from '@nestjs/common';
+import { forwardRef, Module} from '@nestjs/common';
 import { VentaModule } from './venta/venta.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TipoVentaModule } from './tipo-venta/tipo-venta.module';

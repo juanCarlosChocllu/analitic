@@ -1,10 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { HttpAxiosAbonoService } from 'src/providers/http.Abono.service';
 import { diasDelAnio } from 'src/providers/util/dias.anio';
+import { Abono } from './schema/abono.abono';
+import { Model } from 'mongoose';
+import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { abonoI } from './interfaces/abono.interface';
+import { VentaService } from 'src/venta/venta.service';
+import { log } from 'node:console';
 
 @Injectable()
-export class HttpAbonoService {
-  constructor(private readonly httAxiosAbonoService:HttpAxiosAbonoService){}
+export class AbonoService {
+  constructor(
+    @InjectModel(Abono.name, NombreBdConexion.oc) private readonly SchemaAbono:Model<Abono>, 
+    private readonly httpAxiosAbonoService:HttpAxiosAbonoService,
+     private readonly ventaService:VentaService
+  ){}
     
   async extraerAbono() {
     const dataAnio = diasDelAnio(2023);
@@ -17,12 +28,18 @@ export class HttpAbonoService {
        const aqo:number=2024
        try {
     
-       const dataAbono= await    this.httAxiosAbonoService.reporteAbono(mes, dia, aqo)
-       console.log(dataAbono);
+       const dataAbono:abonoI[]= await    this.httpAxiosAbonoService.reporteAbono(mes, dia, aqo)
+      
+      
+        this.ventaService.vericarVentaParaCadaAbono(dataAbono)
+       
+       
+      
+       
        
        } catch (error) {
          if (error instanceof NotFoundException) {
-           console.log(`Archivo no encontrado para la fecha ${dia}/${mes}/2023. Continuando con el siguiente día.`);
+           console.log(`Archivo no encontrado para la fecha ${dia}/${mes}/${aqo}. Continuando con el siguiente día.`);
          //  continue;
          } else {
            throw error;
@@ -30,7 +47,7 @@ export class HttpAbonoService {
        }
    //  }
 
-    return 'This action adds a new abono';
+    return { status:HttpStatus.OK };
   }
 
 

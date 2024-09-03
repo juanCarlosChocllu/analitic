@@ -2,6 +2,7 @@ import { Prop,Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
 import { flag } from "../enums/flag.enum";
 import { flagVenta } from "../enums/flgaVenta.enum";
+import { Type } from "class-transformer";
 
 @Schema({ collection: 'Venta' })
 export class Venta {
@@ -49,6 +50,12 @@ export class VentaExcel {
     @Prop()
     montoTotal:number
 
+    @Prop()
+    acompanantes:number
+
+    @Prop({type:Types.ObjectId, ref:'Tipo_venta'})
+    tipoVenta:Types.ObjectId
+    
     @Prop({type:String, enum :flagVenta, default:flagVenta.nuevo})
     flag:flagVenta
 

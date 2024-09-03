@@ -2,7 +2,7 @@ export function dataEmpresa(){
     const data ={
         empresa:{
             'OPTICENTRO':[
-                'SUCRE - CENTRAL', "OPTICENTRO POTOSI", "OPTICENTRO TUPIZA",
+                'SUCRE  CENTRAL', "OPTICENTRO POTOSI", "OPTICENTRO TUPIZA",
                 "OPTICENTRO LA PAZ", "OPTICENTRO TARIJA", "OPTICENTRO YACUIBA",
                 "OPTICENTRO AZURDUY", "OPTICENTRO TARIJA 2",
                 "OPTICENTRO LA PAZ 2"

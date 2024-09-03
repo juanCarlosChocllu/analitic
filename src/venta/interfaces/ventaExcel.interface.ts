@@ -18,6 +18,10 @@ export interface VentaExcelI {
 
     montoTotal:number
 
+    acompanantes:number
+
+    tipoVenta:string
+    
     fecha:string
 
     flagVenta :string 

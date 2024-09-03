@@ -20,6 +20,14 @@ import { parseNumber } from './util/validar.numero.util';
 
 import { diasHAbiles } from './util/dias.habiles.util';
 import { FechasDto } from './dto/fechas.dto';
+import { log } from 'node:console';
+import { abonoI } from 'src/abono/interfaces/abono.interface';
+import { flag } from './enums/flag.enum';
+import { AbonoService } from '../abono/abono.service';
+import { Abono } from 'src/abono/schema/abono.abono';
+import { constants } from 'node:buffer';
+import { Flag } from 'src/sucursal/enums/flag.enum';
+import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 
 @Injectable()
 export class VentaService {
@@ -32,294 +40,99 @@ export class VentaService {
     @InjectModel(SuscursalExcel.name,NombreBdConexion.oc) private readonly sucursalExcelSchema:Model<SuscursalExcel>,
     @InjectModel(EmpresaExcel.name,NombreBdConexion.oc) private readonly EmpresaExcelSchema:Model<SuscursalExcel>,
     @InjectModel(AsesorExcel.name,NombreBdConexion.oc) private readonly AsesorExcelSchema:Model<AsesorExcel>,
-    private readonly httpAxiosVentaService:HttpAxiosVentaService
+    @InjectModel(Abono.name,NombreBdConexion.oc) private readonly AbonoSchema:Model<Abono>,
+
+
+    private readonly httpAxiosVentaService:HttpAxiosVentaService,
+
+    private readonly tipoVentaService:TipoVentaService
+  
    
 ){}
 
 
-/*async findAll(ventaDto: VentaDto) {
-  
- 
 
-  // Si no hay datos en caché o los datos no son válidos, consulta la base de datos
-  const dataVenta = await this.ventaPorProductos(
-    [tipoProductoI.MONTURA, tipoProductoI.LENTE_DE_CONTACTO, tipoProductoI.GAFA],
-    ventaDto.fechaInicio,
-    ventaDto.FechaFin,
-    ventaDto
-  );
-  const dataPorSucursal = await this.ventaPorProductoSucursal(
-    [tipoProductoI.MONTURA, tipoProductoI.LENTE_DE_CONTACTO, tipoProductoI.GAFA],
-    ventaDto.fechaInicio,
-    ventaDto.FechaFin,
-    ventaDto
-  );
-
-  const ventaTotal = this.ventaTotal(dataVenta);
-  const ventaPorSucursal = this.ventaTotal(dataPorSucursal);
-
-  const respuesta: CacheData = {
-    data: {
-      fecha: { inicio: ventaDto.fechaInicio, fin: ventaDto.FechaFin },
-      ventaTotal,
-      dataVenta
-    },
-    dataSucursal: {
-      fecha: { inicio: ventaDto.fechaInicio, fin: ventaDto.FechaFin },
-      ventaPorSucursal,
-      cantidadSucursales: ventaDto.sucursal.length,
-      dataPorSucursal
-    }
-  };
-
-
-  return respuesta;
-}
- private ventaTotal(venta:respuestaI[]){  
-    const total:number= venta.reduce((total, venta)=>total + venta.total,0) 
-    return  total
- }
- private async  ventaPorProductos(tipo:tipoProductoI[], fechaInicio:string, FechaFin:string, ventaDto:VentaDto){
-    const ventaProducto:any[]=[]
-    for( let tipoProducto of tipo){
-      const producto:VentaPorProductoI[]= await this.DetalleVentaSchema.aggregate([
-        {
-          $lookup:{
-            from:'Producto',
-            localField:'producto',
-            foreignField:'_id',
-            as :'productoInfo'
-          }
-        },
-        {
-          $match:{'productoInfo.tipoProducto':tipoProducto}
-     
-        },
-        {
-         $match:{
-           fechains:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}
-         }
-        },
-        {
-          $lookup: {
-              from: 'Venta',
-              localField: 'venta',
-              foreignField: '_id',
-              as: 'ventaInfo'
-          }
-      },
-      {
-          $match: { 
-           'ventaInfo.flag': ventaDto.flag,
-           'ventaInfo.tipoVenta':new Types.ObjectId(ventaDto.tipoVenta[0])
-         }
-      },
-        {
-          $project: {
-              _id: 1,
-              producto: {
-                  nombre: '$productoInfo.tipoProducto', 
-                  venta:'$ventaInfo._id',
-                  sucursal:'$ventaInfo.sucursal',
-                  preciototal: '$preciototal', 
-                  cantidad: '$cantidad',
-                  
+public async vericarVentaParaCadaAbono(abono:abonoI[]){
+    for(let data of abono){
+      const venta = await this.VentaExcelSchema.findOne({numeroTicket:data.numeroTicket, flagVenta:{$ne: flag.FINALIZADO}})
+      if(venta){
+          const abonoExiste = await this.AbonoSchema.find({numeroTicket:venta.numeroTicket}).exec()
+          if(abonoExiste.length > 0){
+            const total = abonoExiste.reduce((total,a)=>total + a.monto , 0)
+            if(venta.montoTotal < total){
+              const dataAbono:abonoI={
+                numeroTicket: data.numeroTicket,
+                monto:data.monto,
+                fecha:data.fecha,
+                flag:data.flag
               }
+              return await this.AbonoSchema.create(dataAbono)
+            }
+            return
           }
-      },
-     
-        ])
-        const productoNombre= producto.map((item) => item.producto.nombre)
-        const total= producto.reduce((total, item) => total + item.producto.preciototal, 0)
-        const cantidad= producto.reduce((total, item) => (total + item.producto.cantidad), 0)   
-         const ticketPromedio= this.ticketPromedio(total, cantidad)
-        
-        const resultado:respuestaI={
-         producto:productoNombre[0] ?productoNombre[0] : tipoProducto ,
-         cantidad:cantidad,
-         total:total,
-         ticketPromedio 
-      
-        }
-        ventaProducto.push(resultado)
-       
+          const dataAbono:abonoI={
+            numeroTicket: data.numeroTicket,
+            monto:data.monto,
+            fecha:data.fecha,
+            flag:data.flag
+          }
+          return  await this.AbonoSchema.create(dataAbono)
+      }
     }
-
-    const lente= await this.lentes(fechaInicio, FechaFin, ventaDto)
-    ventaProducto.push(lente)
-    return ventaProducto
 }
 
- 
 
-async ventaPorProductoSucursal(tipo:tipoProductoI[], fechaInicio:string, FechaFin:string, ventaDto:VentaDto){  
-  const resultadoData:any[]=[]
-  for(let tipoProducto of tipo){
-    for (let suscursal of ventaDto.sucursal){
-      const suscursalProdcuto = await this.SucursalService.buscarScursal(new Types.ObjectId(suscursal))  
-      const producto:VentaPorProductoI[]= await this.DetalleVentaSchema.aggregate([
-        {
-          $lookup:{
-            from:'Producto',
-            localField:'producto',
-            foreignField:'_id',
-            as :'productoInfo'
-          }
-        },
-        {
-          $match:{'productoInfo.tipoProducto':tipoProducto}
-     
-        },
-        {
-         $match:{
-           fechains:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}
-         },
-         
-        },
-        {
-         $lookup: {
-             from: 'Venta',
-             localField: 'venta',
-             foreignField: '_id',
-             as: 'ventaInfo'
-         }
-     },
-     {
-         $match: {
-          'ventaInfo.sucursal': new Types.ObjectId(suscursal),
 
-          'ventaInfo.flag':ventaDto.flag,
-          'ventaInfo.tipoVenta':new Types.ObjectId(ventaDto.tipoVenta[0])
-        }
-     },
-        {
-          $project: {
-              _id: 1,
-              producto: {
-                  nombre: '$productoInfo.tipoProducto', 
-                  venta:'$ventaInfo._id',
-                  sucursal:'$ventaInfo.sucursal',
-                  preciototal: '$preciototal', 
-                  cantidad: '$cantidad',
-                  
-              }
-          }
-      },
-     
-        ])        
-        const productoNombre= producto.map((item) => item.producto.nombre)
-        const total= producto.reduce((total, item) => total + item.producto.preciototal, 0)
-        const cantidad= producto.reduce((total, item) => (total + item.producto.cantidad), 0)   
-         const ticketPromedio= this.ticketPromedio(total, cantidad)    
-        const resultado={
-          suscursal:suscursalProdcuto,
-         producto: productoNombre[0] ?productoNombre[0] : tipoProducto ,
-         cantidad:cantidad,
-         total:total,
-         ticketPromedio 
-      
-        }
-        
-        
-        resultadoData.push(resultado)
-      
-    }
+public async finalizarVentas(){
+  const fechaFin = new Date();
+  const fechaInicio = new Date(fechaFin)
+  fechaInicio.setDate(fechaInicio.getDate() - 7)
+  const venta= await this.VentaExcelSchema.find({ fecha: {
+    $gte: new Date(fechaInicio),
+    $lte: new Date(fechaFin)},
+    flagVenta:{$ne:flag.FINALIZADO},
+    aperturaTicket:'1'
+  })
+
    
-    
-  }  
-  const lente =await this.lentesPorSucursal(fechaInicio, FechaFin, ventaDto.sucursal, ventaDto)
-  resultadoData.push(...lente)
-  return resultadoData
-}
-
-
- private async  lentes(fechaInicio:string, FechaFin:string, ventaDto:VentaDto){  
-      const lente:LenteI[] =await this.VentaSchema.aggregate([
-        {
-          $match:{$or:[{lente1 :{ $exists: true }},{lente2 :{ $exists: true }} ]}
-        },
-        {
-          $match:{fecha:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)}, flag:ventaDto.flag}
-        },
-        {$project:{
-          _id:1,
-          precioTotal:1,
-        }},
-       
-      ])
-
-      const total = lente.reduce((total, lente)=>total+ lente.precioTotal,0)
-      const tkPromedio= this.ticketPromedio(total, lente.length) 
-      const resultado:respuestaI={
-        producto:'Lente',
-        total:total,
-        cantidad:lente.length,
-        ticketPromedio:tkPromedio
+   if(venta){
+    for(let data of venta){
+      const abono = await this.AbonoSchema.find({numeroTicket:data.numeroTicket})
+      const total = abono.reduce((total, a)=>total+a.monto,0)
+      if(data.montoTotal === total){
+        await this.VentaExcelSchema.updateMany({numeroTicket:data.numeroTicket}, {$set:{flagVenta:flag.FINALIZADO}})
       }
       
-      
-     return resultado
-  }
-  
-  private async  lentesPorSucursal(fechaInicio:string, FechaFin:string, sucursal:string[], ventaDto:VentaDto){  
-    const resultadoData:any[]=[]        
-    for (let sucur of sucursal){
-
-      const suscursalProdcuto = await this.SucursalService.buscarScursal(new Types.ObjectId(sucur))  
-      const lente:LenteI[] =await this.VentaSchema.aggregate([
-        {
-          $match:{$or:[{lente1 :{ $exists: true }},{lente2 :{ $exists: true }}],
-          fecha:{$gte: new Date(fechaInicio),  $lte: new Date(FechaFin)},
-          tipoVenta:new Types.ObjectId(ventaDto.tipoVenta[0])
-          }
-        },
-    
-        {$project:{
-          _id:1,
-          precioTotal:1,
-        }},
-       
-      ])
-
-      
-      const total = lente.reduce((total, lente)=>total+ lente.precioTotal,0)
-      const tkPromedio= this.ticketPromedio(total, lente.length) 
-      const resultado:respuestaI={
-        sucursal:suscursalProdcuto,
-        producto:'Lente',
-        total:total,
-        cantidad:lente.length,
-        ticketPromedio:tkPromedio
-      }
-
-      resultadoData.push(resultado)
-
-
     }
-    
-    
-   return resultadoData
+   }
+   return {status:HttpStatus.OK}
+
 }
-*/
+
+
+
+
 async allExcel(){
   const dataAnio = diasDelAnio(2023);
   
  // for (let data of dataAnio) {
    // const [mes, dia] = data.split('-');
    // console.log(mes , dia, 2023);
-    const mes:string='08'
-    const dia:string='27'
+    const mes:string='09'
+    const dia:string='03'
     const aqo:number=2024
     try {
+      console.log(mes);
+      
       const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
       const ventaSinServicio =  this.quitarServiciosVentas(dataExcel);
       const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
       const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
-   
       
+      await this.guardarTipoVenta(ventaLimpia) 
       await  this.guardarEmpresaYsusSucursales();
        await this.guardarAsesorExcel(ventaLimpia)
-
+    
       await this.guardaVentaLimpiaEnLaBBDD(ventaLimpia);
     } catch (error) {
 
@@ -346,8 +159,6 @@ async allExcel(){
 
   }
   private quitarDescuento(venta:VentaExcelI[]){
-    
-    
     const nuevaVenta = venta.filter((ventas)=> ventas.cantidad !== -1)
     return nuevaVenta    
   }
@@ -355,15 +166,11 @@ async allExcel(){
   private async guardaVentaLimpiaEnLaBBDD(Venta:VentaExcelI[]){
     try {
       for(let data of Venta){
-
-
         const sucursal = await this.sucursalExcelSchema.findOne({nombre:data.sucursal})
-     
-      
-         
         if(sucursal){ 
-          const asesor = await this.AsesorExcelSchema.findOne({usuario:data.asesor, sucursal:sucursal._id}) 
-            try {
+          const asesor = await this.AsesorExcelSchema.findOne({usuario:data.asesor, sucursal:sucursal._id})
+          const tipoVenta = await this.tipoVentaService.verificarTipoVenta(data.tipoVenta)             
+          try {
               const dataVenta={
                 fecha: data.fecha,
                 sucursal: sucursal._id,
@@ -375,6 +182,8 @@ async allExcel(){
                 cantidad: data.cantidad,
                 montoTotal: data.montoTotal,
                 asesor: asesor._id,
+                tipoVenta:tipoVenta._id,
+                acompanantes:data.acompanantes,
                 flagVenta:data.flagVenta
               }
               
@@ -555,7 +364,7 @@ async allExcel(){
      return resultado
   }
 
-    /* private async extraeSucursales(venta:VentaExcelI[]){
+  /* private async extraeSucursales(venta:VentaExcelI[]){
       const suscursales = venta.map((v)=> v.sucursal)
     const sucursalesSinRepetir = [...new Set(suscursales)]
     await  this.guardarScucursal(sucursalesSinRepetir)
@@ -592,7 +401,22 @@ async allExcel(){
     const empresas = await  this.EmpresaExcelSchema.find()
     return empresas
    }
- 
+   
+
+   private async guardarTipoVenta(venta: VentaExcelI[]){
+    const tipoVentaArray:string[]=[]
+    const tipoVenta:string[]= venta.map((venta)=>venta.tipoVenta)
+    const tipoVentaUnica = new Set(tipoVenta)
+     tipoVentaArray.push(...tipoVentaUnica)
+    for(let tipo of tipoVentaArray){
+        const  tipoVenta = await this.tipoVentaService.verificarTipoVenta(tipo)
+        if(!tipoVenta){
+          await this.tipoVentaService.guardarTipoVenta(tipo)
+        }
+    }
+     
+
+   }
 
     private async guardarEmpresaYsusSucursales(){
 
@@ -864,6 +688,15 @@ async allExcel(){
                     } 
                   }
                 },
+                traficoCliente: { 
+                  $sum: { 
+                    $cond: {
+                      if: { $eq: ["$aperturaTicket", '1'] }, 
+                      then: 1, 
+                      else: 0 
+                    } 
+                  }
+                },
                 totalImporte:{
                   $sum:{
                     $cond:{
@@ -897,6 +730,7 @@ async allExcel(){
                 _id: 0,
                 ventaTotal: 1,
                 totalTicket: 1,
+                traficoCliente: 1,
                 cantidad: 1,
                 importeTotalSuma:{
                   $subtract:[ '$totalImporte', '$totalDescuentos']
@@ -929,10 +763,11 @@ async allExcel(){
             }
         
           ])
+          console.log(sucusarsalData);
           
           const resultadoFinal = sucusarsalData.length > 0 ? sucusarsalData[0] : {
             _id:null,
-            trafico:0,
+            traficoCliente:0,
             ventaTotal: 0,
             totalTicket: 0,
             cantidad:0,
