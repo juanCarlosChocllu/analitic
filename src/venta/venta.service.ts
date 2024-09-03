@@ -19,7 +19,7 @@ import { AsesorExcelI } from './interfaces/asesor.interface';
 import { parseNumber } from './util/validar.numero.util';
 
 import { diasHAbiles } from './util/dias.habiles.util';
-import { FechasDto } from './dto/fechas.dto';
+import { informacionVentaDto } from './dto/informacion.venta.dto';
 import { log } from 'node:console';
 import { abonoI } from 'src/abono/interfaces/abono.interface';
 import { flag } from './enums/flag.enum';
@@ -28,6 +28,9 @@ import { Abono } from 'src/abono/schema/abono.abono';
 import { constants } from 'node:buffer';
 import { Flag } from 'src/sucursal/enums/flag.enum';
 import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
+import { FiltroVentaI } from './interfaces/filtro.venta.interface';
+import { Type } from 'class-transformer';
+import { EstadoEnum } from './enums/estado.enum';
 
 @Injectable()
 export class VentaService {
@@ -653,19 +656,40 @@ async allExcel(){
         ticketPromedio:0
     }
    const dataSucursal:any[]=[]
+  
+
+   let filtrador:FiltroVentaI={
+        fecha: {
+      $gte: new Date(ventaDto.fechaInicio),
+      $lte: new Date(ventaDto.FechaFin)
+       },
+       
+       }
+       if (ventaDto.tipoVenta) {
+        filtrador.tipoVenta = new Types.ObjectId(ventaDto.tipoVenta);
+      }
+
+      if(ventaDto.estado){
+        if(ventaDto.estado === EstadoEnum.finalizado){
+          filtrador.flagVenta = ventaDto.estado
+        }
+        else if (ventaDto.estado === EstadoEnum.realizadas){ 
+          filtrador.flagVenta = {$ne:EstadoEnum.finalizado}
+        }
+      
+      }
+
         for(let  idsucursal of ventaDto.sucursal){
+
+         
           const sucursal  = await this.sucursalExcelSchema.findOne({_id:idsucursal})
           const sucusarsalData = await  this.VentaExcelSchema.aggregate([
             {
               $match:{
-                sucursal: new Types.ObjectId(idsucursal),
-                fecha: {
-                  $gte: new Date(ventaDto.fechaInicio),
-                  $lte: new Date(ventaDto.FechaFin)
-                },
+                sucursal:new Types.ObjectId(idsucursal),
+                ...filtrador
               }
             },
-
             {
               $group:{
                 _id:'$sucursal',
@@ -762,9 +786,7 @@ async allExcel(){
               
             }
         
-          ])
-          console.log(sucusarsalData);
-          
+          ])        
           const resultadoFinal = sucusarsalData.length > 0 ? sucusarsalData[0] : {
             _id:null,
             traficoCliente:0,
@@ -803,17 +825,33 @@ async allExcel(){
 
 
 
-    public async sucursalVentaInformacion(id:string, fechasDto:FechasDto){
-     
+    public async sucursalVentaInformacion(id:string, informacionVentaDto:informacionVentaDto){
+ 
+      
+     let filtrador:FiltroVentaI={
+      fecha: {
+        $gte: new Date(informacionVentaDto.fechaInicio),
+        $lte: new Date(informacionVentaDto.fechaFin),
+      },
+     }
+
+     if(informacionVentaDto.estado){
+      if(informacionVentaDto.estado === EstadoEnum.finalizado){
+        filtrador.flagVenta=informacionVentaDto.estado
+      }else if (informacionVentaDto.estado === EstadoEnum.realizadas){
+        filtrador.flagVenta={$ne: EstadoEnum.finalizado}
+      }
+     }
+
+     if(informacionVentaDto.tipoVenta){
+      filtrador.tipoVenta= new Types.ObjectId(informacionVentaDto.tipoVenta)
+     }
+
       const ventaSucursal =  await this.VentaExcelSchema.aggregate([
         {
           $match:{
             sucursal:new Types.ObjectId(id),
-            fecha: {
-              $gte: new Date(fechasDto.fechaInicio),
-              $lte: new Date(fechasDto.fechaFin),
-             
-            },
+           ...filtrador,
             producto: { $ne: 'DESCUENTO'}
           }
         },

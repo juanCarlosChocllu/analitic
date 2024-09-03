@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Type, Query, UseInte
 import { VentaService } from './venta.service';
 import { VentaDto, VentaExcelDto } from './dto/venta.dto';
 import { VentaExcel } from './schemas/venta.schema';
-import { FechasDto } from './dto/fechas.dto';
+import { informacionVentaDto } from './dto/informacion.venta.dto';
 
 @Controller('venta')
 export class VentaController {
@@ -59,9 +59,9 @@ async gestionExcel(@Body() ventaDto:VentaExcelDto) {
 }
 
  
-@Get('informacion/:id')
-sucursalVentaInformacion(@Param('id') id:string, @Body() fechasDto:FechasDto ){
-  return this.ventaService.sucursalVentaInformacion(id, fechasDto)
+@Post('informacion/:id')
+sucursalVentaInformacion(@Param('id') id:string, @Body() informacionVentaDto:informacionVentaDto ){
+  return this.ventaService.sucursalVentaInformacion(id, informacionVentaDto)
 }
 
 

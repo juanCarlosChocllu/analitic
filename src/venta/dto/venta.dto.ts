@@ -1,6 +1,7 @@
 import { IsDateString, IsEnum, IsMongoId, IsOptional, IsString } from "class-validator"
 import { flag } from "../enums/flag.enum"
 import { Types } from "mongoose"
+import { EstadoEnum } from "../enums/estado.enum"
 export class VentaDto {
 
     @IsMongoId({each:true})
@@ -27,9 +28,19 @@ export class VentaExcelDto {
     @IsOptional()
     sucursal:Types.ObjectId[]
     
+    @IsMongoId()
+    @IsOptional()
+    tipoVenta:Types.ObjectId
+    
+    @IsEnum(EstadoEnum)
+    @IsOptional()
+    estado:string
+    
+
     @IsOptional()
     @IsDateString()
     fechaInicio:string
+
     @IsOptional()
     @IsDateString()
     FechaFin:string   
