@@ -690,7 +690,7 @@ export class VentaService {
       ventaDiariaPorLocal: 0,
       unidadPorTickect: 0,
       ticketPromedio: 0,
-      precioConversion:0
+      tasaConversion:0
     };
     const dataSucursal: any[] = [];
 
@@ -812,7 +812,7 @@ export class VentaService {
               },
             },
 
-            precioConversion: {
+            precioPromedio: {
               $cond: {
                 if: { $ne: ['$ventaTotal', 0] },
                 then: {
@@ -822,7 +822,7 @@ export class VentaService {
               },
             },
 
-             tasaPromedio: {
+             tasaConversion: {
               $cond: {
                 if: { $ne: ['$ventaTotal', 0] },
                 then: {
