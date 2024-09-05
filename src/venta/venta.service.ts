@@ -822,16 +822,23 @@ export class VentaService {
               },
             },
 
-             tasaConversion: {
+            tasaConversion: {
               $cond: {
-                if: { $ne: ['$ventaTotal', 0] },
+                if: { $ne: ['$traficoCliente', 0] },  
                 then: {
-                  $round: [{ $divide: ['$totalTicket', '$totalTicket'] }, 2],
+                  $round: [
+                    {
+                      $multiply: [
+                        { $divide: ['$totalTicket', '$traficoCliente'] },
+                        100
+                      ]
+                    },
+                    2  
+                  ]
                 },
-                else: 0,
-              },
-            },
-
+                else: 0  
+              }
+            }
 
           },
         },
