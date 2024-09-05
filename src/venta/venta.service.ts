@@ -821,15 +821,15 @@ export class VentaService {
               },
             },
 
-            tasaConversion:{
-              $cond:{
-                if: { $ne: ['$Conversion', 0] },
-                then:{
-                 $multiply: ['$Conversion',100]
+             tasaPromedio: {
+              $cond: {
+                if: { $ne: ['$ventaTotal', 0] },
+                then: {
+                  $round: [{ $divide: ['$totalTicket', '$totalTicket'] }, 2],
                 },
-                else:0
-              }
-            }
+                else: 0,
+              },
+            },
 
 
           },
