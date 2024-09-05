@@ -58,6 +58,14 @@ async gestionExcel(@Body() ventaDto:VentaExcelDto) {
   return await this.ventaService.gestionExcel(ventaDto);
 }
 
+
+
+@Post('excel/tarfico')
+async trafico(@Body() ventaDto:VentaExcelDto) {    
+  return await this.ventaService.trafico(ventaDto);
+}
+
+
  
 @Post('informacion/:id')
 sucursalVentaInformacion(@Param('id') id:string, @Body() informacionVentaDto:informacionVentaDto ){

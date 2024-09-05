@@ -412,7 +412,7 @@ export class VentaService {
  */
   private ticketPromedio(totalVenta: number, cantidadTotaVenta: number) {
     const tkPromedio = totalVenta / cantidadTotaVenta;
-    return tkPromedio ? tkPromedio.toFixed(4) : 0;
+    return tkPromedio ? parseFloat(tkPromedio.toFixed(2)) : 0;
   }
 
   /*  @Cron(CronExpression.EVERY_10_SECONDS)
@@ -856,6 +856,7 @@ export class VentaService {
 
       dataSucursal.push(data);
     }
+    const traficoCliente = dataSucursal.reduce((total, item)=>total + item.traficoCliente, 0)
     const cantidad = dataSucursal.reduce(
       (total, item) => total + item.cantidad,
       0,
@@ -870,16 +871,21 @@ export class VentaService {
     );
     data.sucursales = ventaDto.sucursal.length;
     data.totalVentas = totalVenta;
+
     data.unidadPorTickect = parseFloat((cantidad / ticket).toFixed(2))
       ? parseFloat((cantidad / ticket).toFixed(2))
       : 0;
     data.ventaDiariaPorLocal = parseFloat((totalVenta / dias).toFixed(2));
-    data.ticketPromedio = 0;
+
+    data.ticketPromedio = this.ticketPromedio(totalVenta,cantidad);
+    
+    data.tcPromedio = traficoCliente / ticket
     const resultado = {
       ...data,
       dataSucursal,
     };
-
+   
+    
     return resultado;
   }
 
@@ -947,4 +953,10 @@ export class VentaService {
     ]);
     return ventaSucursal;
   }
+
+
+  async trafico(ventaDto:VentaExcelDto){
+
+  }
+
 }
