@@ -690,6 +690,7 @@ export class VentaService {
       ventaDiariaPorLocal: 0,
       unidadPorTickect: 0,
       ticketPromedio: 0,
+      tasaPromedio:0
     };
     const dataSucursal: any[] = [];
 
