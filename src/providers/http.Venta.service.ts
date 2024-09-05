@@ -8,8 +8,8 @@ import { log } from 'node:console';
 export class HttpAxiosVentaService {
   constructor(private readonly httpService:HttpService ){}
   public async reporte(mes: string, dia: string, anio: number, retries = 3): Promise<any> {
-    // const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
-    const url= 'http://localhost/opticentro/web/cibeles20240903.csv'
+     const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
+   // const url= 'http://localhost/opticentro/web/cibeles20240903.csv'
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await firstValueFrom(
