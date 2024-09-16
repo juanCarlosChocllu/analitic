@@ -8,32 +8,30 @@ import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 @Injectable()
 export class ProductosService {
-    constructor(@InjectModel(Producto.name,NombreBdConexion.mia) private readonly ProductoSchema:Model<Producto> ){}
-  async buscarMontura(){
+  constructor(
+    @InjectModel(Producto.name, NombreBdConexion.mia)
+    private readonly ProductoSchema: Model<Producto>,
+  ) {}
+  async buscarMontura() {
     const productoDetalle = await this.ProductoSchema.aggregate([
       {
-        $project:{
-          tipoProducto:1
-        }
+        $project: {
+          tipoProducto: 1,
+        },
       },
       {
-        $match:{tipoProducto:tipoProductoI.MONTURA}
-      }
-  ])
-  
+        $match: { tipoProducto: tipoProductoI.MONTURA },
+      },
+    ]);
 
-   // const producto = await this.ProductoSchema.find({tipoProducto:tipoProductoI.MONTURA,flag:'nuevo'},'tipoProducto')
-    return productoDetalle
-
+    // const producto = await this.ProductoSchema.find({tipoProducto:tipoProductoI.MONTURA,flag:'nuevo'},'tipoProducto')
+    return productoDetalle;
   }
 
-  buscarGafas(){
-    
-  }
+  buscarGafas() {}
 
-  buscarLentesContacto(){
-    return 'hola'
-
+  buscarLentesContacto() {
+    return 'hola';
   }
 
   findOne(id: number) {

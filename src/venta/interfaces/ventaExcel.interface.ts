@@ -1,28 +1,29 @@
-import { Types } from "mongoose"
+import { Types } from 'mongoose';
 
 export interface VentaExcelI {
+  sucursal: string;
 
-    sucursal:string
-    
-    aperturaTicket :string
+  aperturaTicket: string;
 
-    numeroTicket:string
+  numeroTicket: string;
 
-    producto:string
+  producto: string;
 
-    asesor:string
+  asesor: string;
 
-    cantidad:number
-    
-    importe:number
+  cantidad: number;
 
-    montoTotal:number
+  importe: number;
 
-    acompanantes:number
+  montoTotal: number;
 
-    tipoVenta:string
-    
-    fecha:string
+  tratamiento: string;
 
-    flagVenta :string 
+  tipoLente: string;
+
+  tipoVenta: string;
+
+  fecha: string;
+
+  flagVenta: string;
 }

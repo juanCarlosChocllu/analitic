@@ -8,10 +8,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import {
   AsesorExcel,
-  DetalleVenta,
   EmpresaExcel,
   SuscursalExcel,
-  Venta,
   VentaExcel,
 } from './schemas/venta.schema';
 import { Model, set, Types } from 'mongoose';
@@ -38,21 +36,20 @@ import { flag } from './enums/flag.enum';
 
 import { Abono } from 'src/abono/schema/abono.abono';
 
-
 import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 import { FiltroVentaI } from './interfaces/filtro.venta.interface';
 
 import { EstadoEnum } from './enums/estado.enum';
+import { log } from 'node:console';
+import { TratamientoService } from 'src/tratamiento/tratamiento.service';
+import { TipoLenteService } from 'src/tipo-lente/tipo-lente.service';
+import { productos } from './enums/productos.enum';
 
 @Injectable()
 export class VentaService {
   private readonly logger = new Logger(VentaExcel.name);
   constructor(
     private readonly SucursalService: SucursalService,
-    @InjectModel(DetalleVenta.name, NombreBdConexion.mia)
-    private readonly DetalleVentaSchema: Model<DetalleVenta>,
-    @InjectModel(Venta.name, NombreBdConexion.mia)
-    private readonly VentaSchema: Model<Venta>,
     @InjectModel(VentaExcel.name, NombreBdConexion.oc)
     private readonly VentaExcelSchema: Model<VentaExcel>,
     @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
@@ -65,6 +62,8 @@ export class VentaService {
     private readonly AbonoSchema: Model<Abono>,
 
     private readonly httpAxiosVentaService: HttpAxiosVentaService,
+    private readonly tratamientoService: TratamientoService,
+    private readonly tipoLenteService: TipoLenteService,
 
     private readonly tipoVentaService: TipoVentaService,
   ) {}
@@ -134,24 +133,25 @@ export class VentaService {
   }
 
   async allExcel() {
-    const aqo: number = 2024;
+    const aqo: number = 2023;
     const dataAnio = diasDelAnio(aqo);
 
-    for (let data of dataAnio) {
-     const [mes, dia] = data.split('-');
-     console.log(mes , dia, aqo);
-    //const mes: string = '09';
-    //const dia: string = '03';
-   
+    //  for (let data of dataAnio) {
+    // const [mes, dia] = data.split('-');
+    //console.log(mes , dia, aqo);
+    const mes: string = '09';
+    const dia: string = '03';
+
     try {
       const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
       const ventaSinServicio = this.quitarServiciosVentas(dataExcel);
       const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
       const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
-
       await this.guardarTipoVenta(ventaLimpia);
       await this.guardarEmpresaYsusSucursales();
       await this.guardarAsesorExcel(ventaLimpia);
+      await this.guardarTratamiento(ventaLimpia);
+      await this.guardarTipoLente(ventaLimpia);
 
       await this.guardaVentaLimpiaEnLaBBDD(ventaLimpia);
     } catch (error) {
@@ -159,12 +159,12 @@ export class VentaService {
         console.log(
           `Archivo no encontrado para la fecha ${dia}/${mes}/2023. Continuando con el siguiente día.`,
         );
-          continue;
+        //  continue;
       } else {
         throw error;
       }
     }
-    }
+    //}
 
     return { status: HttpStatus.CREATED };
   }
@@ -184,6 +184,23 @@ export class VentaService {
     return nuevaVenta;
   }
 
+  private async guardarTratamiento(venta: VentaExcelI[]) {
+    const lentes = venta.filter((item) => item.producto === 'LENTE');
+    for (let data of lentes) {
+      await this.tratamientoService.guardarTratamiento(data.tratamiento);
+    }
+  }
+
+  private async guardarTipoLente(venta: VentaExcelI[]) {
+    const lentes = venta.filter((item) => item.producto === 'LENTE');
+    for (let data of lentes) {
+      await this.tipoLenteService.guardarTipoLente(data.tipoLente);
+    }
+  }
+
+
+
+
   private async guardaVentaLimpiaEnLaBBDD(Venta: VentaExcelI[]) {
     try {
       for (let data of Venta) {
@@ -198,6 +215,15 @@ export class VentaService {
           const tipoVenta = await this.tipoVentaService.verificarTipoVenta(
             data.tipoVenta,
           );
+
+          const tratamiento =
+            data.producto === productos.lente
+              ? await this.tratamientoService.listarTratamiento(
+                  data.tratamiento,
+                )
+              : null;
+
+          const tipoLente = data.producto === productos.lente  ? await this.tipoLenteService.listarTipoLente(data.tipoLente):null
           try {
             const dataVenta = {
               fecha: data.fecha,
@@ -211,10 +237,10 @@ export class VentaService {
               montoTotal: data.montoTotal,
               asesor: asesor._id,
               tipoVenta: tipoVenta._id,
-              acompanantes: data.acompanantes,
               flagVenta: data.flagVenta,
+              ...(data.producto === productos.lente && { tratamiento }),
+              ...(data.producto === productos.lente && { tipoLente }),
             };
-
             await this.VentaExcelSchema.create(dataVenta);
           } catch (error) {
             throw error;
@@ -690,7 +716,7 @@ export class VentaService {
       ventaDiariaPorLocal: 0,
       unidadPorTickect: 0,
       ticketPromedio: 0,
-      tasaConversion:0
+      tasaConversion: 0,
     };
     const dataSucursal: any[] = [];
 
@@ -824,22 +850,21 @@ export class VentaService {
 
             tasaConversion: {
               $cond: {
-                if: { $ne: ['$traficoCliente', 0] },  
+                if: { $ne: ['$traficoCliente', 0] },
                 then: {
                   $round: [
                     {
                       $multiply: [
                         { $divide: ['$totalTicket', '$traficoCliente'] },
-                        100
-                      ]
+                        100,
+                      ],
                     },
-                    2  
-                  ]
+                    2,
+                  ],
                 },
-                else: 0  
-              }
-            }
-
+                else: 0,
+              },
+            },
           },
         },
       ]);
@@ -865,7 +890,10 @@ export class VentaService {
 
       dataSucursal.push(data);
     }
-    const traficoCliente = dataSucursal.reduce((total, item)=>total + item.traficoCliente, 0)
+    const traficoCliente = dataSucursal.reduce(
+      (total, item) => total + item.traficoCliente,
+      0,
+    );
     const cantidad = dataSucursal.reduce(
       (total, item) => total + item.cantidad,
       0,
@@ -886,15 +914,14 @@ export class VentaService {
       : 0;
     data.ventaDiariaPorLocal = parseFloat((totalVenta / dias).toFixed(2));
 
-    data.ticketPromedio = this.ticketPromedio(totalVenta,cantidad);
-    
-    data.tcPromedio = traficoCliente / ticket
+    data.ticketPromedio = this.ticketPromedio(totalVenta, cantidad);
+
+    data.tcPromedio = (traficoCliente / ticket) * 100;
     const resultado = {
       ...data,
       dataSucursal,
     };
-   
-    
+
     return resultado;
   }
 
@@ -963,9 +990,5 @@ export class VentaService {
     return ventaSucursal;
   }
 
-
-  async trafico(ventaDto:VentaExcelDto){
-
-  }
-
+  async trafico(ventaDto: VentaExcelDto) {}
 }

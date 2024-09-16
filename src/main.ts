@@ -5,23 +5,20 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors()
+  app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
-  .setTitle('Cats example')
-  .setDescription('The cats API description')
-  .setVersion('1.0')
-  .addTag('cats')
-  .build();
-const document = SwaggerModule.createDocument(app, config);
-SwaggerModule.setup('doc', app, document);
+    .setTitle('Cats example')
+    .setDescription('The cats API description')
+    .setVersion('1.0')
+    .addTag('cats')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('doc', app, document);
 
-await app.listen(5000, ()=>{
-  console.log('Servidor corriendo en el 5000');
-  
-
-});
+  await app.listen(5000, () => {
+    console.log('Servidor corriendo en el 5000');
+  });
 }
-
 
 bootstrap();

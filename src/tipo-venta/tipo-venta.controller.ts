@@ -1,6 +1,5 @@
-import { Controller, Get} from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { TipoVentaService } from './tipo-venta.service';
-
 
 @Controller('tipo-venta')
 export class TipoVentaController {
@@ -9,5 +8,4 @@ export class TipoVentaController {
   findAll() {
     return this.tipoVentaService.findAll();
   }
-
 }

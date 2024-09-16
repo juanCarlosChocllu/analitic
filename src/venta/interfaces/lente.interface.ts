@@ -1,4 +1,3 @@
-
-export interface LenteI{
-    precioTotal:number
+export interface LenteI {
+  precioTotal: number;
 }

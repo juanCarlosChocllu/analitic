@@ -1,5 +1,4 @@
-
-export enum flagVenta{
-    nuevo='nuevo',
-    eliminado='eliminado'
+export enum flagVenta {
+  nuevo = 'nuevo',
+  eliminado = 'eliminado',
 }

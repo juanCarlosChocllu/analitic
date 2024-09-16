@@ -1,12 +1,9 @@
-import { Types } from "mongoose"
+import { Types } from 'mongoose';
 
-export interface AsesorExcelI{
-    
-    id:Types.ObjectId,
+export interface AsesorExcelI {
+  id: Types.ObjectId;
 
-    usuario:string
+  usuario: string;
 
-
-    sucursal:Types.ObjectId
-
+  sucursal: Types.ObjectId;
 }

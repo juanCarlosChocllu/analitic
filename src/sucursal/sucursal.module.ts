@@ -6,9 +6,14 @@ import { Sucursal, sucursalSchema } from './schema/sucursal.schema';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 @Module({
-  imports:[MongooseModule.forFeature([{name: Sucursal.name, schema:sucursalSchema}],NombreBdConexion.mia)],
+  imports: [
+    MongooseModule.forFeature(
+      [{ name: Sucursal.name, schema: sucursalSchema }],
+      NombreBdConexion.mia,
+    ),
+  ],
   controllers: [SucursalController],
   providers: [SucursalService],
-  exports:[SucursalService]
+  exports: [SucursalService],
 })
 export class SucursalModule {}

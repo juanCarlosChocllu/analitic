@@ -12,43 +12,41 @@ import { log } from 'node:console';
 @Injectable()
 export class AbonoService {
   constructor(
-    @InjectModel(Abono.name, NombreBdConexion.oc) private readonly SchemaAbono:Model<Abono>, 
-    private readonly httpAxiosAbonoService:HttpAxiosAbonoService,
-     private readonly ventaService:VentaService
-  ){}
-    
+    @InjectModel(Abono.name, NombreBdConexion.oc)
+    private readonly SchemaAbono: Model<Abono>,
+    private readonly httpAxiosAbonoService: HttpAxiosAbonoService,
+    private readonly ventaService: VentaService,
+  ) {}
+
   async extraerAbono() {
     const dataAnio = diasDelAnio(2023);
-  
+
     // for (let data of dataAnio) {
-      // const [mes, dia] = data.split('-');
-      // console.log(mes , dia, 2023);
-       const mes:string='08'
-       const dia:string='27'
-       const aqo:number=2024
-       try {
-    
-       const dataAbono:abonoI[]= await    this.httpAxiosAbonoService.reporteAbono(mes, dia, aqo)
-      
-      
-        this.ventaService.vericarVentaParaCadaAbono(dataAbono)
-       
-       
-      
-       
-       
-       } catch (error) {
-         if (error instanceof NotFoundException) {
-           console.log(`Archivo no encontrado para la fecha ${dia}/${mes}/${aqo}. Continuando con el siguiente día.`);
-         //  continue;
-         } else {
-           throw error;
-         }
-       }
-   //  }
+    // const [mes, dia] = data.split('-');
+    // console.log(mes , dia, 2023);
+    const mes: string = '08';
+    const dia: string = '27';
+    const aqo: number = 2024;
+    try {
+      const dataAbono: abonoI[] = await this.httpAxiosAbonoService.reporteAbono(
+        mes,
+        dia,
+        aqo,
+      );
 
-    return { status:HttpStatus.OK };
+      this.ventaService.vericarVentaParaCadaAbono(dataAbono);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        console.log(
+          `Archivo no encontrado para la fecha ${dia}/${mes}/${aqo}. Continuando con el siguiente día.`,
+        );
+        //  continue;
+      } else {
+        throw error;
+      }
+    }
+    //  }
+
+    return { status: HttpStatus.OK };
   }
-
-
 }

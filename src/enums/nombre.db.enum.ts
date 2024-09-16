@@ -1,4 +1,4 @@
-export enum NombreBdConexion{
-    mia='mia',
-    oc='oc'
+export enum NombreBdConexion {
+  mia = 'mia',
+  oc = 'oc',
 }

@@ -8,14 +8,15 @@ import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 @Injectable()
 export class EmpresaService {
-
-  constructor(@InjectModel(Empresa.name,NombreBdConexion.mia) private readonly EmpresaSchema:Model<Empresa> ){}
+  constructor(
+    @InjectModel(Empresa.name, NombreBdConexion.mia)
+    private readonly EmpresaSchema: Model<Empresa>,
+  ) {}
   create(createEmpresaDto: CreateEmpresaDto) {
     return 'This action adds a new empresa';
   }
 
   findAll() {
-    return this.EmpresaSchema.find({},'nombre') ;
+    return this.EmpresaSchema.find({}, 'nombre');
   }
-
 }
