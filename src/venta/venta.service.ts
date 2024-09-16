@@ -1,9 +1,8 @@
 import {
-  BadRequestException,
   HttpStatus,
   Injectable,
   Logger,
-  NotFoundException,
+
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -16,17 +15,14 @@ import { Model, set, Types } from 'mongoose';
 import { VentaDto, VentaExcelDto } from './dto/venta.dto';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 
-import { HttpAxiosVentaService } from 'src/providers/http.Venta.service';
+
 import { VentaExcelI } from './interfaces/ventaExcel.interface';
 
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
-import { dataEmpresa } from './data.empresas';
-
-import { diasDelAnio } from 'src/providers/util/dias.anio';
 
 import { AsesorExcelI } from './interfaces/asesor.interface';
 
-import { parseNumber } from './util/validar.numero.util';
+
 
 import { diasHAbiles } from './util/dias.habiles.util';
 import { informacionVentaDto } from './dto/informacion.venta.dto';
@@ -41,15 +37,14 @@ import { FiltroVentaI } from './interfaces/filtro.venta.interface';
 
 import { EstadoEnum } from './enums/estado.enum';
 import { log } from 'node:console';
-import { TratamientoService } from 'src/tratamiento/tratamiento.service';
-import { TipoLenteService } from 'src/tipo-lente/tipo-lente.service';
 import { productos } from './enums/productos.enum';
+import { Tratamiento } from 'src/tratamiento/schema/tratamiento.schema';
 
 @Injectable()
 export class VentaService {
   private readonly logger = new Logger(VentaExcel.name);
   constructor(
-    private readonly SucursalService: SucursalService,
+
     @InjectModel(VentaExcel.name, NombreBdConexion.oc)
     private readonly VentaExcelSchema: Model<VentaExcel>,
     @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
@@ -61,11 +56,8 @@ export class VentaService {
     @InjectModel(Abono.name, NombreBdConexion.oc)
     private readonly AbonoSchema: Model<Abono>,
 
-    private readonly httpAxiosVentaService: HttpAxiosVentaService,
-    private readonly tratamientoService: TratamientoService,
-    private readonly tipoLenteService: TipoLenteService,
-
     private readonly tipoVentaService: TipoVentaService,
+
   ) {}
 
   public async vericarVentaParaCadaAbono(abono: abonoI[]) {
@@ -132,127 +124,7 @@ export class VentaService {
     return { status: HttpStatus.OK };
   }
 
-  async allExcel() {
-    const aqo: number = 2023;
-    const dataAnio = diasDelAnio(aqo);
 
-    //  for (let data of dataAnio) {
-    // const [mes, dia] = data.split('-');
-    //console.log(mes , dia, aqo);
-    const mes: string = '09';
-    const dia: string = '03';
-
-    try {
-      const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
-      const ventaSinServicio = this.quitarServiciosVentas(dataExcel);
-      const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
-      const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
-      await this.guardarTipoVenta(ventaLimpia);
-      await this.guardarEmpresaYsusSucursales();
-      await this.guardarAsesorExcel(ventaLimpia);
-      await this.guardarTratamiento(ventaLimpia);
-      await this.guardarTipoLente(ventaLimpia);
-
-      await this.guardaVentaLimpiaEnLaBBDD(ventaLimpia);
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        console.log(
-          `Archivo no encontrado para la fecha ${dia}/${mes}/2023. Continuando con el siguiente día.`,
-        );
-        //  continue;
-      } else {
-        throw error;
-      }
-    }
-    //}
-
-    return { status: HttpStatus.CREATED };
-  }
-
-  private quitarServiciosVentas(venta: VentaExcelI[]): VentaExcelI[] {
-    const nuevaVenta = venta.filter((ventas) => ventas.producto !== 'SERVICIO');
-    return nuevaVenta;
-  }
-  private quitarSucursalParaguay(venta: VentaExcelI[]): VentaExcelI[] {
-    const nuevaVenta = venta.filter(
-      (ventas) => ventas.sucursal !== 'OPTICENTRO PARAGUAY',
-    );
-    return nuevaVenta;
-  }
-  private quitarDescuento(venta: VentaExcelI[]) {
-    const nuevaVenta = venta.filter((ventas) => ventas.cantidad !== -1);
-    return nuevaVenta;
-  }
-
-  private async guardarTratamiento(venta: VentaExcelI[]) {
-    const lentes = venta.filter((item) => item.producto === 'LENTE');
-    for (let data of lentes) {
-      await this.tratamientoService.guardarTratamiento(data.tratamiento);
-    }
-  }
-
-  private async guardarTipoLente(venta: VentaExcelI[]) {
-    const lentes = venta.filter((item) => item.producto === 'LENTE');
-    for (let data of lentes) {
-      await this.tipoLenteService.guardarTipoLente(data.tipoLente);
-    }
-  }
-
-
-
-
-  private async guardaVentaLimpiaEnLaBBDD(Venta: VentaExcelI[]) {
-    try {
-      for (let data of Venta) {
-        const sucursal = await this.sucursalExcelSchema.findOne({
-          nombre: data.sucursal,
-        });
-        if (sucursal) {
-          const asesor = await this.AsesorExcelSchema.findOne({
-            usuario: data.asesor,
-            sucursal: sucursal._id,
-          });
-          const tipoVenta = await this.tipoVentaService.verificarTipoVenta(
-            data.tipoVenta,
-          );
-
-          const tratamiento =
-            data.producto === productos.lente
-              ? await this.tratamientoService.listarTratamiento(
-                  data.tratamiento,
-                )
-              : null;
-
-          const tipoLente = data.producto === productos.lente  ? await this.tipoLenteService.listarTipoLente(data.tipoLente):null
-          try {
-            const dataVenta = {
-              fecha: data.fecha,
-              sucursal: sucursal._id,
-              empresa: sucursal.empresa,
-              numeroTicket: data.numeroTicket,
-              aperturaTicket: data.aperturaTicket,
-              producto: data.producto,
-              importe: parseNumber(data.importe),
-              cantidad: data.cantidad,
-              montoTotal: data.montoTotal,
-              asesor: asesor._id,
-              tipoVenta: tipoVenta._id,
-              flagVenta: data.flagVenta,
-              ...(data.producto === productos.lente && { tratamiento }),
-              ...(data.producto === productos.lente && { tipoLente }),
-            };
-            await this.VentaExcelSchema.create(dataVenta);
-          } catch (error) {
-            throw error;
-          }
-        }
-      }
-    } catch (error) {
-      console.log(error);
-
-      throw new BadRequestException();
-    }
-  }
 
   async ventaExel(ventaDto: VentaExcelDto) {
     const venta = await this.ventaExcel(ventaDto);
@@ -271,13 +143,12 @@ export class VentaService {
       venta,
       ventaSucursal,
     };
-    // console.log(resultado);
-
+ 
     return resultado;
   }
 
   private async ventaExcel(ventaDto: VentaExcelDto) {
-    //prueba por cadena
+
 
     const venta = await this.VentaExcelSchema.aggregate([
       {
@@ -419,33 +290,13 @@ export class VentaService {
     return resultado;
   }
 
-  /* private async extraeSucursales(venta:VentaExcelI[]){
-      const suscursales = venta.map((v)=> v.sucursal)
-    const sucursalesSinRepetir = [...new Set(suscursales)]
-    await  this.guardarScucursal(sucursalesSinRepetir)
-      
-  } 
 
-    private async guardarScucursal(sucursal:string[]){
-    for( let nombre of sucursal){
-      const sucursalBBDD= await this.sucursalExcelSchema.findOne({nombre:nombre})
-       if(!sucursalBBDD){
-        const sucursal =  await this.sucursalExcelSchema.create({nombre:nombre})
-        sucursal.save()      
-       }
-    }
-  }
- */
   private ticketPromedio(totalVenta: number, cantidadTotaVenta: number) {
     const tkPromedio = totalVenta / cantidadTotaVenta;
     return tkPromedio ? parseFloat(tkPromedio.toFixed(2)) : 0;
   }
 
-  /*  @Cron(CronExpression.EVERY_10_SECONDS)
-  handleCron() {
-    this.allExcel()
-    this.logger.debug('descarga completa');
-  }*/
+
 
   async sucursalExcel(id: string) {
     const suscursales = await this.sucursalExcelSchema.find({
@@ -459,88 +310,6 @@ export class VentaService {
     return empresas;
   }
 
-  private async guardarTipoVenta(venta: VentaExcelI[]) {
-    const tipoVentaArray: string[] = [];
-    const tipoVenta: string[] = venta.map((venta) => venta.tipoVenta);
-    const tipoVentaUnica = new Set(tipoVenta);
-    tipoVentaArray.push(...tipoVentaUnica);
-    for (let tipo of tipoVentaArray) {
-      const tipoVenta = await this.tipoVentaService.verificarTipoVenta(tipo);
-      if (!tipoVenta) {
-        await this.tipoVentaService.guardarTipoVenta(tipo);
-      }
-    }
-  }
-
-  private async guardarEmpresaYsusSucursales() {
-    const data = dataEmpresa();
-
-    for (let [empresa, sucursales] of Object.entries(data.empresa)) {
-      const empresaData = {
-        nombre: empresa,
-      };
-
-      try {
-        const empresas = await this.EmpresaExcelSchema.findOne({
-          nombre: empresa,
-        });
-        if (!empresas) {
-          await this.EmpresaExcelSchema.create(empresaData);
-        }
-        for (let sucursal of sucursales) {
-          const sucursalExiste = await this.sucursalExcelSchema.findOne({
-            nombre: sucursal,
-          });
-          if (!sucursalExiste) {
-            const empresas = await this.EmpresaExcelSchema.findOne({
-              nombre: empresa,
-            });
-            const sucursalData = {
-              empresa: empresas._id,
-              nombre: sucursal,
-            };
-            await this.sucursalExcelSchema.create(sucursalData);
-          }
-        }
-      } catch (error) {
-        console.error(
-          `Error al crear empresa o sucursal para ${empresa}: `,
-          error,
-        );
-      }
-    }
-  }
-
-  private async guardarAsesorExcel(venta: VentaExcelI[]) {
-    const data = venta.map((item) => ({
-      asesor: item.asesor,
-      sucursal: item.sucursal,
-    }));
-
-    const uniqueData = Array.from(
-      new Map(data.map((item) => [item.asesor + item.sucursal, item])).values(),
-    );
-
-    for (let data of uniqueData) {
-      const sucursal = await this.sucursalExcelSchema.findOne({
-        nombre: data.sucursal,
-      });
-
-      if (sucursal) {
-        const usuario = await this.AsesorExcelSchema.findOne({
-          usuario: data.asesor,
-          sucursal: sucursal._id,
-        });
-
-        if (!usuario) {
-          await this.AsesorExcelSchema.create({
-            usuario: data.asesor,
-            sucursal: sucursal._id,
-          });
-        }
-      }
-    }
-  }
 
   public async ventaSucursalExcel(ventaDto: VentaExcelDto) {
     const listaAsesor: AsesorExcelI[] = [];
@@ -990,5 +759,108 @@ export class VentaService {
     return ventaSucursal;
   }
 
-  async trafico(ventaDto: VentaExcelDto) {}
+
+  public async informacionLente(id:string ,  informacionVentaDto: informacionVentaDto){
+   const tratamiento= await this.lenteTratamiento(id, informacionVentaDto)
+   const tipoLente = await this.tipoDeLente(id,informacionVentaDto )   
+    return{
+      tratamiento,
+      tipoLente
+    }
+     
+  }
+
+
+  private async lenteTratamiento(id:string ,  informacionVentaDto: informacionVentaDto){
+
+    const lente = await this.VentaExcelSchema.aggregate([
+      {
+        $match:{
+           producto:productos.lente,
+           sucursal:new Types.ObjectId(id),
+           fecha: {
+            $gte: new Date(informacionVentaDto.fechaInicio),
+            $lte: new Date(informacionVentaDto.fechaFin),
+          },
+
+        }
+      },
+      {
+        $lookup:{
+          from:'tratamientos',
+          foreignField:'_id',
+          localField:'tratamiento',
+          as:'tratamiento'
+        }
+      },
+      {
+        $unwind:'$tratamiento'
+      },
+      {
+        $group:{
+          _id:'$tratamiento._id',
+          tratamiendo:{$first:'$tratamiento.nombre'},
+          cantidad: { $sum: 1},
+           importe:{$sum:'$importe'}
+        }
+      },
+      {
+        $project:{
+           tratamiendo:1,
+           cantidad:1,
+           importe:1
+        }
+      }
+    ])    
+    return lente
+  }
+
+
+  private async tipoDeLente(id:string ,  informacionVentaDto: informacionVentaDto){
+    const lente = await this.VentaExcelSchema.aggregate(
+     [ {
+        $match:{
+           producto:productos.lente,
+           sucursal:new Types.ObjectId(id),
+           fecha: {
+            $gte: new Date(informacionVentaDto.fechaInicio),
+            $lte: new Date(informacionVentaDto.fechaFin),
+          },
+
+        }
+      }
+      ,
+      {
+        $lookup:{
+          from:'tipolentes',
+          foreignField:'_id',
+          localField:'tipoLente',
+          as:'tipoLente'
+        }
+       },{
+        $unwind :'$tipoLente'
+       },
+
+       {
+        $group:{
+          _id:'$tipoLente._id',
+          tipoLente:{$first:'$tipoLente.nombre'},
+          cantidad:{$sum:1},
+          importe :{$sum:'$importe'}
+        }
+       },{
+        $project:{
+          tipoLente:1,
+          cantidad:1,
+          importe:1,
+        }
+       }
+      
+      ])
+    
+  return lente
+    
+  }
+
+ 
 }

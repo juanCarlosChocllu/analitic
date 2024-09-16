@@ -13,6 +13,7 @@ export class informacionVentaDto {
 
   @IsDateString()
   fechaInicio: string;
+  
   @IsDateString()
   fechaFin: string;
 }

@@ -37,10 +37,7 @@ export class VentaController {
     return await this.ventaService.ventaExel(ventaDto);
   }
 
-  @Post('reporte')
-  async allExcel() {
-    return await this.ventaService.allExcel();
-  }
+
 
   @Get('Empresa')
   async empresaExcel() {
@@ -62,10 +59,7 @@ export class VentaController {
     return await this.ventaService.gestionExcel(ventaDto);
   }
 
-  @Post('excel/tarfico')
-  async trafico(@Body() ventaDto: VentaExcelDto) {
-    return await this.ventaService.trafico(ventaDto);
-  }
+ 
 
   @Post('informacion/:id')
   sucursalVentaInformacion(
@@ -74,6 +68,13 @@ export class VentaController {
   ) {
     return this.ventaService.sucursalVentaInformacion(id, informacionVentaDto);
   }
+
+  @Post('lente/:id')
+  informacionLente(@Param('id') id: string,
+  @Body() informacionVentaDto: informacionVentaDto,){
+     return this.ventaService.informacionLente( id,informacionVentaDto)
+  }
+  
 
   @Get('finalizar')
   finalizarVenta() {

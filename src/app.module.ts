@@ -11,6 +11,7 @@ import { NombreBdConexion } from './enums/nombre.db.enum';
 import { AbonoModule } from './abono/abono.module';
 import { TratamientoModule } from './tratamiento/tratamiento.module';
 import { TipoLenteModule } from './tipo-lente/tipo-lente.module';
+import { ReporteModule } from './reporte/reporte.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { TipoLenteModule } from './tipo-lente/tipo-lente.module';
     AbonoModule,
     TratamientoModule,
     TipoLenteModule,
+    ReporteModule,
   ],
   controllers: [],
   providers: [],

@@ -39,11 +39,9 @@ import { TipoLenteModule } from 'src/tipo-lente/tipo-lente.module';
       ],
       NombreBdConexion.oc,
     ),
-    SucursalModule,
-    ProvidersModule,
+
     TipoVentaModule,
-    TratamientoModule,
-    TipoLenteModule
+ 
   ],
   controllers: [VentaController],
   providers: [VentaService],
