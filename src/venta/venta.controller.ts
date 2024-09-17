@@ -19,14 +19,6 @@ import { informacionVentaDto } from './dto/informacion.venta.dto';
 export class VentaController {
   constructor(private readonly ventaService: VentaService) {}
 
-  /* @Post('actual')
-   async actual(@Body() ventaDto:VentaDto) { 
-     return await this.ventaService.findAll(ventaDto);
-  }
-  @Post('anterior')
-  async anterio(@Body() ventaDto:VentaDto) { 
-    return await this.ventaService.findAll(ventaDto);
-  }*/
   @Post('excel/actual')
   async ventaExcelActual(@Body() ventaDto: VentaExcelDto) {
     return await this.ventaService.ventaExel(ventaDto);
@@ -39,10 +31,6 @@ export class VentaController {
 
 
 
-  @Get('Empresa')
-  async empresaExcel() {
-    return await this.ventaService.EmpresaExcel();
-  }
 
  
 
@@ -72,7 +60,7 @@ export class VentaController {
      return this.ventaService.informacionLente( id,informacionVentaDto)
   }
   
-  @Post('indicadores/fecha')
+  @Post('indicadores/dia')
    indicadoresPorFecha(@Body() ventaDto: VentaExcelDto){
     return this.ventaService.indicadoresPorFecha(ventaDto)
    }

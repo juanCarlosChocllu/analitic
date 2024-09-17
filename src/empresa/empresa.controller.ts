@@ -8,7 +8,8 @@ import { EmpresaService } from './empresa.service';
 export class EmpresaController {
   constructor(private readonly empresaService: EmpresaService) {}
   @Get()
-  findAll() {
-    return this.empresaService.findAll();
+  async empresaExcel() {
+    return await this.empresaService.EmpresaExcel();
   }
+
 }

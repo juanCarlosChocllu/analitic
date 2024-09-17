@@ -63,13 +63,6 @@ VentaExcelSchema.index({ asesor: 1 });
 
 
 
-@Schema()
-export class EmpresaExcel {
-  @Prop()
-  nombre: string;
-}
-
-export const EmpresaExcelSchema = SchemaFactory.createForClass(EmpresaExcel);
 
 @Schema()
 export class AsesorExcel {

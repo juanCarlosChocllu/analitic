@@ -5,8 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   AsesorExcel,
   AsesorExcelSchema,
-  EmpresaExcel,
-  EmpresaExcelSchema,
   VentaExcel,
   VentaExcelSchema,
 } from './schemas/venta.schema';
@@ -19,6 +17,7 @@ import { TipoVentaModule } from 'src/tipo-venta/tipo-venta.module';
 import { TratamientoModule } from 'src/tratamiento/tratamiento.module';
 import { TipoLenteModule } from 'src/tipo-lente/tipo-lente.module';
 import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucursal.schema';
+import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.schema';
 
 @Module({
   imports: [

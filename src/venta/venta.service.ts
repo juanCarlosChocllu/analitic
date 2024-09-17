@@ -7,11 +7,10 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import {
   AsesorExcel,
-  EmpresaExcel,
   VentaExcel,
 } from './schemas/venta.schema';
 import { Model, set, Types } from 'mongoose';
-import { VentaDto, VentaExcelDto } from './dto/venta.dto';
+import {VentaExcelDto } from './dto/venta.dto';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 
 
@@ -31,14 +30,11 @@ import { flag } from './enums/flag.enum';
 
 import { Abono } from 'src/abono/schema/abono.abono';
 
-import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 import { FiltroVentaI } from './interfaces/filtro.venta.interface';
 
 import { EstadoEnum } from './enums/estado.enum';
-import { log } from 'node:console';
 import { productos } from './enums/productos.enum';
-import { Tratamiento } from 'src/tratamiento/schema/tratamiento.schema';
-import { fechasArray } from './util/fecha.array.util';
+
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
 
 @Injectable()
@@ -50,14 +46,11 @@ export class VentaService {
     private readonly VentaExcelSchema: Model<VentaExcel>,
     @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
     private readonly sucursalExcelSchema: Model<SuscursalExcel>,
-    @InjectModel(EmpresaExcel.name, NombreBdConexion.oc)
-    private readonly EmpresaExcelSchema: Model<SuscursalExcel>,
     @InjectModel(AsesorExcel.name, NombreBdConexion.oc)
     private readonly AsesorExcelSchema: Model<AsesorExcel>,
     @InjectModel(Abono.name, NombreBdConexion.oc)
     private readonly AbonoSchema: Model<Abono>,
 
-    private readonly tipoVentaService: TipoVentaService,
     private readonly sucursalService: SucursalService,
 
   ) {}
@@ -301,10 +294,7 @@ export class VentaService {
 
 
 
-  async EmpresaExcel() {
-    const empresas = await this.EmpresaExcelSchema.find();
-    return empresas;
-  }
+
 
 
   public async ventaSucursalExcel(ventaDto: VentaExcelDto) {
@@ -861,8 +851,6 @@ export class VentaService {
   public async indicadoresPorFecha(ventaDto: VentaExcelDto){
     const data:any[]=[]
     for (let su of ventaDto.sucursal){
-  
-      
       const sucursal = await this.sucursalService.listarSucursalId(su)      
       const venta = await this.VentaExcelSchema.aggregate([
         {
@@ -882,6 +870,7 @@ export class VentaService {
                 mes:{$month:'$fecha'},
                 dia:{$dayOfMonth:'$fecha'}
               },
+              fecha:{$first:'$fecha'},
               tickets:{
                   $sum:{
                     $cond:{ 
@@ -937,6 +926,7 @@ export class VentaService {
         {
           $project:{
             _id:1,
+            fecha:1,
             tickets:1,
             ventaTotal:1,
             cantidad:1,

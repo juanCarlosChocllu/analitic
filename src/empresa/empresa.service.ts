@@ -1,18 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { InjectModel } from '@nestjs/mongoose';
-import { Empresa } from './schemas/empresa.schema';
+import { EmpresaExcel } from './schemas/empresa.schema';
 import { Model } from 'mongoose';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 @Injectable()
 export class EmpresaService {
   constructor(
-    @InjectModel(Empresa.name, NombreBdConexion.mia)
-    private readonly EmpresaSchema: Model<Empresa>,
+    @InjectModel(EmpresaExcel.name, NombreBdConexion.oc)
+    private readonly EmpresaSchema: Model<EmpresaExcel>,
   ) {}
 
-  findAll() {
-    return this.EmpresaSchema.find({}, 'nombre');
+
+  async EmpresaExcel() {
+    const empresas = await this.EmpresaSchema.find();
+    return empresas;
   }
 }

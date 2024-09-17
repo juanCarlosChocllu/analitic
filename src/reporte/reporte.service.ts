@@ -9,10 +9,12 @@ import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 import { TratamientoService } from 'src/tratamiento/tratamiento.service';
 import { productos } from 'src/venta/enums/productos.enum';
 import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
-import { AsesorExcel, EmpresaExcel,  VentaExcel } from 'src/venta/schemas/venta.schema';
+
 import { parseNumber } from 'src/venta/util/validar.numero.util';
 import { dataEmpresa } from './data.empresas';
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
+import { EmpresaExcel } from 'src/empresa/schemas/empresa.schema';
+import { AsesorExcel, VentaExcel } from 'src/venta/schemas/venta.schema';
 
 
 @Injectable()

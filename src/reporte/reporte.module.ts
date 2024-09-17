@@ -8,9 +8,10 @@ import { TipoVentaModule } from 'src/tipo-venta/tipo-venta.module';
 import { SucursalModule } from 'src/sucursal/sucursal.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
-import { AsesorExcel, AsesorExcelSchema, EmpresaExcel, EmpresaExcelSchema, VentaExcel, VentaExcelSchema   } from 'src/venta/schemas/venta.schema';
+import { AsesorExcel, AsesorExcelSchema,VentaExcel, VentaExcelSchema   } from 'src/venta/schemas/venta.schema';
 import { Abono, AbonoSchema } from 'src/abono/schema/abono.abono';
 import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucursal.schema';
+import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.schema';
 
 @Module({
   imports:[
