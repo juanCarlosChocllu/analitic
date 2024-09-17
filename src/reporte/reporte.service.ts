@@ -9,9 +9,10 @@ import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 import { TratamientoService } from 'src/tratamiento/tratamiento.service';
 import { productos } from 'src/venta/enums/productos.enum';
 import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
-import { AsesorExcel, EmpresaExcel, SuscursalExcel, VentaExcel } from 'src/venta/schemas/venta.schema';
+import { AsesorExcel, EmpresaExcel,  VentaExcel } from 'src/venta/schemas/venta.schema';
 import { parseNumber } from 'src/venta/util/validar.numero.util';
 import { dataEmpresa } from './data.empresas';
+import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
 
 
 @Injectable()
@@ -39,14 +40,14 @@ export class ReporteService {
   ){}
  
   async allExcel() {
-    const aqo: number = 2023;
+    const aqo: number = 2024;
     const dataAnio = diasDelAnio(aqo);
 
-    //  for (let data of dataAnio) {
-    // const [mes, dia] = data.split('-');
-    //console.log(mes , dia, aqo);
-    const mes: string = '09';
-    const dia: string = '03';
+      for (let data of dataAnio) {
+     const [mes, dia] = data.split('-');
+    console.log(mes , dia, aqo);
+    //const mes: string = '09';
+   // const dia: string = '03';
 
     try {
       const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
@@ -63,14 +64,14 @@ export class ReporteService {
     } catch (error) {
       if (error instanceof NotFoundException) {
         console.log(
-          `Archivo no encontrado para la fecha ${dia}/${mes}/2023. Continuando con el siguiente día.`,
+          `Archivo no encontrado para la fecha ${dia}/${mes}/${aqo}. Continuando con el siguiente día.`,
         );
-        //  continue;
+          continue;
       } else {
         throw error;
       }
     }
-    //}
+    }
 
     return { status: HttpStatus.CREATED };
   }

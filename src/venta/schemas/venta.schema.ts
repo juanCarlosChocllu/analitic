@@ -61,16 +61,7 @@ VentaExcelSchema.index({ sucursal: 1 });
 VentaExcelSchema.index({ empresa: 1 });
 VentaExcelSchema.index({ asesor: 1 });
 
-@Schema()
-export class SuscursalExcel {
-  @Prop()
-  nombre: string;
-  @Prop({ type: Types.ObjectId, ref: 'EmpresaExcel' })
-  empresa: Types.ObjectId;
-}
 
-export const SuscursalExcelSchema =
-  SchemaFactory.createForClass(SuscursalExcel);
 
 @Schema()
 export class EmpresaExcel {

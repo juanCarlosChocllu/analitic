@@ -1,12 +1,13 @@
-import { Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
-@Schema({ collection: 'Sucursal' })
-export class Sucursal {
-  _id: Types.ObjectId;
-  sucursal: string;
+@Schema()
+export class SuscursalExcel {
+  @Prop()
   nombre: string;
-  preciosVenta: string[];
+  @Prop({ type: Types.ObjectId, ref: 'EmpresaExcel' })
+  empresa: Types.ObjectId;
 }
 
-export const sucursalSchema = SchemaFactory.createForClass(Sucursal);
+export const SuscursalExcelSchema =
+  SchemaFactory.createForClass(SuscursalExcel);

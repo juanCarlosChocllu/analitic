@@ -44,10 +44,7 @@ export class VentaController {
     return await this.ventaService.EmpresaExcel();
   }
 
-  @Get('sucursalExcel/:id')
-  async sucursalExcel(@Param() id: string) {
-    return await this.ventaService.sucursalExcel(id);
-  }
+ 
 
   @Post('excel/sucursal/asesor')
   async ventaSucursalExcelActual(@Body() ventaDto: VentaExcelDto) {
@@ -75,6 +72,10 @@ export class VentaController {
      return this.ventaService.informacionLente( id,informacionVentaDto)
   }
   
+  @Post('indicadores/fecha')
+   indicadoresPorFecha(@Body() ventaDto: VentaExcelDto){
+    return this.ventaService.indicadoresPorFecha(ventaDto)
+   }
 
   @Get('finalizar')
   finalizarVenta() {

@@ -7,8 +7,6 @@ import {
   AsesorExcelSchema,
   EmpresaExcel,
   EmpresaExcelSchema,
-  SuscursalExcel,
-  SuscursalExcelSchema,
   VentaExcel,
   VentaExcelSchema,
 } from './schemas/venta.schema';
@@ -20,6 +18,7 @@ import { Abono, AbonoSchema } from 'src/abono/schema/abono.abono';
 import { TipoVentaModule } from 'src/tipo-venta/tipo-venta.module';
 import { TratamientoModule } from 'src/tratamiento/tratamiento.module';
 import { TipoLenteModule } from 'src/tipo-lente/tipo-lente.module';
+import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucursal.schema';
 
 @Module({
   imports: [
@@ -41,6 +40,7 @@ import { TipoLenteModule } from 'src/tipo-lente/tipo-lente.module';
     ),
 
     TipoVentaModule,
+    SucursalModule
  
   ],
   controllers: [VentaController],

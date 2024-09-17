@@ -9,11 +9,12 @@ import {
 } from '@nestjs/common';
 import { SucursalService } from './sucursal.service';
 
-@Controller('sucursal')
+@Controller()
 export class SucursalController {
   constructor(private readonly sucursalService: SucursalService) {}
-  @Get(':id')
-  findAll(@Param() id: string) {
-    return this.sucursalService.findAll(id);
+
+  @Get('sucursalExcel/:id')
+  async sucursalExcel(@Param() id: string) {
+    return await this.sucursalService.sucursalExcel(id);
   }
 }

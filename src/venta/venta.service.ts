@@ -8,7 +8,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   AsesorExcel,
   EmpresaExcel,
-  SuscursalExcel,
   VentaExcel,
 } from './schemas/venta.schema';
 import { Model, set, Types } from 'mongoose';
@@ -39,6 +38,8 @@ import { EstadoEnum } from './enums/estado.enum';
 import { log } from 'node:console';
 import { productos } from './enums/productos.enum';
 import { Tratamiento } from 'src/tratamiento/schema/tratamiento.schema';
+import { fechasArray } from './util/fecha.array.util';
+import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
 
 @Injectable()
 export class VentaService {
@@ -57,6 +58,7 @@ export class VentaService {
     private readonly AbonoSchema: Model<Abono>,
 
     private readonly tipoVentaService: TipoVentaService,
+    private readonly sucursalService: SucursalService,
 
   ) {}
 
@@ -298,12 +300,6 @@ export class VentaService {
 
 
 
-  async sucursalExcel(id: string) {
-    const suscursales = await this.sucursalExcelSchema.find({
-      empresa: new Types.ObjectId(id),
-    });
-    return suscursales;
-  }
 
   async EmpresaExcel() {
     const empresas = await this.EmpresaExcelSchema.find();
@@ -857,9 +853,144 @@ export class VentaService {
        }
       
       ])
-    
   return lente
     
+  }
+
+
+  public async indicadoresPorFecha(ventaDto: VentaExcelDto){
+    const data:any[]=[]
+    for (let su of ventaDto.sucursal){
+  
+      
+      const sucursal = await this.sucursalService.listarSucursalId(su)      
+      const venta = await this.VentaExcelSchema.aggregate([
+        {
+          $match:{
+            sucursal:new Types.ObjectId(su),
+            fecha: {
+              $gte: new Date(ventaDto.fechaInicio),
+              $lte: new Date(ventaDto.FechaFin),
+            },
+
+          }
+        },
+        {
+          $group:{
+              _id:{
+                aqo:{$year:'$fecha'},
+                mes:{$month:'$fecha'},
+                dia:{$dayOfMonth:'$fecha'}
+              },
+              tickets:{
+                  $sum:{
+                    $cond:{ 
+                      if : {$eq: ['$aperturaTicket','1'] },
+                      then: 1,
+                      else:0
+                    }
+                  }
+              },
+              cantidad :{
+                $sum:{
+                  $cond:{
+                    if :{ $ne :['$producto', 'DESCUENTO'] },
+                    then:'$cantidad',
+                    else:0
+                  }
+                }
+              },
+              importe:{
+                $sum:{
+                  $cond:{
+                    if :{ $ne :['$producto', 'DESCUENTO'] },
+                    then:'$importe',
+                    else:0
+                  }
+                }
+              },
+              ventaTotal:{
+                $sum:{
+                  $cond:{
+                    if :{ $eq :['$aperturaTicket', '1'] },
+                    then:'$montoTotal',
+                    else:0
+                  }
+                },
+              },
+
+              totalDescuentos:{
+                $sum:{
+                  $cond:{
+                    if :{ $eq :['$producto', 'DESCUENTO'] },
+                    then:'$importe',
+                    else:0
+                  }
+                }
+              }
+
+
+          },
+         
+          
+        },
+        {
+          $project:{
+            _id:1,
+            tickets:1,
+            ventaTotal:1,
+            cantidad:1,
+            totalImporte:{
+              $subtract: [
+                "$importe",
+                '$totalDescuentos'
+            ]
+            },
+            ticketPromedio: {
+              $cond: {
+                if: { $ne: ['$tickets', 0] },
+                then: {
+                  $round: [{ $divide: ['$ventaTotal', '$tickets'] }, 2],
+                },
+                else: 0,
+              },
+            },
+            unidadPorTicket: {
+              $cond: {
+                if: { $ne: ['$cantidad', 0] },
+                then: {
+                  $round: [{ $divide: ['$cantidad', '$tickets'] }, 2],
+                },
+                else: 0,
+              },
+            },
+            precioPromedio: {
+              $cond: {
+                if: { $ne: ['$ventaTotal', 0] },
+                then: {
+                  $round: [{ $divide: ['$ventaTotal', '$cantidad'] }, 2],
+                },
+                else: 0,
+              },
+            },
+
+            tasaConversion:{
+              $sum:0
+            }
+            
+
+          }
+        }
+      ])
+        const resultado={
+          sucursal:sucursal.nombre,
+          id:sucursal._id,
+          venta
+        }
+        data.push(resultado)
+        
+    }
+          return data
   }
 
  
