@@ -62,6 +62,8 @@ export class VentaController {
   
   @Post('indicadores/dia')
    indicadoresPorFecha(@Body() ventaDto: VentaExcelDto){
+    console.log('hola');
+    
     return this.ventaService.indicadoresPorFecha(ventaDto)
    }
 
