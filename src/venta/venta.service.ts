@@ -1077,7 +1077,7 @@ export class VentaService {
           },
           {
             $project: {
-              progesivos: 1,
+              progresivos: 1,
               ocupacional: 1,
               lentes: 1,
               ocupacionalProgresivos: 1,
