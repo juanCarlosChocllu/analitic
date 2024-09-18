@@ -17,4 +17,8 @@ export class SucursalController {
   async sucursalExcel(@Param() id: string) {
     return await this.sucursalService.sucursalExcel(id);
   }
+  @Post('sucursal/guardar')
+  guardarEmpresaYsusSucursales (){
+    return this.sucursalService.guardarEmpresaYsusSucursales()
+  }
 }

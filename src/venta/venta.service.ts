@@ -36,6 +36,8 @@ import { EstadoEnum } from './enums/estado.enum';
 import { productos } from './enums/productos.enum';
 
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
+import { KpiDto } from './dto/kpi.venta.dto';
+import { log } from 'node:console';
 
 @Injectable()
 export class VentaService {
@@ -848,6 +850,8 @@ export class VentaService {
   }
 
 
+
+  
   public async indicadoresPorFecha(ventaDto: VentaExcelDto){
     const data:any[]=[]
     for (let su of ventaDto.sucursal){
@@ -860,7 +864,6 @@ export class VentaService {
               $gte: new Date(ventaDto.fechaInicio),
               $lte: new Date(ventaDto.FechaFin),
             },
-
           }
         },
         {
@@ -983,5 +986,131 @@ export class VentaService {
           return data
   }
 
- 
+
+
+  public async kpi(kpiDto: KpiDto) {
+    return this.kpiAntireflejo(kpiDto)
+  }
+
+  private async kpiAntireflejo(kpiDto: KpiDto){
+    const data:any=[]
+    for (let su of kpiDto.sucursal) {
+      const dataKpi = await this.VentaExcelSchema.aggregate([
+        {
+          $match: {
+            sucursal: new Types.ObjectId(su),
+            fecha: {
+              $gte: new Date(kpiDto.fechaInicio),
+              $lte: new Date(kpiDto.fechaFin),
+              
+            },
+          },
+        },
+          {
+            $lookup:{
+              from:'tratamientos',
+              foreignField:'_id',
+              localField:'tratamiento',
+              as:'tratamiento'
+            }
+          },
+          {
+            $lookup:{
+              from:'tipolentes',
+              foreignField:'_id',
+              localField:'tipoLente',
+              as:'tipoLente'
+            }
+          },
+          {
+            $unwind:'$tratamiento'
+          },
+          {
+            $unwind:'$tipoLente'
+          },
+          {
+            $group:{
+              _id:null,
+              lentes:{
+                $sum:{
+                  $cond:{
+                    if:{$eq:['$producto','LENTE']},
+                    then:1,
+                    else:0
+                  }
+                }
+              },
+  
+              antireflejo:{
+                $sum:{
+                  $cond:{
+                    if:{$eq:['$tratamiento.nombre','ANTIREFLEJO']},
+                    then:1,
+                    else:0
+                  }
+                }
+              },
+              progesivos:{
+                $sum:{
+                  $cond:{
+                    if:{$eq:['$tipoLente.nombre','PROGRESIVO']},
+                    then:1,
+                    else:0
+                  }
+                }
+              
+              },
+              ocupacional:{
+                $sum:{
+                  $cond:{
+                    if:{$eq:['$tipoLente.nombre','OCUPACIONAL']},
+                    then:1,
+                    else:0
+                  }
+                }
+              
+              },
+         
+
+            }
+          },
+          {
+            $project:{
+              
+
+              progesivos:1,
+              ocupacional:1,
+              ocupacionalProgresivos:1,
+        
+              participacionProgresivos:[
+                  {
+                    lentes:'$lentes',
+                    progresivosOcupacionales:{$add: ['$progesivos', '$ocupacional']},
+                    progresivosOcupacionalesPorcentaje:{
+                      $multiply:[ {$round:[ {$divide: [{$add: ['$progesivos', '$ocupacional']}, '$lentes']} ,2]},100]
+                    }
+
+
+                  }
+              ],
+
+              antireflejoData:[
+                {
+                  lentes:'$lentes',
+                  antireflejo: "$antireflejo", 
+                  porcentajeAntireflejo:{
+                    $multiply:[ {$round:[ {$divide: ['$antireflejo', '$lentes']} ,2]},100]
+                  },
+                }
+             ],
+            }
+          }
+      
+      ]);
+  
+      data.push(dataKpi)
+    }
+    return data
+  }
+  
 }

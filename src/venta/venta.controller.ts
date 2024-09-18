@@ -14,6 +14,7 @@ import { VentaService } from './venta.service';
 import { VentaDto, VentaExcelDto } from './dto/venta.dto';
 import { VentaExcel } from './schemas/venta.schema';
 import { informacionVentaDto } from './dto/informacion.venta.dto';
+import { KpiDto } from './dto/kpi.venta.dto';
 
 @Controller('venta')
 export class VentaController {
@@ -62,9 +63,12 @@ export class VentaController {
   
   @Post('indicadores/dia')
    indicadoresPorFecha(@Body() ventaDto: VentaExcelDto){
-    console.log('hola');
-    
     return this.ventaService.indicadoresPorFecha(ventaDto)
+   }
+
+   @Post('kpi')
+    kpi(@Body() kpiDto: KpiDto){
+    return this.ventaService.kpi(kpiDto)
    }
 
   @Get('finalizar')

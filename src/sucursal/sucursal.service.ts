@@ -1,12 +1,12 @@
-import { Injectable, Type } from '@nestjs/common';
+import { HttpStatus, Injectable, Type } from '@nestjs/common';
 
 import { InjectModel } from '@nestjs/mongoose';
 import { SuscursalExcel } from './schema/sucursal.schema';
 import { Model, Types } from 'mongoose';
-import { Flag } from './enums/flag.enum';
-import { SucursalVentasI } from './interfaces/venta.interface';
-import { VentaDto } from 'src/venta/dto/venta.dto';
+
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+
+import {dataEmpresa} from './data.empresas'
 
 @Injectable()
 export class SucursalService {
@@ -30,6 +30,45 @@ export class SucursalService {
     return suscursales;
   }
 
+  public async guardarEmpresaYsusSucursales() {
+    const data = dataEmpresa();
+
+    for (let [empresa, sucursales] of Object.entries(data.empresa)) {
+      const empresaData = {
+        nombre: empresa,
+      };
+
+      try {
+        const empresas = await this.SucursalSchema.findOne({
+          nombre: empresa,
+        });
+        if (!empresas) {
+          await this.SucursalSchema.create(empresaData);
+        }
+        for (let sucursal of sucursales) {
+          const sucursalExiste = await this.SucursalSchema.findOne({
+            nombre: sucursal,
+          });
+          if (!sucursalExiste) {
+            const empresas = await this.SucursalSchema.findOne({
+              nombre: empresa,
+            });
+            const sucursalData = {
+              empresa: empresas._id,
+              nombre: sucursal,
+            };
+            await this.SucursalSchema.create(sucursalData);
+          }
+        }
+        return {status:HttpStatus.CREATED}
+      } catch (error) {
+        console.error(
+          `Error al crear empresa o sucursal para ${empresa}: `,
+          error,
+        );
+      }
+    }
+  }
 
  
 }
