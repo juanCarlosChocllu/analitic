@@ -1,7 +1,7 @@
 export function dataEmpresa() {
   const data = {
     empresa: {
-      OPTICENTRO: [
+      'OPTICENTRO': [
         'SUCRE CENTRAL',
         'OPTICENTRO POTOSI',
         'OPTICENTRO TUPIZA',
@@ -12,7 +12,7 @@ export function dataEmpresa() {
         'OPTICENTRO TARIJA 2',
         'OPTICENTRO LA PAZ 2',
       ],
-      ECONOVISION: [
+      'ECONOVISION': [
         'ECONOPTICA CENTRAL',
         'ECONOPTICA PLAZA',
         'ECONOPTICA CAMPESINO',
@@ -26,9 +26,9 @@ export function dataEmpresa() {
       'TU OPTICA': ['TU OPTICA', 'TU OPTICA 2', 'CEMENTERIO TU OPTICA  2'],
 
       'ZONA OPTICA': ['ZONA OPTICA 1'],
-      OPTILAB: ['OPTILAB', 'OPTILAB TARIJA'],
+      'OPTILAB': ['OPTILAB', 'OPTILAB TARIJA'],
 
-      MINISO: ['MINISO', 'MINISO LA PAZ'],
+     'MINISO': ['MINISO', 'MINISO LA PAZ'],
 
       'VISUALHEALT S.R.L': [
         'CONSULTORIO LA PAZ',
