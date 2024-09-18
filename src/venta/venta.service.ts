@@ -995,6 +995,7 @@ export class VentaService {
   private async kpiAntireflejo(kpiDto: KpiDto){
     const data:any=[]
     for (let su of kpiDto.sucursal) {
+      const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))
       const dataKpi = await this.VentaExcelSchema.aggregate([
         {
           $match: {
@@ -1075,40 +1076,39 @@ export class VentaService {
             }
           },
           {
-            $project:{
-              
-
-              progesivos:1,
-              ocupacional:1,
-              ocupacionalProgresivos:1,
-        
-              participacionProgresivos:[
-                  {
-                    lentes:'$lentes',
-                    progresivosOcupacionales:{$add: ['$progesivos', '$ocupacional']},
-                    progresivosOcupacionalesPorcentaje:{
-                      $multiply:[ {$round:[ {$divide: [{$add: ['$progesivos', '$ocupacional']}, '$lentes']} ,2]},100]
-                    }
-
-
-                  }
-              ],
-
-              antireflejoData:[
-                {
-                  lentes:'$lentes',
-                  antireflejo: "$antireflejo", 
-                  porcentajeAntireflejo:{
-                    $multiply:[ {$round:[ {$divide: ['$antireflejo', '$lentes']} ,2]},100]
-                  },
-                }
-             ],
+            $project: {
+              progesivos: 1,
+              ocupacional: 1,
+              lentes: 1,
+              ocupacionalProgresivos: 1,
+              antireflejo: 1,
+              progresivosOcupacionales: { $add: ['$progesivos', '$ocupacional'] },
+              progresivosOcupacionalesPorcentaje: {
+                $multiply: [
+                  { $round: [{ $divide: [{ $add: ['$progesivos', '$ocupacional'] }, '$lentes'] }, 2] },
+                  100
+                ]
+              },
+              porcentajeAntireflejo: {
+                $multiply: [
+                  { $round: [{ $divide: ['$antireflejo', '$lentes'] }, 2] },
+                  100
+                ]
+              }
             }
           }
+          
       
       ]);
+
+      const resultado={
+        sucursal:sucursal.nombre,
+        id:sucursal._id,
+        dataKpi
+
+      }
   
-      data.push(dataKpi)
+      data.push(resultado)
     }
     return data
   }

@@ -45,31 +45,31 @@ export class SucursalService {
       };
   
       try {
-        // Busca la empresa en la base de datos
+
         const empresaEncontrada = await this.EmpresaSchema.findOne({
           nombre: empresa,
         });
   
-        // Si la empresa no existe, se crea
+
         if (!empresaEncontrada) {
           await this.EmpresaSchema.create(empresaData);
         }
   
-        // Busca la empresa de nuevo para obtener su ID
+
         const empresaCreada = await this.EmpresaSchema.findOne({
           nombre: empresa,
         });
   
         for (let sucursal of sucursales) {
-          // Verifica si la sucursal ya existe
+
           const sucursalExiste = await this.SucursalSchema.findOne({
             nombre: sucursal,
           });
   
-          // Si la sucursal no existe, se crea
+ 
           if (!sucursalExiste) {
             const sucursalData = {
-              empresa: empresaCreada._id, // Usa el ID de la empresa
+              empresa: empresaCreada._id, 
               nombre: sucursal,
             };
             await this.SucursalSchema.create(sucursalData);
