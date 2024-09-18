@@ -1051,7 +1051,7 @@ export class VentaService {
                   }
                 }
               },
-              progesivos:{
+              progresivos:{
                 $sum:{
                   $cond:{
                     if:{$eq:['$tipoLente.nombre','PROGRESIVO']},
