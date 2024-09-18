@@ -44,22 +44,21 @@ export class ReporteService {
   ){}
  
   async allExcel() {
-    const aqo: number = 2024;
+    const aqo: number = 2023;
     const dataAnio = diasDelAnio(aqo);
 
     //  for (let data of dataAnio) {
     // const [mes, dia] = data.split('-');
    
       const mes: string = '09';
-     const dia: string = '03';
+     const dia: string = '05';
    console.log(mes , dia, aqo);
     try {
       const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
       const ventaSinServicio = this.quitarServiciosVentas(dataExcel);
       const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
       const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
-
-    
+      
       await this.guardarAsesorExcel(ventaLimpia);
       await this.guardarTratamiento(ventaLimpia);
       await this.guardarTipoLente(ventaLimpia);
@@ -113,11 +112,11 @@ export class ReporteService {
  
     try {
       for (let data of Venta) {
+        
         const textoTipo= data.numeroTicket.split('-')
-      
-        
+ 
         const  tipo = textoTipo[textoTipo.length - 2 ].toUpperCase()
-        
+          
           const sucursal = await this.sucursalExcelSchema.findOne({
           nombre: data.sucursal,
         });
@@ -126,6 +125,7 @@ export class ReporteService {
             usuario: data.asesor,
             sucursal: sucursal._id,
           });
+    
           const tipoVenta = await this.tipoVentaService.tipoVentaAbreviatura(tipo);
           const tratamiento =
             data.producto === productos.lente
@@ -134,13 +134,9 @@ export class ReporteService {
                 )
               : null;
 
-          const tipoLente = data.producto === productos.lente  ? await this.tipoLenteService.listarTipoLente(data.tipoLente):null
-          console.log(tipo);
-          
-          console.log(tipoVenta);
-          
-          
-
+          const tipoLente = data.producto === productos.lente  ? await this.tipoLenteService.listarTipoLente(data.tipoLente):null          
+         
+                
           try {
             const dataVenta = {
               fecha: data.fecha,
@@ -158,6 +154,8 @@ export class ReporteService {
               ...(data.producto === productos.lente && { tratamiento }),
               ...(data.producto === productos.lente && { tipoLente }),
             };
+    
+          
             await this.VentaExcelSchema.create(dataVenta);
           } catch (error) {
             throw error;

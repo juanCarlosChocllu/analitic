@@ -45,7 +45,11 @@ export class TipoVentaService {
 
 
   public async tipoVentaAbreviatura(abreviatura:string){
+    console.log();
+    
     const abrev= await this.TipoVentaSchema.findOne({abreviatura:abreviatura})
+    console.log(abrev);
+    
      return abrev
 
   }

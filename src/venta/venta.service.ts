@@ -1001,7 +1001,7 @@ export class VentaService {
             sucursal: new Types.ObjectId(su),
             fecha: {
               $gte: new Date(kpiDto.fechaInicio),
-              $lte: new Date(kpiDto.fechaFin),
+              $lte: new Date(kpiDto.FechaFin),
               
             },
           },

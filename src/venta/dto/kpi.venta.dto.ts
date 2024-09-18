@@ -16,6 +16,6 @@ export class KpiDto{
   
     @IsOptional()
     @IsDateString()
-    fechaFin: string;
+    FechaFin: string;
 
 }
