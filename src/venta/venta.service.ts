@@ -1085,13 +1085,13 @@ export class VentaService {
               progresivosOcupacionales: { $add: ['$progesivos', '$ocupacional'] },
               progresivosOcupacionalesPorcentaje: {
                 $multiply: [
-                  { $round: [{ $divide: [{ $add: ['$progesivos', '$ocupacional'] }, '$lentes'] }, 2] },
+                  { $round: [{ $divide: [{ $add: ['$progesivos', '$ocupacional'] }, '$lentes'] }, 1] },
                   100
                 ]
               },
               porcentajeAntireflejo: {
                 $multiply: [
-                  { $round: [{ $divide: ['$antireflejo', '$lentes'] }, 2] },
+                  { $round: [{ $divide: ['$antireflejo', '$lentes'] }, 1] },
                   100
                 ]
               }
