@@ -19,7 +19,6 @@ import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.sc
       [
         { name: SuscursalExcel.name, schema: SuscursalExcelSchema },
         { name: VentaExcel.name, schema: VentaExcelSchema },
-        { name: EmpresaExcel.name, schema: EmpresaExcelSchema },
         { name: AsesorExcel.name, schema: AsesorExcelSchema },
         { name: Abono.name, schema: AbonoSchema },
       ],

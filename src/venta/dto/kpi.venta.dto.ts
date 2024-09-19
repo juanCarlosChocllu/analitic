@@ -9,6 +9,9 @@ export class KpiDto{
     @IsMongoId({ each: true })
     @IsOptional()
     sucursal: Types.ObjectId[];
+
+    @IsOptional()
+    tipoVenta: Types.ObjectId;
   
     @IsOptional()
     @IsDateString()

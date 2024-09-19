@@ -42,6 +42,8 @@ export class VentaController {
 
   @Post('excel/gestion')
   async gestionExcel(@Body() ventaDto: VentaExcelDto) {
+    console.log(ventaDto);
+    
     return await this.ventaService.gestionExcel(ventaDto);
   }
 

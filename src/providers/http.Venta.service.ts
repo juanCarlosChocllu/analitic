@@ -17,8 +17,8 @@ export class HttpAxiosVentaService {
     anio: number,
     retries = 3,
   ): Promise<any> {
-    const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
-    // const url= 'http://localhost/opticentro/web/cibeles20240903.csv'
+   // const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
+     const url= 'http://localhost/opticentro/web/cibelesVenta20240919.csv'
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await firstValueFrom(
@@ -80,8 +80,7 @@ export class HttpAxiosVentaService {
         asesor: columnas[21],
         montoTotal: Number(columnas[28]),
         tipoVenta: columnas[29] ? columnas[29] : 'CONTADO',
-
-        flagVenta: columnas[31] ? columnas[31] : flag.FINALIZADO,
+        flagVenta: columnas[30] ? columnas[30] : flag.FINALIZADO,
       };
 
       return resultado;

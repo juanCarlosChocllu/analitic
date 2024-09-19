@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { log } from 'node:console';
@@ -19,7 +20,8 @@ export class HttpAxiosAbonoService {
     anio: number,
     retries = 3,
   ) {
-    const url = 'http://localhost/opticentro/web/cibelesAbono20240829.csv';
+    const url = 'http://localhost/opticentro/web/cibelesAbono20240919.csv';
+
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await firstValueFrom(
@@ -59,9 +61,9 @@ export class HttpAxiosAbonoService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  private extracionDeInformacionValida(data: any) {
-    const lineas: any[] = data.trim().split('\n');
-    const venta = lineas.map((linea) => {
+  private extracionDeInformacionValida(data: any) {    
+    const lineas: any[] = data.trim().split('\n');    
+    const abono = lineas.map((linea) => {
       const columnas = linea.split(';');
       const fechaCSV = columnas[0].split(' ');
       const resultado: abonoI = {
@@ -72,6 +74,6 @@ export class HttpAxiosAbonoService {
       };
       return resultado;
     });
-    return venta;
+       return abono;
   }
 }

@@ -18,6 +18,7 @@ import { TratamientoModule } from 'src/tratamiento/tratamiento.module';
 import { TipoLenteModule } from 'src/tipo-lente/tipo-lente.module';
 import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucursal.schema';
 import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.schema';
+import { AbonoModule } from 'src/abono/abono.module';
 
 @Module({
   imports: [
@@ -33,13 +34,14 @@ import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.sc
         { name: VentaExcel.name, schema: VentaExcelSchema },
         { name: EmpresaExcel.name, schema: EmpresaExcelSchema },
         { name: AsesorExcel.name, schema: AsesorExcelSchema },
-        { name: Abono.name, schema: AbonoSchema },
+
       ],
       NombreBdConexion.oc,
     ),
 
     TipoVentaModule,
-    SucursalModule
+    SucursalModule,
+    forwardRef(()=> AbonoModule)
  
   ],
   controllers: [VentaController],

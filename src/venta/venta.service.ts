@@ -1,5 +1,7 @@
 import {
+  forwardRef,
   HttpStatus,
+  Inject,
   Injectable,
   Logger,
 
@@ -25,10 +27,9 @@ import { AsesorExcelI } from './interfaces/asesor.interface';
 import { diasHAbiles } from './util/dias.habiles.util';
 import { informacionVentaDto } from './dto/informacion.venta.dto';
 
-import { abonoI } from 'src/abono/interfaces/abono.interface';
+
 import { flag } from './enums/flag.enum';
 
-import { Abono } from 'src/abono/schema/abono.abono';
 
 import { FiltroVentaI } from './interfaces/filtro.venta.interface';
 
@@ -37,6 +38,7 @@ import { productos } from './enums/productos.enum';
 
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
 import { KpiDto } from './dto/kpi.venta.dto';
+import { AbonoService } from 'src/abono/abono.service';
 import { log } from 'node:console';
 
 @Injectable()
@@ -50,47 +52,12 @@ export class VentaService {
     private readonly sucursalExcelSchema: Model<SuscursalExcel>,
     @InjectModel(AsesorExcel.name, NombreBdConexion.oc)
     private readonly AsesorExcelSchema: Model<AsesorExcel>,
-    @InjectModel(Abono.name, NombreBdConexion.oc)
-    private readonly AbonoSchema: Model<Abono>,
 
     private readonly sucursalService: SucursalService,
-
+    
+    @Inject(forwardRef(() =>AbonoService))
+    private readonly abonoService: AbonoService,
   ) {}
-
-  public async vericarVentaParaCadaAbono(abono: abonoI[]) {
-    for (let data of abono) {
-      const venta = await this.VentaExcelSchema.findOne({
-        numeroTicket: data.numeroTicket,
-        flagVenta: { $ne: flag.FINALIZADO },
-      });
-      if (venta) {
-        const abonoExiste = await this.AbonoSchema.find({
-          numeroTicket: venta.numeroTicket,
-        }).exec();
-        if (abonoExiste.length > 0) {
-          const total = abonoExiste.reduce((total, a) => total + a.monto, 0);
-          if (venta.montoTotal < total) {
-            const dataAbono: abonoI = {
-              numeroTicket: data.numeroTicket,
-              monto: data.monto,
-              fecha: data.fecha,
-              flag: data.flag,
-            };
-            return await this.AbonoSchema.create(dataAbono);
-          }
-          return;
-        }
-        const dataAbono: abonoI = {
-          numeroTicket: data.numeroTicket,
-          monto: data.monto,
-          fecha: data.fecha,
-          flag: data.flag,
-        };
-        return await this.AbonoSchema.create(dataAbono);
-      }
-    }
-  }
-
   public async finalizarVentas() {
     const fechaFin = new Date();
     const fechaInicio = new Date(fechaFin);
@@ -106,11 +73,10 @@ export class VentaService {
 
     if (venta) {
       for (let data of venta) {
-        const abono = await this.AbonoSchema.find({
-          numeroTicket: data.numeroTicket,
-        });
+        const abono = await this.abonoService.buscarAbonoPorNumeroTicket(data.numeroTicket)
         const total = abono.reduce((total, a) => total + a.monto, 0);
-        if (data.montoTotal === total) {
+        
+        if (total >= data.montoTotal ) {
           await this.VentaExcelSchema.updateMany(
             { numeroTicket: data.numeroTicket },
             { $set: { flagVenta: flag.FINALIZADO } },
@@ -121,6 +87,16 @@ export class VentaService {
     return { status: HttpStatus.OK };
   }
 
+
+  
+
+   async verificarVentaExistente(numeroTicket:string){
+    const venta = await this.VentaExcelSchema.findOne({
+      numeroTicket: numeroTicket,
+      flagVenta: { $ne: flag.FINALIZADO },
+    });  
+    return venta
+   }
 
 
   async ventaExel(ventaDto: VentaExcelDto) {
@@ -993,19 +969,22 @@ export class VentaService {
   }
 
   private async kpiAntireflejo(kpiDto: KpiDto){
+    let filtrador={
+      fecha: {
+        $gte: new Date(kpiDto.fechaInicio),
+        $lte: new Date(kpiDto.FechaFin),
+        
+      },
+    }
+    //kpiDto.tipoVenta  ? filtrador['tipoVenta']=new Types.ObjectId( kpiDto.tipoVenta): filtrador
+     
     const data:any=[]
     for (let su of kpiDto.sucursal) {
+      filtrador['sucursal'] = new Types.ObjectId(su)
       const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))
       const dataKpi = await this.VentaExcelSchema.aggregate([
         {
-          $match: {
-            sucursal: new Types.ObjectId(su),
-            fecha: {
-              $gte: new Date(kpiDto.fechaInicio),
-              $lte: new Date(kpiDto.FechaFin),
-              
-            },
-          },
+          $match: filtrador
         },
           {
             $lookup:{
@@ -1084,21 +1063,31 @@ export class VentaService {
               antireflejo: 1,
               progresivosOcupacionales: { $add: ['$progresivos', '$ocupacional'] },
               progresivosOcupacionalesPorcentaje: {
-                $multiply: [
-                  { $round: [{ $divide: [{ $add: ['$progresivos', '$ocupacional'] }, '$lentes'] }, 1] },
-                  100
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: [{ $add: ['$progresivos', '$ocupacional'] }, '$lentes'] },
+                      100
+                    ]
+                  },
+                  2
                 ]
               },
               porcentajeAntireflejo: {
-                $multiply: [
-                  { $round: [{ $divide: ['$antireflejo', '$lentes'] }, 1] },
-                  100
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: ['$antireflejo', '$lentes'] },
+                      100
+                    ]
+                  },
+                  2
                 ]
+              
               }
             }
           }
-          
-      
+        
       ]);
 
       const resultado={

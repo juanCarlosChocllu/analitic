@@ -25,8 +25,8 @@ export class ReporteService {
 
     @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
     private readonly sucursalExcelSchema: Model<SuscursalExcel>,
-    @InjectModel(EmpresaExcel.name, NombreBdConexion.oc)
-    private readonly EmpresaExcelSchema: Model<SuscursalExcel>,
+
+    
     @InjectModel(VentaExcel.name, NombreBdConexion.oc)
     private readonly VentaExcelSchema: Model<VentaExcel>,
    
@@ -44,14 +44,14 @@ export class ReporteService {
   ){}
  
   async allExcel() {
-    const aqo: number = 2023;
+    const aqo: number = 2024;
     const dataAnio = diasDelAnio(aqo);
 
-    //  for (let data of dataAnio) {
+  //    for (let data of dataAnio) {
     // const [mes, dia] = data.split('-');
    
       const mes: string = '09';
-     const dia: string = '05';
+    const dia: string = '05';
    console.log(mes , dia, aqo);
     try {
       const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
@@ -69,12 +69,12 @@ export class ReporteService {
         console.log(
           `Archivo no encontrado para la fecha ${dia}/${mes}/${aqo}. Continuando con el siguiente día.`,
         );
-     //     continue;
+       //   continue;
       } else {
         throw error;
       }
-    }
-   // }
+    //}
+   }
 
     return { status: HttpStatus.CREATED };
   }

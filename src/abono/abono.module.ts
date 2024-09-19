@@ -10,9 +10,8 @@ import { VentaModule } from 'src/venta/venta.module';
 @Module({
   imports: [
     ProvidersModule,
-
-    VentaModule,
-
+    forwardRef(()=>VentaModule),
+    
     MongooseModule.forFeature(
       [{ name: Abono.name, schema: AbonoSchema }],
       NombreBdConexion.oc,

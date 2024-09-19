@@ -15,6 +15,6 @@ export class AbonoController {
 
   @Post('reporte')
   extraerAbono() {
-    return this.abonoService.extraerAbono();
+    return this.abonoService.descargarAbono();
   }
 }
