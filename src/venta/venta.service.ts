@@ -54,7 +54,7 @@ export class VentaService {
     private readonly AsesorExcelSchema: Model<AsesorExcel>,
 
     private readonly sucursalService: SucursalService,
-    
+
     @Inject(forwardRef(() =>AbonoService))
     private readonly abonoService: AbonoService,
   ) {}
@@ -88,7 +88,6 @@ export class VentaService {
   }
 
 
-  
 
    async verificarVentaExistente(numeroTicket:string){
     const venta = await this.VentaExcelSchema.findOne({
@@ -100,12 +99,12 @@ export class VentaService {
 
 
   async ventaExel(ventaDto: VentaExcelDto) {
+      
     const venta = await this.ventaExcel(ventaDto);
     const ventaSucursal = await this.ventaExcelSucursal(ventaDto);
     const total = venta.reduce((total, ve) => total + ve.montoTotal, 0);
     const cantidad = venta.reduce((total, ve) => total + ve.cantidad, 0);
     const ticketPromedio = this.ticketPromedio(total, cantidad);
-
     const resultado = {
       cantidadSucursal: ventaDto.sucursal.length,
       fechaInicio: ventaDto.fechaInicio,
@@ -121,8 +120,6 @@ export class VentaService {
   }
 
   private async ventaExcel(ventaDto: VentaExcelDto) {
-
-
     const venta = await this.VentaExcelSchema.aggregate([
       {
         $match: {
@@ -131,6 +128,7 @@ export class VentaService {
             $lte: new Date(ventaDto.FechaFin),
           },
           empresa: new Types.ObjectId(ventaDto.empresa),
+          tipoVenta:new Types.ObjectId(ventaDto.tipoVenta),
           producto: { $ne: 'DESCUENTO' },
         },
       },
@@ -163,7 +161,9 @@ export class VentaService {
             fecha: {
               $gte: new Date(ventaDto.fechaInicio),
               $lte: new Date(ventaDto.FechaFin),
+             
             },
+            tipoVenta:new Types.ObjectId(ventaDto.tipoVenta),
             sucursal: new Types.ObjectId(sucursal),
             producto: { $ne: 'DESCUENTO' },
           },
@@ -291,20 +291,12 @@ export class VentaService {
     return ventaPorAsesor;
   }
 
-  private async ventaPorAsesores(
-    asesores: AsesorExcelI[],
-    fechaInicio: string,
-    fechaFin: string,
-  ) {
+  private async ventaPorAsesores( asesores: AsesorExcelI[], fechaInicio: string, fechaFin: string) {
     const venPorAsesor: any[] = [];
 
     for (let asesor of asesores) {
-      const sucursal = await this.sucursalExcelSchema
-        .findOne({ _id: asesor.sucursal })
-        .select('nombre');
-      const asesorNombre = await this.AsesorExcelSchema.findOne({
-        _id: asesor.id,
-      }).select('usuario');
+      const sucursal = await this.sucursalExcelSchema.findOne({ _id: asesor.sucursal }).select('nombre');
+      const asesorNombre = await this.AsesorExcelSchema.findOne({ _id: asesor.id,}).select('usuario');
       const resultado = await this.VentaExcelSchema.aggregate([
         {
           $match: {
@@ -649,12 +641,13 @@ export class VentaService {
 
     data.ticketPromedio = this.ticketPromedio(totalVenta, cantidad);
 
-    data.tcPromedio = (traficoCliente / ticket) * 100;
+    data.tcPromedio = (traficoCliente / ticket) * 100 ? (traficoCliente / ticket) * 100  : 0;
     const resultado = {
       ...data,
       dataSucursal,
     };
-
+    console.log(data);
+    
     return resultado;
   }
 
@@ -668,7 +661,6 @@ export class VentaService {
         $lte: new Date(informacionVentaDto.fechaFin),
       },
     };
-
     if (informacionVentaDto.estado) {
       if (informacionVentaDto.estado === EstadoEnum.finalizado) {
         filtrador.flagVenta = informacionVentaDto.estado;
@@ -968,6 +960,9 @@ export class VentaService {
     return this.kpiAntireflejo(kpiDto)
   }
 
+
+
+
   private async kpiAntireflejo(kpiDto: KpiDto){
     let filtrador={
       fecha: {
@@ -980,7 +975,7 @@ export class VentaService {
      
     const data:any=[]
     for (let su of kpiDto.sucursal) {
-      filtrador['sucursal'] = new Types.ObjectId(su)
+      filtrador['sucursal'] = new Types.ObjectId(su)  
       const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))
       const dataKpi = await this.VentaExcelSchema.aggregate([
         {

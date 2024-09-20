@@ -18,7 +18,7 @@ import { ReporteModule } from './reporte/reporte.module';
     MongooseModule.forRoot('mongodb://localhost:27017/nombre_bd', {
       connectionName: NombreBdConexion.mia,
     }),
-    MongooseModule.forRoot('mongodb://localhost:27017/analitic2', {
+    MongooseModule.forRoot('mongodb://localhost:27017/analitic', {
       connectionName: NombreBdConexion.oc,
     }),
     VentaModule,

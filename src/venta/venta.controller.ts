@@ -37,6 +37,8 @@ export class VentaController {
 
   @Post('excel/sucursal/asesor')
   async ventaSucursalExcelActual(@Body() ventaDto: VentaExcelDto) {
+    console.log(ventaDto);
+    
     return await this.ventaService.ventaSucursalExcel(ventaDto);
   }
 
