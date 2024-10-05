@@ -26,7 +26,7 @@ export class VentaController {
   }
 
   @Post('excel/anterior')
-  async ventaExcelAnterior(@Body() ventaDto: VentaExcelDto) {
+  async ventaExcelAnterior(@Body() ventaDto: VentaExcelDto) {    
     return await this.ventaService.ventaExel(ventaDto);
   }
 
@@ -75,8 +75,28 @@ export class VentaController {
     return this.ventaService.kpi(kpiDto)
    }
 
+   @Post('kpi/lc/econovision')
+   kpiLentesDeContactoEconoVision(@Body() kpiDto: KpiDto){
+   return this.ventaService.kpiLentesDeContactoEconoVision(kpiDto)
+  }
+
+  @Post('kpi/lc/opticentro')
+  kpiLentesDeContactoOpticentro(@Body() kpiDto: KpiDto){
+  return this.ventaService.kpiLentesDeContactoOpticentro(kpiDto)
+ }
+   @Post('kpi/monturas/opticentro/vip')
+    kpiMonturasVip(@Body() kpiDto: KpiDto){
+    return this.ventaService.kpiMonturasVip(kpiDto)
+   }
+   @Post('kpi/lc/tuOptica')
+   kpiLentesDeContactoTuOptica(@Body() kpiDto: KpiDto){
+   return this.ventaService.kpiLentesDeContactoTuOptica(kpiDto)
+  }
   @Get('finalizar')
   finalizarVenta() {
     return this.ventaService.finalizarVentas();
   }
+
+
+
 }

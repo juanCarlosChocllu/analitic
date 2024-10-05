@@ -4,4 +4,5 @@ export enum productos {
   lente = 'LENTE',
   otroProducto = 'OTRO PRODUCTO',
   lenteDeContacto = 'LENTE DE CONTACTO',
+  descuento='DESCUENTO'
 }

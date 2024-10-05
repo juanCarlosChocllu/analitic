@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { InjectModel } from '@nestjs/mongoose';
-import { EmpresaExcel } from './schemas/empresa.schema';
+import { EmpresaExcel} from './schemas/empresa.schema';
 import { Model } from 'mongoose';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
@@ -16,6 +16,11 @@ export class EmpresaService {
   async EmpresaExcel() {
     const empresas = await this.EmpresaSchema.find();
     return empresas;
+  }
+
+  async buscarEmpresa(id:string){
+    const empresa=  await this.EmpresaSchema.findById(id)
+    return empresa
   }
 
 

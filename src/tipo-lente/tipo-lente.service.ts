@@ -19,7 +19,7 @@ export class TipoLenteService {
 
 
   public async listarTipoLente(nombre:string){
-    const tipoLent = await this.TipoLenteSchema.findOne({ nombre: nombre });
-    return tipoLent
+    const tipoLente = await this.TipoLenteSchema.findOne({ nombre: nombre });
+    return tipoLente
   }
 }

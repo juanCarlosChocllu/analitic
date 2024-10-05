@@ -3,8 +3,8 @@ import { Types } from "mongoose";
 
 
 export class KpiDto{
+
     @IsMongoId()
-    @IsOptional()
     empresa: string;
     @IsMongoId({ each: true })
     @IsOptional()

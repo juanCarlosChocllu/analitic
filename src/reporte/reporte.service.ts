@@ -17,6 +17,10 @@ import { EmpresaExcel } from 'src/empresa/schemas/empresa.schema';
 import { AsesorExcel, VentaExcel } from 'src/venta/schemas/venta.schema';
 import { Console, log } from 'node:console';
 import { constants } from 'node:buffer';
+import { MaterialService } from 'src/material/material.service';
+import { TipoColorService } from 'src/tipo-color/tipo-color.service';
+import { MarcasService } from 'src/marcas/marcas.service';
+import { MarcaLenteService } from 'src/marca-lente/marca-lente.service';
 
 
 @Injectable()
@@ -40,18 +44,25 @@ export class ReporteService {
     private readonly tipoLenteService: TipoLenteService,
     
     private readonly tipoVentaService: TipoVentaService,
+        
+    private readonly materialService: MaterialService,
+
+    private readonly tipoColorService: TipoColorService,
+
+    private readonly marcaService: MarcasService,
+    private readonly marcaLenteService: MarcaLenteService,
 
   ){}
  
   async allExcel() {
-    const aqo: number = 2024;
+    const aqo: number = 2023;
     const dataAnio = diasDelAnio(aqo);
 
-  //    for (let data of dataAnio) {
-    // const [mes, dia] = data.split('-');
+     for (let data of dataAnio) {
+     const [mes, dia] = data.split('-');
    
-      const mes: string = '09';
-    const dia: string = '05';
+   //   const mes: string = '09';
+   // const dia: string = '05';
    console.log(mes , dia, aqo);
     try {
       const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
@@ -60,8 +71,8 @@ export class ReporteService {
       const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
       
       await this.guardarAsesorExcel(ventaLimpia);
-      await this.guardarTratamiento(ventaLimpia);
-      await this.guardarTipoLente(ventaLimpia);
+      await this.guardarAtributosLente(ventaLimpia);
+      await this.guardarAtributosProductos(ventaLimpia)
       await this.guardaVentaLimpiaEnLaBBDD(ventaLimpia);
      
     } catch (error) {
@@ -69,11 +80,11 @@ export class ReporteService {
         console.log(
           `Archivo no encontrado para la fecha ${dia}/${mes}/${aqo}. Continuando con el siguiente día.`,
         );
-       //   continue;
+         continue;
       } else {
         throw error;
       }
-    //}
+    }
    }
 
     return { status: HttpStatus.CREATED };
@@ -94,19 +105,27 @@ export class ReporteService {
     return nuevaVenta;
   }
 
-  private async guardarTratamiento(venta: VentaExcelI[]) {
+
+  private async guardarAtributosLente(venta: VentaExcelI[]) {
     const lentes = venta.filter((item) => item.producto === 'LENTE');
     for (let data of lentes) {
-      await this.tratamientoService.guardarTratamiento(data.tratamiento);
+      await this.tratamientoService.guardarTratamiento(data.atributo6.toUpperCase());
+      await this.materialService.guardarMaterIal(data.atributo3.toUpperCase());
+      await this.tipoLenteService.guardarTipoLente(data.atributo2.toUpperCase());
+      await  this.tipoColorService.guardarTipoColor(data.atributo4.toUpperCase())
+      await  this.marcaLenteService.guardarMarcaLente(data.atributo5.toUpperCase())
     }
   }
 
-  private async guardarTipoLente(venta: VentaExcelI[]) {
-    const lentes = venta.filter((item) => item.producto === 'LENTE');
-    for (let data of lentes) {
-      await this.tipoLenteService.guardarTipoLente(data.tipoLente);
+  protected async guardarAtributosProductos(venta: VentaExcelI[]){    
+    
+    const producto = venta.filter((item) => item.producto != productos.lente && item.producto != productos.descuento);
+    for (let data of producto) {
+        await this.marcaService.guardarMarcaProducto(data.atributo1.toUpperCase())
+         
     }
   }
+
 
   private async guardaVentaLimpiaEnLaBBDD(Venta: VentaExcelI[]) {
  
@@ -116,10 +135,13 @@ export class ReporteService {
         const textoTipo= data.numeroTicket.split('-')
  
         const  tipo = textoTipo[textoTipo.length - 2 ].toUpperCase()
+       
           
           const sucursal = await this.sucursalExcelSchema.findOne({
           nombre: data.sucursal,
         });
+    
+        
         if (sucursal) {
           const asesor = await this.AsesorExcelSchema.findOne({
             usuario: data.asesor,
@@ -127,16 +149,18 @@ export class ReporteService {
           });
     
           const tipoVenta = await this.tipoVentaService.tipoVentaAbreviatura(tipo);
-          const tratamiento =
-            data.producto === productos.lente
-              ? await this.tratamientoService.listarTratamiento(
-                  data.tratamiento,
-                )
-              : null;
+          const tratamiento = data.producto === productos.lente? await this.tratamientoService.listarTratamiento( data.atributo6,): null;
 
-          const tipoLente = data.producto === productos.lente  ? await this.tipoLenteService.listarTipoLente(data.tipoLente):null          
+          const tipoLente = data.producto === productos.lente  ? await this.tipoLenteService.listarTipoLente(data.atributo2):null          
+         const material= data.producto === productos.lente ?await this.materialService.listarMaterial(data.atributo3):null;
+         const tipoColor= data.producto === productos.lente ?await this.tipoColorService.listarTipoColor(data.atributo4):null;
+          
+         const marcaLente= data.producto === productos.lente ?await this.marcaLenteService.listarMarcaLente(data.atributo5):null;
+      
          
-                
+         const marca= (data.producto === productos.montura  || data.producto === productos.gafa || data.producto === productos.lenteDeContacto) ?await this.marcaService.listarMarcaProducto(data.atributo1):null;
+      
+          
           try {
             const dataVenta = {
               fecha: data.fecha,
@@ -153,6 +177,12 @@ export class ReporteService {
               flagVenta: data.flagVenta,
               ...(data.producto === productos.lente && { tratamiento }),
               ...(data.producto === productos.lente && { tipoLente }),
+              ...(data.producto === productos.lente && { material }),
+              ...(data.producto === productos.lente && { tipoColor }),
+              ...(data.producto === productos.lente && { marcaLente }),
+              ...(data.producto === productos.montura && { marca }),
+              ...(data.producto === productos.gafa && { marca }),
+              ...(data.producto === productos.lenteDeContacto && { marca }),
             };
     
           

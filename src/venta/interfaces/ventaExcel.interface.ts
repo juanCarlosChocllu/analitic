@@ -17,12 +17,20 @@ export interface VentaExcelI {
 
   montoTotal: number;
 
-  tratamiento: string;
+  atributo6: string;
 
-  tipoLente: string;
+  atributo2: string;
+  
+  atributo1: string;
 
   tipoVenta: string;
+  
+  atributo3:string
 
+  atributo5:string
+
+  atributo4:string
+  
   fecha: string;
 
   flagVenta: string;

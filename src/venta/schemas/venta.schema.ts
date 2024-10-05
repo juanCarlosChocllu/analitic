@@ -25,6 +25,20 @@ export class VentaExcel {
   @Prop({ type: Types.ObjectId, ref: 'TipoLente' })
   tipoLente: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'TipoColor' })
+  tipoColor: Types.ObjectId;
+
+  
+  @Prop({ type: Types.ObjectId, ref: 'Rango' })
+  rango: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'MarcaLente' }) //se aplica depente al rubro
+  marcaLente: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Marca' })//se aplica depente al rubro
+  marca: Types.ObjectId;
+
+
   @Prop()
   producto: string;
 
@@ -37,14 +51,16 @@ export class VentaExcel {
   @Prop()
   montoTotal: number;
 
-  @Prop()
-  acompanantes: number;
-
   @Prop({ type: Types.ObjectId, ref: 'Tipo_venta' })
   tipoVenta: Types.ObjectId;
+  
+  @Prop({ type: Types.ObjectId, ref: 'Material' })
+  material: Types.ObjectId;
 
   @Prop({ type: String, enum: flagVenta, default: flagVenta.nuevo })
   flag: flagVenta;
+
+
 
   @Prop({ type: Date })
   fecha: Date;
