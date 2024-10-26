@@ -16,11 +16,16 @@ import { RangosModule } from './rangos/rangos.module';
 import { MarcasModule } from './marcas/marcas.module';
 import { TipoColorModule } from './tipo-color/tipo-color.module';
 import { MarcaLenteModule } from './marca-lente/marca-lente.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
+import { AutenticacionModule } from './autenticacion/autenticacion.module';
+import { APP_GUARD } from '@nestjs/core';
+import { TokenGuard } from './autenticacion/guard/token/token.guard';
+import { LogModule } from './log/log.module';
 
 @Module({
   imports: [
  
-    MongooseModule.forRoot('mongodb://localhost:27017/analitic2', {
+    MongooseModule.forRoot('mongodb://localhost:27017/analitic4', {
       connectionName: NombreBdConexion.oc,
     }),
     VentaModule,
@@ -37,8 +42,14 @@ import { MarcaLenteModule } from './marca-lente/marca-lente.module';
     MarcasModule,
     TipoColorModule,
     MarcaLenteModule,
+    UsuariosModule,
+    AutenticacionModule,
+    LogModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [{
+    provide:APP_GUARD,
+    useClass:TokenGuard
+  }],
 })
 export class AppModule {}

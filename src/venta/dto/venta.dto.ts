@@ -26,25 +26,26 @@ export class VentaDto {
 
 export class VentaExcelDto {
   @IsMongoId()
-  @IsOptional()
   empresa: string;
+
   @IsMongoId({ each: true })
   @IsOptional()
   sucursal: Types.ObjectId[];
 
-  @IsMongoId()
+  
+  @IsMongoId({each:true})
   @IsOptional()
-  tipoVenta: Types.ObjectId;
+  tipoVenta: Types.ObjectId[];
 
   @IsEnum(EstadoEnum)
   @IsOptional()
   estado: string;
 
-  @IsOptional()
+
   @IsDateString()
   fechaInicio: string;
 
-  @IsOptional()
+
   @IsDateString()
   FechaFin: string;
 }

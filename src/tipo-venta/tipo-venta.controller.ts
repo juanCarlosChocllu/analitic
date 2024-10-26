@@ -1,5 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { TipoVentaService } from './tipo-venta.service';
+import { TokenGuard } from 'src/autenticacion/guard/token/token.guard';
+
 
 @Controller('tipo/venta')
 export class TipoVentaController {

@@ -21,6 +21,8 @@ import { MaterialService } from 'src/material/material.service';
 import { TipoColorService } from 'src/tipo-color/tipo-color.service';
 import { MarcasService } from 'src/marcas/marcas.service';
 import { MarcaLenteService } from 'src/marca-lente/marca-lente.service';
+import { FechaDto } from './dto/fecha.dto';
+import { fechasArray } from './util/fecha.array.util';
 
 
 @Injectable()
@@ -54,18 +56,18 @@ export class ReporteService {
 
   ){}
  
-  async allExcel() {
-    const aqo: number = 2023;
-    const dataAnio = diasDelAnio(aqo);
-
-     for (let data of dataAnio) {
-     const [mes, dia] = data.split('-');
-   
-   //   const mes: string = '09';
-   // const dia: string = '05';
-   console.log(mes , dia, aqo);
+  async allExcel(fechaDto:FechaDto) {
+    const diasFechasArray:Date[] | String[] = fechasArray(fechaDto.fechaInicio, fechaDto.fechaFin)    
+    for(let fecha of diasFechasArray){
+  
+      const[aqo, mes, dia]= [fecha.getFullYear(), (fecha.getMonth() + 1).toString().padStart(2, '0') ,  fecha.getDate().toString().padStart(2, '0') ]
+      console.log(aqo, mes, dia);
+      
+      const fechaInicio= new Date(aqo, parseNumber(mes) - 1, parseNumber(dia), 0, 0, 0);
+      const fechaFin= new Date(aqo, parseNumber(mes) - 1, parseNumber(dia), 23, 59, 59);
     try {
-      const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
+     const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
+     
       const ventaSinServicio = this.quitarServiciosVentas(dataExcel);
       const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
       const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
@@ -128,16 +130,19 @@ export class ReporteService {
 
 
   private async guardaVentaLimpiaEnLaBBDD(Venta: VentaExcelI[]) {
- 
+
     try {
       for (let data of Venta) {
-        
+        const venta = await this.VentaExcelSchema.exists({
+          numeroTicket: data.numeroTicket,
+          producto: data.producto,     
+      });      
+      
+        if(!venta){
         const textoTipo= data.numeroTicket.split('-')
  
         const  tipo = textoTipo[textoTipo.length - 2 ].toUpperCase()
-       
-          
-          const sucursal = await this.sucursalExcelSchema.findOne({
+                 const sucursal = await this.sucursalExcelSchema.findOne({
           nombre: data.sucursal,
         });
     
@@ -187,10 +192,12 @@ export class ReporteService {
     
           
             await this.VentaExcelSchema.create(dataVenta);
+          
           } catch (error) {
             throw error;
           }
         }
+      }
       }
     } catch (error) {
       console.log(error);

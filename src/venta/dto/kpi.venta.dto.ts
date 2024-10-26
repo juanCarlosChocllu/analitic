@@ -6,18 +6,20 @@ export class KpiDto{
 
     @IsMongoId()
     empresa: string;
+
     @IsMongoId({ each: true })
     @IsOptional()
     sucursal: Types.ObjectId[];
 
+    @IsMongoId({ each: true })
     @IsOptional()
-    tipoVenta: Types.ObjectId;
+    tipoVenta: Types.ObjectId[];
   
-    @IsOptional()
+ 
     @IsDateString()
     fechaInicio: string;
   
-    @IsOptional()
+   
     @IsDateString()
     FechaFin: string;
 

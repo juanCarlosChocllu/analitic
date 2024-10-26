@@ -1,14 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { TokenGuard } from './autenticacion/guard/token/token.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist:true
+      whitelist:true,
+      exceptionFactory:(e)=>{
+        const error= e.map((error)=>{
+          return {
+            propiedad :error.property,
+            error :Object.values(error.constraints)
+          }
+        })
+       throw new BadRequestException(error)
+    }
     })
 );
    app.setGlobalPrefix('api')

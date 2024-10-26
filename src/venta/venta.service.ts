@@ -25,7 +25,7 @@ import { AsesorExcelI } from './interfaces/asesor.interface';
 
 
 import { diasHAbiles } from './util/dias.habiles.util';
-import { informacionVentaDto } from './dto/informacion.venta.dto';
+import { InformacionVentaDto } from './dto/informacion.venta.dto';
 
 
 import { flag } from './enums/flag.enum';
@@ -41,6 +41,8 @@ import { KpiDto } from './dto/kpi.venta.dto';
 import { AbonoService } from 'src/abono/abono.service';
 import { log } from 'node:console';
 import { EmpresaService } from 'src/empresa/empresa.service';
+import { fail } from 'node:assert';
+import { Type } from 'class-transformer';
 
 @Injectable()
 export class VentaService {
@@ -123,8 +125,7 @@ export class VentaService {
     return resultado;
   }
 
-  private async ventaExcel(ventaDto: VentaExcelDto) {
-
+  private async ventaExcel(ventaDto: VentaExcelDto) {    
     const filtrador:FiltroVentaI={ fecha: {
       $gte: new Date(ventaDto.fechaInicio),
       $lte: new Date(ventaDto.FechaFin),
@@ -132,13 +133,15 @@ export class VentaService {
     empresa: new Types.ObjectId(ventaDto.empresa),
   }
 
-    if(ventaDto.tipoVenta){
-      filtrador.tipoVenta=new Types.ObjectId(ventaDto.tipoVenta)
-    }
-    
+    ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id) ) } :filtrador
+
    const venta = await this.VentaExcelSchema.aggregate([
       {
-        $match: filtrador
+        $match: {
+          ...filtrador,
+          producto:{$ne:'DESCUENTO'}
+        },
+       
       },
       {
         $group: {
@@ -165,19 +168,21 @@ export class VentaService {
 
   private async ventaExcelSucursal(ventaDto: VentaExcelDto) {
     const ventaSucursal: any[] = [];
+    const filtrador:FiltroVentaI={ fecha: {
+      $gte: new Date(ventaDto.fechaInicio),
+      $lte: new Date(ventaDto.FechaFin),
+    },
+  }
+
+    ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id) ) } :filtrador
+
     for (let sucursal of ventaDto.sucursal) {
       const venta = await this.VentaExcelSchema.aggregate([
         {
-          $match: {
-            fecha: {
-              $gte: new Date(ventaDto.fechaInicio),
-              $lte: new Date(ventaDto.FechaFin),
-             
-            },
-            tipoVenta:new Types.ObjectId(ventaDto.tipoVenta),
-            sucursal: new Types.ObjectId(sucursal),
-            producto: { $ne: 'DESCUENTO' },
-          },
+          $match:{
+            ...filtrador,
+            producto:{$ne: 'DESCUENTO' }
+          }
         },
         {
           $group: {
@@ -292,8 +297,17 @@ export class VentaService {
 
 
 
-  public async ventaSucursalExcel(ventaDto: VentaExcelDto) {
+  public async indicadoresPorAsesor(ventaDto: VentaExcelDto) {
     const listaAsesor: AsesorExcelI[] = [];
+
+    const filtrador: FiltroVentaI={
+      fecha:{
+        $gte: new Date(ventaDto.fechaInicio),
+        $lte: new Date(ventaDto.FechaFin),
+      }
+    }
+
+    ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in:ventaDto.tipoVenta.map((id)=>new Types.ObjectId(id))}:filtrador
     for (let sucursal of ventaDto.sucursal) {
       const asesores: AsesorExcelI[] = await this.AsesorExcelSchema.find({
         sucursal: new Types.ObjectId(sucursal),
@@ -302,13 +316,13 @@ export class VentaService {
     }
     const ventaPorAsesor = await this.ventaPorAsesores(
       listaAsesor,
-      ventaDto.fechaInicio,
-      ventaDto.FechaFin,
-    );
+     filtrador)
     return ventaPorAsesor;
   }
 
-  private async ventaPorAsesores( asesores: AsesorExcelI[], fechaInicio: string, fechaFin: string) {
+
+
+  private async ventaPorAsesores( asesores: AsesorExcelI[], filtrador:FiltroVentaI ) {
     const venPorAsesor: any[] = [];
 
     for (let asesor of asesores) {
@@ -318,10 +332,7 @@ export class VentaService {
         {
           $match: {
             asesor: new Types.ObjectId(asesor.id),
-            fecha: {
-              $gte: new Date(fechaInicio),
-              $lte: new Date(fechaFin),
-            },
+            ...filtrador
           },
         },
         {
@@ -441,6 +452,11 @@ export class VentaService {
     return venPorAsesor;
   }
 
+
+
+
+
+
   private async extraerSucursal(sucursal: Types.ObjectId) {
     const su = await this.sucursalExcelSchema
       .findOne({ _id: sucursal })
@@ -448,7 +464,7 @@ export class VentaService {
     return su.nombre;
   }
 
-  public async gestionExcel(ventaDto: VentaExcelDto) {
+  public async indicadoresPorSucursal(ventaDto: VentaExcelDto) {
     const dias: number = diasHAbiles(ventaDto.fechaInicio, ventaDto.FechaFin);
 
     const data = {
@@ -468,17 +484,15 @@ export class VentaService {
         $lte: new Date(ventaDto.FechaFin),
       },
     };
-    if (ventaDto.tipoVenta) {
-      filtrador.tipoVenta = new Types.ObjectId(ventaDto.tipoVenta);
-    }
+     ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id)) }:filtrador
 
-    if (ventaDto.estado) {
+    /*if (ventaDto.estado) {
       if (ventaDto.estado === EstadoEnum.finalizado) {
         filtrador.flagVenta = ventaDto.estado;
       } else if (ventaDto.estado === EstadoEnum.realizadas) {
         filtrador.flagVenta = { $ne: EstadoEnum.finalizado };
       }
-    }
+    }*/
 
     for (let idsucursal of ventaDto.sucursal) {
       const sucursal = await this.sucursalExcelSchema.findOne({
@@ -663,14 +677,12 @@ export class VentaService {
       ...data,
       dataSucursal,
     };
-    console.log(data);
-    
     return resultado;
   }
 
   public async sucursalVentaInformacion(
     id: string,
-    informacionVentaDto: informacionVentaDto,
+    informacionVentaDto: InformacionVentaDto,
   ) {
     let filtrador: FiltroVentaI = {
       fecha: {
@@ -686,9 +698,9 @@ export class VentaService {
       }
     }
 
-    if (informacionVentaDto.tipoVenta) {
-      filtrador.tipoVenta = new Types.ObjectId(informacionVentaDto.tipoVenta);
-    }
+    //if (informacionVentaDto.tipoVenta) {
+     // filtrador.tipoVenta = new Types.ObjectId(informacionVentaDto.tipoVenta);
+   // }
 
     const ventaSucursal = await this.VentaExcelSchema.aggregate([
       {
@@ -733,7 +745,7 @@ export class VentaService {
   }
 
 
-  public async informacionLente(id:string ,  informacionVentaDto: informacionVentaDto){
+  public async informacionLente(id:string ,  informacionVentaDto: InformacionVentaDto){
    const tratamiento= await this.lenteTratamiento(id, informacionVentaDto)
    const tipoLente = await this.tipoDeLente(id,informacionVentaDto )   
     return{
@@ -744,7 +756,7 @@ export class VentaService {
   }
 
 
-  private async lenteTratamiento(id:string ,  informacionVentaDto: informacionVentaDto){
+  private async lenteTratamiento(id:string ,  informacionVentaDto: InformacionVentaDto){
 
     const lente = await this.VentaExcelSchema.aggregate([
       {
@@ -789,7 +801,7 @@ export class VentaService {
   }
 
 
-  private async tipoDeLente(id:string ,  informacionVentaDto: informacionVentaDto){
+  private async tipoDeLente(id:string ,  informacionVentaDto: InformacionVentaDto){
     const lente = await this.VentaExcelSchema.aggregate(
      [ {
         $match:{
@@ -839,16 +851,23 @@ export class VentaService {
   
   public async indicadoresPorFecha(ventaDto: VentaExcelDto){
     const data:any[]=[]
+
+    let filtrador: FiltroVentaI = {
+      fecha: {
+        $gte: new Date(ventaDto.fechaInicio),
+        $lte: new Date(ventaDto.FechaFin),
+      },
+    };
+     ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id)) }:filtrador
+
+
     for (let su of ventaDto.sucursal){
       const sucursal = await this.sucursalService.listarSucursalId(su)      
       const venta = await this.VentaExcelSchema.aggregate([
         {
           $match:{
             sucursal:new Types.ObjectId(su),
-            fecha: {
-              $gte: new Date(ventaDto.fechaInicio),
-              $lte: new Date(ventaDto.FechaFin),
-            },
+            ...filtrador
           }
         },
         {
@@ -971,1328 +990,6 @@ export class VentaService {
           return data
   }
 
-private async verificacionEmpresa(kpiDto:KpiDto){
-  const empresa = await this.empresaService.buscarEmpresa(kpiDto.empresa)
-  if(empresa.nombre === 'OPTICENTRO'){
-    return this.kpiOpticentro(kpiDto)
-  }
-  else if(empresa.nombre=== 'ECONOVISION'){
-    return this.kpiOpEconovision(kpiDto)
-  }else if(empresa.nombre=== 'TU OPTICA'){
-    return this.kpiTuOptica(kpiDto)
 
-  }
-  
-  else{
-    return {mensaje:'Esta cadena no tiene kpi'}
-  }
-  
-}
-
-
-
-  public async kpi(kpiDto: KpiDto) {
-    return this.verificacionEmpresa(kpiDto)
-   
-  }
-
-//'-----------------------capi econovision--------------------
-  
-  private async kpiOpEconovision(kpiDto: KpiDto){
-    const data:any[]=[]
-    let filtrador:FiltroVentaI={
-      fecha: {
-        $gte: new Date(kpiDto.fechaInicio),
-        $lte: new Date(kpiDto.FechaFin),
-        
-      },
-    }
-   
-    for (let  su of kpiDto.sucursal ){
-      const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))      
-      filtrador.sucursal= new Types.ObjectId(su)  
-      const dataKpi = await this.VentaExcelSchema.aggregate([
-        {
-          $match:{
-            ...filtrador,
-            producto:productos.lente
-          }
-        },
-        {
-          $lookup:{
-            from:'tratamientos',
-            foreignField:'_id',
-            localField:'tratamiento',
-            as:'tratamiento',
-            
-          }
-        },
-
-        {
-          $lookup:{
-            from:'marcalentes',
-            foreignField:'_id',
-            localField:'marcaLente',
-            as:'marcaLente'
-          }
-        },
-        {
-          $lookup:{
-            from:'tipocolors',
-            foreignField:'_id',
-            localField:'tipoColor',
-            as:'tipoColor'
-          }
-        },
-        {
-          $lookup:{
-            from:'materials',
-            foreignField:'_id',
-            localField:'material',
-            as:'material'
-          }
-        },
-        {
-          $unwind:{ path: '$tratamiento', preserveNullAndEmptyArrays: true }
-        },
-
-        {
-          $unwind:{ path: '$marcaLente', preserveNullAndEmptyArrays: true }
-        },
-        {
-          $unwind:{ path: '$tipoColor', preserveNullAndEmptyArrays: true }
-        },
-        {
-          $unwind:{ path: '$material', preserveNullAndEmptyArrays: true }
-        },
-        {
-          $group:{
-            _id:null,
-            lentes:{
-              $sum:{
-                $cond:{
-                  if:{$eq:['$producto','LENTE']},
-                  then:'$cantidad',
-                  else:0
-                }
-              }
-            },
-            antireflejo:{
-              $sum:{
-                $cond:{
-                  if:{ $or:[
-                    {$eq:['$tratamiento.nombre','BLUE SHIELD']},
-                    {$eq:['$tratamiento.nombre','GREEN SHIELD']},
-                 
-                  ]},
-                  then:1,
-                  else:0
-                }
-              }
-            },
-            progresivos:{
-              $sum:{
-                $cond:{
-                  if:{$or:[
-                    {$eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']},
-                    {$eq:['$marcaLente.nombre','DISEÑO DIGITAL']},
-                    {$eq:['$marcaLente.nombre','DIGITAL PLATINIUM']},
-                    {$eq:['$marcaLente.nombre','DIGITAL GOLD']},
-                    //{$eq:['$marcaLente.nombre','Digital Ruby']}, no se encontro en la base de datos
-                  ]},
-                  then:1,
-                  else:0
-                }
-              }
-            
-            },
-            ocupacional:{
-              $sum:{
-                $cond:{
-                  if:{$eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']},
-                  then:1,
-                  else:0
-                }
-              }
-            
-            },
-
-            fotosensibles: {
-              $sum: {
-                $cond: {
-                  if: {
-                    $or: [
-                      { $eq: ["$tipoColor.nombre", "SOLAR ACTIVE"] },
-                      { $eq: ["$tipoColor.nombre", "VIOLETA"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "NARANJA"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "AZUL"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "ROSADO"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "VERDE HI INDEX"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "DRIVE"] },  //NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "GRIS"] },   //NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "CAFE"] },   //NO SE ENCONTRO EN LA DB
-                    ]
-                  },
-                  then: "$cantidad",
-                  else: 0
-                }
-              }
-            },
-
-            participacionMaterial:{
-              $sum:{
-                $cond:{
-                  if:{$or:[
-                    {$eq:['$material.nombre','ORGANICO']},
-                    {$eq:['$material.nombre','POLICARBONATO']},
-                    {$eq:['$material.nombre','HIGH INDEX']},
-                    {$eq:['$material.nombre','HIGH INDEX']},//dudoso
-                    {$eq:['$material.nombre','HIGH LIGTH']},//no existe en la base de datos
-                    {$eq:['$material.nombre','MINERAL']},
-                    {$eq:['$material.nombre','SUPER THIN AND LITE']},
-                  ]},
-                  then:'$cantidad',
-                  else:0
-                }
-              }
-            }
-          
-
-         
-          }
-        },
-
-        {
-          $project:{
-            lentes:1,
-            antireflejo:1,
-            porcentajeAntireflejo: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$antireflejo', '$lentes'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            
-            },
-            progresivos:1,
-            ocupacional:1,
-            progresivosOcupacionales: { $add: ['$progresivos', '$ocupacional'] },
-            progresivosOcupacionalesPorcentaje: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: [{ $add: ['$progresivos', '$ocupacional'] }, '$lentes'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            },
-            porcentajeProgresivos: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$progresivos','$lentes'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            
-            },
-            porcentajeOcupacionales: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$ocupacional','$lentes'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            
-            },
-            fotosensibles:1,
-            procentajeFotosensibles:{
-              $round:[
-                {
-                  $multiply:[
-                    { $divide: ['$fotosensibles','$lentes'] },
-                    100
-
-                  ]
-                }
-                ,2
-              ]
-            },
-            participacionMaterial:1,
-            porcentajeParticipacionMaterial:{
-              $round:[
-                {
-                  $multiply:[
-                    { $divide: ['$participacionMaterial','$lentes'] },
-                    100
-
-                  ]
-                }
-                ,2
-              ]
-
-            }
-            
-              
-          }
-        }
     
-      ])
-       const resultado ={
-        
-         sucursal:sucursal.nombre,
-         id:sucursal._id,
-         dataKpi
-       }
-       data.push(resultado)
-    }
-    
-    return data
-
-
-  }
-
-  
-  async kpiLentesDeContactoEconoVision(kpiDto: KpiDto){
-    console.log('eco');
-    const data:any[]=[]
-    let filtrador:FiltroVentaI={
-      fecha: {
-        $gte: new Date(kpiDto.fechaInicio),
-        $lte: new Date(kpiDto.FechaFin),
-        
-      },
-    }
-
-    for(let su of kpiDto.sucursal){
-      const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))      
-      filtrador.sucursal= new Types.ObjectId(su)  
-      console.log(filtrador);
-      
-      const dataKpi = await this.VentaExcelSchema.aggregate([
-        {
-          $match:{
-            ...filtrador,
-            producto:productos.lenteDeContacto
-          }
-        },
-        {
-          $lookup:{
-            from:'marcas',
-            foreignField:'_id',
-            localField:'marca',
-            as:'marca'
-          }
-        },
-        {
-          $lookup:{
-            from:'tipoventas',
-            foreignField:'_id',
-            localField:'tipoVenta',
-            as:'tipoVenta'
-          }
-        },
-     
-
-        {
-          $unwind:{ path: '$marca', preserveNullAndEmptyArrays:true}
-        },
-        {
-          $unwind:{ path: '$tipoVenta', preserveNullAndEmptyArrays:true}
-        },
-        {
-          $group:{
-            _id:null,
-
-            lentesDeContacto:{
-              $sum:'$cantidad'
-
-          },
-
-          cantidadDeLentesDeContacto:{
-            $sum:{
-              $cond:{
-                if:{
-               $and:[
-                {
-                  $or:[
-                    {$eq:['$marca.nombre','FRESHLOOK']},
-                    {$eq:['$marca.nombre','IMPRESIONS']}, //no se encontro en la base de datos 
-                      {$eq:['$marca.nombre','BIOMEDICS']}, //no se encontro en la base de datos 
-                    {$eq:['$marca.nombre','CLARITY']}, //no se encontro en la base de datos    
-                    {$eq:['$marca.nombre','AVAIRA']},
-                    {$eq:['$marca.nombre','BIOFINITY']},
-                    {$eq:['$marca.nombre','BIOFINITY XR']},//no se encontro en la base de datos 
-                    {$eq:['$marca.nombre','BIOFINITY TORIC']},
-                    {$eq:['$marca.nombre','BIOFINITY XR TORIC']},//no se encontro en la base de datos 
-                  ]
-                },
-                {$or:[
-                  {
-                    $eq:['$tipoVenta.abreviatura','VEF']
-                  },
-                  {
-                    $ne:['$tipoVenta.abreviatura','REP']
-                  },
-                  {
-                    $ne:['$tipoVenta.abreviatura','CO']
-                  },
-                  {
-                    $ne:['$tipoVenta.abreviatura','PROD']
-                  },
-                  {
-                    $ne:['$tipoVenta.abreviatura','DA']
-                  }
-                ]
-                }
-                
-               ]              
-              },
-                then:'$cantidad',
-                else:0
-              }
-            }
-          }
-
-         
-
-          
-        }
-      },{
-        $project:{
-          lentesDeContacto:1,
-          cantidadDeLentesDeContacto:1,
-          porcentajeLentesDeContacto: {
-            $round: [
-              {
-                $multiply: [
-                  { $divide: ['$cantidadDeLentesDeContacto', '$lentesDeContacto'] },
-                  100
-                ]
-              },
-              2
-            ]
-          
-          },
-          
-        }
-      }
-       
-
-      ])
-
-      const resultado={
-         sucursal:sucursal.nombre,
-         id:sucursal._id,
-         dataKpi
-      }
-
-      data.push(resultado)
-    }
- 
-
-    return data
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//------------------------------
-
-  private async kpiOpticentro(kpiDto: KpiDto){
-    let filtrador:FiltroVentaI={
-      fecha: {
-        $gte: new Date(kpiDto.fechaInicio),
-        $lte: new Date(kpiDto.FechaFin),
-        
-      },
-    }
-    //kpiDto.tipoVenta  ? filtrador['tipoVenta']=new Types.ObjectId( kpiDto.tipoVenta): filtrador
-     
-    const data:any[]=[]
-    for (let su of kpiDto.sucursal) {
-      filtrador.sucursal = new Types.ObjectId(su)  
-      const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))
-      const dataKpi = await this.VentaExcelSchema.aggregate([
-        {
-          $match: {
-            ...filtrador,
-            producto:productos.lente
-          },
-     
-        },
-       {
-            $lookup:{
-              from:'tratamientos',
-              foreignField:'_id',
-              localField:'tratamiento',
-              as:'tratamiento',
-              
-            }
-          },
-          {
-            $lookup:{
-              from:'marcalentes',
-              foreignField:'_id',
-              localField:'marcaLente',
-              as:'marcaLente'
-            }
-          },
-      
-
-          {
-            $lookup:{
-              from:'tipoventas',
-              foreignField:'_id',
-              localField:'tipoVenta',
-              as:'tipoVenta'
-            }
-          },
-
-          {
-            $lookup:{
-              from:'materials',
-              foreignField:'_id',
-              localField:'material',
-              as:'material'
-            }
-          },
-
-
-         {
-            $unwind:{ path: '$tratamiento', preserveNullAndEmptyArrays: true }
-          },
-          {
-            $unwind:{ path: '$marcaLente', preserveNullAndEmptyArrays: true }
-          },
-          {
-            $unwind:{ path: '$tipoVenta', preserveNullAndEmptyArrays: true }
-          },
-          
-          {
-            $unwind:{ path: '$material', preserveNullAndEmptyArrays: true }
-          },
-
-          {
-            $group:{
-              _id:null,
-
-              lentes:{
-                $sum:{
-                  $cond:{
-                    if:{$eq:['$producto','LENTE']},
-                    then:'$cantidad',
-                    else:0
-                  }
-                }
-              },
-
-              materialUnitario:{
-                $sum:{
-                  $cond:{
-                    if:{$and:[
-                        {$eq:['$producto','LENTE']},
-                        {$or:[
-                          {$eq:['$material.nombre','ORGANICO']},
-                          {$eq:['$material.nombre','POLICARBONATO']},
-                          {$eq:['$material.nombre','THIN AND LITE']},
-                          {$eq:['$material.nombre','HI LITE RESINA']},
-                          {$eq:['$material.nombre','SUPER THIN AND LITE']}, //dudoso 
-                          {$eq:['$material.nombre','SUPER HI LITE RESINA - 1.74']}, //dudoso 
-                        ]}
-                    ]  },
-                    then:1,
-                    else:0
-                  }
-                }
-              },
-              antireflejo:{
-                $sum:{
-                  $cond:{
-                    if:{ $or:[
-                      {$eq:['$tratamiento.nombre','CLARITY']},
-                      {$eq:['$tratamiento.nombre','CLARITY PLUS']},
-                      {$eq:['$tratamiento.nombre','BLUCLARITY']},
-                      {$eq:['$tratamiento.nombre','STOP AGE']},
-                     // {$eq:['$tratamiento.nombre','ANTIREFLEJO']}
-                    ]},
-                    then:1,
-                    else:0
-                  }
-                }
-              },
-             
-              progresivos:{
-                $sum:{
-                  $cond:{
-                    if:{$or:[
-                      {$eq:['$marcaLente.nombre','TALLADO TRADICIONAL']},
-
-                      {$eq:['$marcaLente.nombre','DISEÑO DIGITAL']},
-
-                      {$eq:['$marcaLente.nombre','DIGITAL HP OPTIMIZADO']},
-
-                      {$eq:['$marcaLente.nombre','DIGITAL HP MUNDO TACTIL']},//dudoso
-
-                      //digital driver
-                      //gtz byte zesse
-                      {$eq:['$marcaLente.nombre','DIGITAL PRIMER USUARIO']},
-                      {$eq:['$marcaLente.nombre','DIGITAL SENIOR']},
-                      {$eq:['$marcaLente.nombre','AILENS']},
-                    ]},
-                    then:1,
-                    else:0
-                  }
-                }
-              
-              },
-              ocupacional:{
-                $sum:{
-                  $cond:{
-                    if:{$eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']},
-                    then:1,
-                    else:0
-                  }
-                }
-              
-              },
-            }
-          },
-         {
-            $project: {            
-             lentes: 1,
-              progresivos: 1,
-              ocupacional: 1,
-              materialUnitario:1,
-              ocupacionalProgresivos: 1,
-              antireflejo: 1,
-              progresivosOcupacionales: { $add: ['$progresivos', '$ocupacional'] },
-              progresivosOcupacionalesPorcentaje: {
-                $round: [
-                  {
-                    $multiply: [
-                      { $divide: [{ $add: ['$progresivos', '$ocupacional'] }, '$lentes'] },
-                      100
-                    ]
-                  },
-                  2
-                ]
-              },
-              porcentajeAntireflejo: {
-                $round: [
-                  {
-                    $multiply: [
-                      { $divide: ['$antireflejo', '$lentes'] },
-                      100
-                    ]
-                  },
-                  2
-                ]
-              
-              },
-              porcentajeProgresivos: {
-                $round: [
-                  {
-                    $multiply: [
-                      { $divide: ['$progresivos','$lentes'] },
-                      100
-                    ]
-                  },
-                  2
-                ]
-              
-              },
-              porcentajeOcupacionales: {
-                $round: [
-                  {
-                    $multiply: [
-                      { $divide: ['$ocupacional','$lentes'] },
-                      100
-                    ]
-                  },
-                  2
-                ]
-              
-              },
-
-           
-              porcentajeMaterialUnitario: {
-                $round: [
-                  {
-                    $multiply: [
-                      { $divide: ['$materialUnitario', '$lentes'] },
-                      100
-                    ]
-                  },
-                  2
-                ]
-              
-              },
-            }
-          }
-        
-      ]);   
-
-      const resultado={
-        sucursal:sucursal.nombre,
-        id:sucursal._id,
-        dataKpi
-
-      }
-
-      data.push(resultado)
-    }
-  
-    return data
-  }
-
-
-
-  async kpiLentesDeContactoOpticentro(kpiDto:KpiDto){
-    console.log('opticentro');
-    
-    const data:any[]=[]
-
-    let filtrador:FiltroVentaI={
-      fecha: {
-        $gte: new Date(kpiDto.fechaInicio),
-        $lte: new Date(kpiDto.FechaFin),
-        
-      },
-    }
-
-    for(let su of kpiDto.sucursal){
-      filtrador.sucursal = new Types.ObjectId(su)
-      const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))
-      const dataKpi = await this.VentaExcelSchema.aggregate([
-        {
-          $match:{
-            ...filtrador,
-            producto:productos.lenteDeContacto
-          }
-        },
-        {
-          $lookup:{
-            from:'marcas',
-            foreignField:'_id',
-            localField:'marca',
-            as:'marca'
-          }
-        },
-        {
-          $unwind:{path:'$marca', preserveNullAndEmptyArrays:true}
-        }
-        ,
-
-        {
-      
-          $group:{
-            _id:null,
-            lentesDeContacto:{
-              $sum:'$cantidad'
-            },
-            cantidadDeLentesDeContacto: {
-              $sum: {
-                $cond: {
-                  if: { $and:[
-                    {
-                      $or:[
-                      {$eq: ['$marca.nombre','BIOFINITY']},
-                      {$eq: ['$marca.nombre','AVAIRA']},
-                      {$eq: ['$marca.nombre','BIOMEDICS']}
-                      //BIOMEDICS NO HAY LA MARCA
-                    ],
-                  },
-                  {
-                    $or:[
-                      {
-                        $ne:['$tipoVenta.abreviatura','VEF']
-                      },
-                      {
-                        $ne:['$tipoVenta.abreviatura','REP']
-                      },
-                      {
-                        $ne:['$tipoVenta.abreviatura','CO']
-                      },
-                      {
-                        $ne:['$tipoVenta.abreviatura','PROD']
-                      },
-                      {
-                        $ne:['$tipoVenta.abreviatura','DA']
-                      },
-                    ]
-                  }
-                  ]   },
-                  then: '$cantidad',
-                  else: 0
-                }
-              }
-            },
-
-
-
-          }
-        },
-        {
-          $project:{
-            lentesDeContacto:1,
-            cantidadDeLentesDeContacto: 1,
-            porcentajeLentesDeContacto: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$cantidadDeLentesDeContacto', '$lentesDeContacto'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            
-            },
-          }
-        }
-      ])
-      const resultado ={
-        sucursal:sucursal.nombre,
-        id:sucursal.id,
-        dataKpi
-      }
-      data.push(resultado)
-
-    }
-    return data
-
-  }
-
-
-
-
-
-  async kpiMonturasVip(kpiDto:KpiDto){
-    let filtrador:FiltroVentaI={
-      fecha: {
-        $gte: new Date(kpiDto.fechaInicio),
-        $lte: new Date(kpiDto.FechaFin),
-        
-      },
-    }
-
-    const dataMonturasVip:any=[]
-    for(let su of  kpiDto.sucursal){
-      filtrador.sucursal = new Types.ObjectId(su)  
-      const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))
-       const kpiMonturasVip = await this.VentaExcelSchema.aggregate([
-        {
-          $match:{
-            ...filtrador,
-            producto:productos.montura
-
-          },
-        },
-        {
-          $lookup:{
-            from:'marcas',
-            foreignField:'_id',
-            localField:'marca',
-            as:'marca'
-          }
-        }
-        ,
-       
-        
-        {
-          $group:{
-            _id:null,
-            monturas:{
-              $sum:{
-                $sum:'$cantidad'
-            },
-          },
-
-            monturasVip: {
-              $sum: {
-                $cond: {//preguntar si si estas marcas hay la posivilad de que su precio fuera menor que 700
-                  if: {$and:[
-                    {$gte: ['$importe', 700] },
-                    {$or:['$marca.nombre','BENETTON']},
-                    {$or:['$marca.nombre','BENETTON KIDS']},
-                    {$or:['$marca.nombre','CAROLINA HERRERA']},
-                    {$or:['$marca.nombre','CARRERA']},
-                    {$or:['$marca.nombre','CHRISTIAN LACROIX']}
-                  ]},
-                  then: '$cantidad',
-                  else: 0
-                }
-              }
-            }
-
-          },
-         
-          
-        },
-        {
-          $project:{
-            monturas:1,
-            monturasVip:1,
-            porcentajeMonturasVip: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$monturasVip', '$monturas'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            
-            },
-          }
-        }
-
-       ])
-
-        const resultado={
-          sucursal: sucursal.nombre,
-          kpiMonturasVip
-        }
-       dataMonturasVip.push(resultado)
-       
-
-    }
-
-    return dataMonturasVip
-
-  }
-
-
-  //---------------------------------------------------------
-  
-  //----------kpi tu optica
-
-   private async kpiTuOptica(kpiDto:KpiDto){
-    
-
-    const data:any[]= []
-    let filtrador:FiltroVentaI={
-      fecha: {
-        $gte: new Date(kpiDto.fechaInicio),
-        $lte: new Date(kpiDto.FechaFin),
-        
-      },
-    }
-
-    for(let su of kpiDto.sucursal){
-      const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))
-      filtrador.sucursal= new Types.ObjectId(su)
-
-      const dataKpi = await this.VentaExcelSchema.aggregate([
-        {
-          $match:{
-            ...filtrador,
-           producto:productos.lente
-          }
-        },
-        {
-          $lookup:{
-            from:'tratamientos',
-            foreignField:'_id',
-            localField:'tratamiento',
-            as:'tratamiento',
-            
-          }
-        },
-
-        {
-          $lookup:{
-            from:'marcalentes',
-            foreignField:'_id',
-            localField:'marcaLente',
-            as:'marcaLente'
-          }
-        },
-        {
-          $lookup:{
-            from:'tipocolors',
-            foreignField:'_id',
-            localField:'tipoColor',
-            as:'tipoColor'
-          }
-        },
-        {
-          $lookup:{
-            from:'materials',
-            foreignField:'_id',
-            localField:'material',
-            as:'material'
-          }
-        },
-        {
-          $unwind:{ path: '$tratamiento', preserveNullAndEmptyArrays: true }
-        },
-
-        {
-          $unwind:{ path: '$marcaLente', preserveNullAndEmptyArrays: true }
-        },
-        {
-          $unwind:{ path: '$tipoColor', preserveNullAndEmptyArrays: true }
-        },
-        {
-          $unwind:{ path: '$material', preserveNullAndEmptyArrays: true }
-        },
-        {
-          $group:{
-            _id:null,
-            lentes:{
-              $sum:{
-                $cond:{
-                  if:{$eq:['$producto','LENTE']},
-                  then:'$cantidad',
-                  else:0
-                }
-              }
-            },  
-            
-            antireflejo:{
-              $sum:{
-                $cond:{
-                  if:{ $or:[
-                    {$eq:['$tratamiento.nombre','BLUE SHIELD']},
-                    {$eq:['$tratamiento.nombre','GREEN SHIELD']},
-                 
-                  ]},
-                  then:'$cantidad',
-                  else:0
-                }
-              }
-            },
-            progresivos:{
-              $sum:{
-                $cond:{
-                  if:{$or:[
-                    {$eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']},
-                    {$eq:['$marcaLente.nombre','DISEÑO DIGITAL']},
-                    {$eq:['$marcaLente.nombre','DIGITAL PLATINIUM']},
-                    {$eq:['$marcaLente.nombre','DIGITAL GOLD']},
-                    {$eq:['$marcaLente.nombre','DIGITAL RUBY']},// no se encontro en la base de datos
-                  ]},
-                  then:1,
-                  else:0
-                }
-              }
-            
-            },
-            ocupacional:{
-              $sum:{
-                $cond:{
-                  if:{$eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']},
-                  then:1,
-                  else:0
-                }
-              }
-            
-            },
-
-            fotosensibles: {
-              $sum: {
-                $cond: {
-                  if: {
-                    $or: [
-                      { $eq: ["$tipoColor.nombre", "SOLAR ACTIVE"] },
-                      { $eq: ["$tipoColor.nombre", "VIOLETA"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "NARANJA"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "AZUL"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "ROSADO"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "VERDE HI INDEX"] },//NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "DRIVE"] },  //NO SE ENCONTRO EN LA DB
-                      { $eq: ["$tipoColor.nombre", "SUPER HI LITE RESINA - 1.74"] },   // DUDOSO
-                    
-                    ]
-                  },
-                  then: "$cantidad",
-                  else: 0
-                }
-              }
-            },
-            participacionMaterial:{
-              $sum:{
-                $cond:{
-                  if:{$or:[
-                    {$eq:['$material.nombre','ORGANICO']},
-                    {$eq:['$material.nombre','POLICARBONATO']},
-                    {$eq:['$material.nombre','HIGH INDEX']},//dudoso
-                  
-                  ]},
-                  then:'$cantidad',
-                  else:0
-                }
-              }
-            }
-          
-
-
-          }
-        },
-        {
-          $project:{
-            lentes:1,
-            antireflejo:1,
-            porcentajeAntireflejo: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$antireflejo', '$lentes'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            
-            },
-            progresivos:1,
-            ocupacional:1,
-            progresivosOcupacionales: { $add: ['$progresivos', '$ocupacional'] },
-            progresivosOcupacionalesPorcentaje: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: [{ $add: ['$progresivos', '$ocupacional'] }, '$lentes'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            },
-            porcentajeProgresivos: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$progresivos','$lentes'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            
-            },
-            porcentajeOcupacionales: {
-              $round: [
-                {
-                  $multiply: [
-                    { $divide: ['$ocupacional','$lentes'] },
-                    100
-                  ]
-                },
-                2
-              ]
-            
-            },
-            fotosensibles:1,
-            procentajeFotosensibles:{
-              $round:[
-                {
-                  $multiply:[
-                    { $divide: ['$fotosensibles','$lentes'] },
-                    100
-
-                  ]
-                }
-                ,2
-              ]
-            },
-            participacionMaterial:1,
-            porcentajeParticipacionMaterial:{
-              $round:[
-                {
-                  $multiply:[
-                    { $divide: ['$participacionMaterial','$lentes'] },
-                    100
-
-                  ]
-                }
-                ,2
-              ]
-
-            }
-            
-              
-          }
-        }
-      ])
-       const resultado ={
-        sucursal:sucursal.nombre,
-        id:sucursal._id,
-        dataKpi
-       }
-       data.push(resultado)
-      
-    }
-
-    return data
-   }
-
-   async kpiLentesDeContactoTuOptica(kpiDto: KpiDto){
-    console.log('eco');
-    const data:any[]=[]
-    let filtrador:FiltroVentaI={
-      fecha: {
-        $gte: new Date(kpiDto.fechaInicio),
-        $lte: new Date(kpiDto.FechaFin),
-        
-      },
-    }
-
-    for(let su of kpiDto.sucursal){
-      const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))      
-      filtrador.sucursal= new Types.ObjectId(su)  
-      const dataKpi = await this.VentaExcelSchema.aggregate([
-        {
-          $match:{
-            ...filtrador,
-            producto:productos.lenteDeContacto
-          }
-        },
-        {
-          $lookup:{
-            from:'marcas',
-            foreignField:'_id',
-            localField:'marca',
-            as:'marca'
-          }
-        },
-        {
-          $lookup:{
-            from:'tipoventas',
-            foreignField:'_id',
-            localField:'tipoVenta',
-            as:'tipoVenta'
-          }
-        },
-     
-
-        {
-          $unwind:{ path: '$marca', preserveNullAndEmptyArrays:true}
-        },
-        {
-          $unwind:{ path: '$tipoVenta', preserveNullAndEmptyArrays:true}
-        },
-        {
-          $group:{
-            _id:null,
-
-            lentesDeContacto:{
-              $sum:'$cantidad'
-
-          },
-
-          cantidadDeLentesDeContacto:{
-            $sum:{
-              $cond:{
-                if:{
-               $and:[
-                {
-                  $or:[
-                    {$eq:['$marca.nombre','FRESHLOOK']},
-                    {$eq:['$marca.nombre','IMPRESIONS']}, //no se encontro en la base de datos 
-            
-                  ]
-                },
-                {$or:[
-                  {
-                    $eq:['$tipoVenta.abreviatura','VEF']
-                  },
-                  {
-                    $ne:['$tipoVenta.abreviatura','REP']
-                  },
-                  {
-                    $ne:['$tipoVenta.abreviatura','CO']
-                  },
-                  {
-                    $ne:['$tipoVenta.abreviatura','PROD']
-                  },
-                  {
-                    $ne:['$tipoVenta.abreviatura','DA']
-                  }
-                ]
-                }
-                
-               ]              
-              },
-                then:'$cantidad',
-                else:0
-              }
-            }
-          }
-
-         
-
-          
-        }
-      },{
-        $project:{
-          lentesDeContacto:1,
-          cantidadDeLentesDeContacto:1,
-          porcentajeLentesDeContacto: {
-            $round: [
-              {
-                $multiply: [
-                  { $divide: ['$cantidadDeLentesDeContacto', '$lentesDeContacto'] },
-                  100
-                ]
-              },
-              2
-            ]
-          
-          },
-          
-        }
-      }
-       
-
-      ])
-
-      const resultado={
-         sucursal:sucursal.nombre,
-         id:sucursal._id,
-         dataKpi
-      }
-
-      data.push(resultado)
-    }
- 
-
-    return data
-  }
-
-
-
-    //---------------------------------------------------------  
-
 }

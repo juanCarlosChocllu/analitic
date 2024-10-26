@@ -2,10 +2,11 @@ import { IsDateString, IsEnum, IsMongoId, IsOptional } from 'class-validator';
 import { EstadoEnum } from '../enums/estado.enum';
 import { Types } from 'mongoose';
 
-export class informacionVentaDto {
-  @IsMongoId()
+export class InformacionVentaDto {
+
+  @IsMongoId({each:true})
   @IsOptional()
-  tipoVenta: Types.ObjectId;
+  tipoVenta: Types.ObjectId[];
 
   @IsEnum(EstadoEnum)
   @IsOptional()

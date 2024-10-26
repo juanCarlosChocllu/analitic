@@ -18,6 +18,7 @@ import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucurs
 import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.schema';
 import { AbonoModule } from 'src/abono/abono.module';
 import { EmpresaModule } from 'src/empresa/empresa.module';
+import { VentaKpiService } from './venta.kpi.service';
 
 
 @Module({
@@ -40,7 +41,7 @@ import { EmpresaModule } from 'src/empresa/empresa.module';
  
   ],
   controllers: [VentaController],
-  providers: [VentaService],
+  providers: [VentaService, VentaKpiService],
 
   exports: [VentaService],
 })
