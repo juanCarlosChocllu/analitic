@@ -12,9 +12,9 @@ export class LogController {
     return this.logService.create(createLogDto);
   }
 
-  @Get()
-  findAll() {
-    return this.logService.findAll();
+  @Get('venta')
+  logFindVenta() {
+    return this.logService.logFindVenta();
   }
 
   @Get(':id')

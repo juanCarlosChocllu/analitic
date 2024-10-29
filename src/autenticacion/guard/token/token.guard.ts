@@ -16,9 +16,14 @@ export class TokenGuard implements CanActivate {
     context: ExecutionContext,
   ) {
     const publico = this.reflector.get(PUBLIC_KEY,context.getHandler())
+
+    
     if(publico){
-      return true
+   
+        return true
     }
+
+    
     const request = context.switchToHttp().getRequest()
     const header:string = request.headers.authorization  
 
@@ -29,7 +34,7 @@ export class TokenGuard implements CanActivate {
       })
       request.user= tokenVerificada
       return true
-    } catch (error) {
+    } catch (error) {      
        throw new UnauthorizedException()
       
     }

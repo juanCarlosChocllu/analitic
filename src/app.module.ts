@@ -21,11 +21,15 @@ import { AutenticacionModule } from './autenticacion/autenticacion.module';
 import { APP_GUARD } from '@nestjs/core';
 import { TokenGuard } from './autenticacion/guard/token/token.guard';
 import { LogModule } from './log/log.module';
+import { ConfigModule } from '@nestjs/config';
+import { databaseConeccion } from './config/variables.entorno.config';
 
 @Module({
   imports: [
- 
-    MongooseModule.forRoot('mongodb://localhost:27017/analitic4', {
+    ConfigModule.forRoot({
+      isGlobal:true
+    }),
+    MongooseModule.forRoot(databaseConeccion, {
       connectionName: NombreBdConexion.oc,
     }),
     VentaModule,

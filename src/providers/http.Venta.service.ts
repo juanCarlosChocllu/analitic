@@ -8,9 +8,14 @@ import { firstValueFrom } from 'rxjs';
 import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
 import { flag } from 'src/venta/enums/flag.enum';
 import { log } from 'node:console';
+import { LogService } from 'src/log/log.service';
+import { Types } from 'mongoose';
 @Injectable()
 export class HttpAxiosVentaService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly logService:LogService
+  ) {}
   public async reporte(
     mes: string,
     dia: string,
@@ -32,16 +37,23 @@ export class HttpAxiosVentaService {
       } catch (error) {
         const mensage = error.message.split(' ');
         if (mensage[5] == 404) {
+          const descripcion:string = `Archivo no encontrado error 404 de la fecha: ${anio}/${mes}/${dia}`
+          this.logService.registroLogDescarga(descripcion,'Venta' )
           throw new NotFoundException('Error no se encontro ningun archivo');
         } else if (error.code === 'ECONNABORTED') {
+          
           console.log(
            `Intento fallido: la solicitud tomó demasiado tiempo.`,
           );
         } else if (error.message.includes('socket hang up')) {
+          const descripcion:string = `Intento  fallido: se perdió la conexión con el servidor: socket hang up: fecha: ${anio}/${mes}/${dia}`
+            this.logService.registroLogDescarga(descripcion,'Venta' )
           console.log(
-            `Intento  fallido: se perdió la conexión con el servidor: socket hang up: fecha:${anio}${mes}${dia}`,
+            `Intento  fallido: se perdió la conexión con el servidor: socket hang up: fecha: ${anio}/${mes}/${dia}`,
           );
         } else {
+          const descripcion:string = `Error: ocurrió un problema al procesar la solicitud de la fecha: ${anio}/${mes}/${dia}`
+          this.logService.registroLogDescarga(descripcion,'Venta' )
           throw new InternalServerErrorException(
             'Error: ocurrió un problema al procesar la solicitud.',
           );
