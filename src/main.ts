@@ -2,12 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
-import { port } from './config/variables.entorno.config';
+import { port , interfaceRed} from './config/variables.entorno.config';
 
 async function bootstrap() {
+
   
   const app = await NestFactory.create(AppModule);
-  console.log(port);
+ 
   
   app.enableCors();
   app.useGlobalPipes(
@@ -35,7 +36,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('doc', app, document);
 
-  await app.listen(port, () => {
+  await app.listen(port,interfaceRed, () => {
     console.log(`Servidor corriendo en el ${port}`);
   });
 }

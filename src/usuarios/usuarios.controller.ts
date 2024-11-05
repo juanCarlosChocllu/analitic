@@ -9,7 +9,6 @@ import { Public } from 'src/autenticacion/decorators/public.decorator';
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
-  
   @Post('create')
   create(@Body() createUsuarioDto: CreateUsuarioDto) {
     return this.usuariosService.create(createUsuarioDto);
