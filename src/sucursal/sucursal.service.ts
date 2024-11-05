@@ -36,9 +36,7 @@ export class SucursalService {
 
   
   public async guardarEmpresaYsusSucursales() {
-    const data = dataEmpresa();
-    console.log(data.empresa);
-  
+    const data = dataEmpresa();  
     for (let [empresa, sucursales] of Object.entries(data.empresa)) {
       const empresaData = {
         nombre: empresa,
