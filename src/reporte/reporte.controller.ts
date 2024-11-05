@@ -7,7 +7,7 @@ export class ReporteController {
   constructor(private readonly reporteService: ReporteService) {}
 
   @Post()
-  async allExcel(@Body()fechaDto:FechaDto) {
+  async allExcel(@Body()fechaDto:FechaDto) {   
     return await this.reporteService.allExcel(fechaDto);
   }
 

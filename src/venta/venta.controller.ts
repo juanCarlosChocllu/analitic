@@ -95,8 +95,8 @@ export class VentaController {
 
    @Post('kpi/monturas')
    kpiMonturasPorEmpresa(@Body() kpiDto: KpiDto){
-    console.log('hola');
-    
+
+
     return this.ventaKpiService.kpiMonturasPorEmpresa(kpiDto)
    }
 

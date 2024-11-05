@@ -93,7 +93,7 @@ export class HttpAxiosVentaService {
         producto: columnas[12],
         cantidad: Number(columnas[19]),
         importe: columnas[20],
-        asesor: columnas[21],
+        asesor: columnas[22],
         montoTotal: Number(columnas[28]),
         tipoVenta: columnas[29] ? columnas[29] : 'CONTADO',
         flagVenta: columnas[30] ? columnas[30] : flag.FINALIZADO,
