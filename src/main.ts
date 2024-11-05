@@ -37,7 +37,7 @@ async function bootstrap() {
   SwaggerModule.setup('doc', app, document);
 
   await app.listen(port,interfaceRed, () => {
-    console.log(`Servidor corriendo en el ${port}`);
+    console.log(`Servidor corriendo  host:${interfaceRed}:${port}`);
   });
 }
 
