@@ -29,7 +29,7 @@ export function dataEmpresa() {
       //'ZONA OPTICA': ['ZONA OPTICA 1'],
       //'OPTILAB': ['OPTILAB', 'OPTILAB TARIJA'],
 
-     'MINISO': ['MINISO', 'MINISO LA PAZ'],
+     //'MINISO': ['MINISO', 'MINISO LA PAZ'],
      'OPTISERVICE S.R.L': ['OFEROPTICA'],
      /* 'VISUALHEALT S.R.L': [
         'CONSULTORIO LA PAZ',
