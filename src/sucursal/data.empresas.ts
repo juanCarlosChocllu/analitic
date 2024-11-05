@@ -26,17 +26,17 @@ export function dataEmpresa() {
       ],
       'TU OPTICA': ['TU OPTICA', 'TU OPTICA 2', 'CEMENTERIO TU OPTICA  2'],
 
-      'ZONA OPTICA': ['ZONA OPTICA 1'],
-      'OPTILAB': ['OPTILAB', 'OPTILAB TARIJA'],
+      //'ZONA OPTICA': ['ZONA OPTICA 1'],
+      //'OPTILAB': ['OPTILAB', 'OPTILAB TARIJA'],
 
      'MINISO': ['MINISO', 'MINISO LA PAZ'],
      'OPTISERVICE S.R.L': ['OFEROPTICA'],
-      'VISUALHEALT S.R.L': [
+     /* 'VISUALHEALT S.R.L': [
         'CONSULTORIO LA PAZ',
         'CONSULTORIO SANTA CRUZ',
         'CONSULTORIO CAMARGO',
         'CONSULTORIO LA PAZ  2',
-      ],
+      ],*/
     },
   };
   return data;
