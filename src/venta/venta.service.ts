@@ -175,8 +175,10 @@ export class VentaService {
   }
 
     ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id) ) } :filtrador
-
+    console.log(filtrador);
+    
     for (let sucursal of ventaDto.sucursal) {
+      filtrador.sucursal=new Types.ObjectId(sucursal)
       const venta = await this.VentaExcelSchema.aggregate([
         {
           $match:{
@@ -218,7 +220,8 @@ export class VentaService {
           },
         },
       ]);
-
+      console.log(venta);
+      
       const resultado = {
         sucursal: await this.extraerSucursal(sucursal),
         data: venta.map((elemeto) => {
