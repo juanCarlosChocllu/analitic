@@ -378,6 +378,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
   
   
   //------------------------------
+
   
     private async kpiOpticentro(kpiDto: KpiDto){
       let filtrador:FiltroVentaI={
@@ -472,14 +473,13 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                 tickets:{
                   $sum:{
                     $cond:{
-                         if:{$and:[
-                      {$eq:['$aperturaTicket', '1']},
-                      {$ne:['$producto', 'OTRO PRODUCTO']}
+                      if:{$and:[
+                        {$eq:['$aperturaTicket', '1']},
                       
-                    ]},
+                        
+                      ]},
                       then:1,
                       else:0
-  
                     }
                   }
                 },
@@ -642,7 +642,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
         data.push(resultado)
       }
       return data
-    }
+    } 
   
     async kpiInformacion(sucursal:string,informacionVentaDto :InformacionVentaDto){
       const filtrador:FiltroVentaI ={
@@ -1756,15 +1756,288 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                 }
               }
               
-          ]) 
-
-          
+          ])           
           return lc[0]
           
         
      }
 
 
-  
+    async kpiMonturas(kpiDto:KpiDto){
+      const filtrador:FiltroVentaI={
+        fecha:{
+          $gte:new Date(kpiDto.fechaInicio),
+          $lte: new Date(kpiDto.FechaFin)
+        }
+        
+      }
+
+
+      
+      kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in:kpiDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
+      
+        const dataMonturas:any=[]
+        for(let su of  kpiDto.sucursal){
+          filtrador.sucursal = new Types.ObjectId(su)  
+           const monturas = await this.VentaExcelSchema.aggregate([
+            {
+              $match:{
+                ...filtrador,
+                producto:productos.montura,
+               
+              },
+            },
+            {
+              $lookup:{
+                from:'marcas',
+                foreignField:'_id',
+                localField:'marca',
+                as:'marca'
+              }
+            },
+    
+            {
+              $lookup:{
+                from:'suscursalexcels',
+                foreignField:'_id',
+                localField:'sucursal',
+                as:'sucursal'
+              }
+            },
+            
+    
+            {
+              $unwind:{path:'$marca', preserveNullAndEmptyArrays:false}
+            },
+            {
+              $unwind:{path:'$sucursal', preserveNullAndEmptyArrays:false}
+            }
+            ,
+            {
+              $group:{
+                _id:null,
+               cantidad:{$sum:'$cantidad'},
+               sucursal:{$first:'$sucursal.nombre'},
+               idSucursal:{$first:'$sucursal._id'}
+              }
+    
+            },
+          {
+    
+              $project:{
+    
+                _id:0,
+                sucursal:1,
+                cantidad:1,
+                idSucursal:1
+            
+              }
+            }
+           ])           
+           dataMonturas.push(...monturas)
+           
+        }
+        return dataMonturas
+    
+      }
+
+      async kpiInformacionMonturas(informacionVentaDto:InformacionVentaDto, sucursal:string){
+        const filtrador:FiltroVentaI={
+          fecha:{
+            $gte:new Date(informacionVentaDto.fechaInicio),
+            $lte: new Date(informacionVentaDto.fechaFin)
+          },
+          sucursal:new Types.ObjectId(sucursal)
+        
+        }
+      informacionVentaDto.tipoVenta.length> 0 ? filtrador.tipoVenta = {$in: informacionVentaDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
+        
+        const monturas = await this.VentaExcelSchema.aggregate([
+          {
+            $match:{
+              ...filtrador,
+              producto:productos.montura
+            }
+          },
+          {
+            $lookup:{
+              from:'marcas',
+              foreignField:'_id',
+              localField:'marca',
+              as:'marca'
+            }
+          },
+       
+          {
+            $unwind:{path:'$marca',preserveNullAndEmptyArrays:false}
+          },
+        
+          {
+            $group:{
+              _id:'$marca.nombre',
+              cantidad:{$sum:'$cantidad'},
+       
+            }
+          },
+          {
+            $group:{
+              _id:null,
+              monturas:{$sum:'$cantidad'},
+              marcas:{$push:{
+                marca:'$_id',
+                cantidad:'$cantidad'
+    
+              }}
+            }
+          },
+          
+          {
+            $project:{
+              monturas:1,
+              marcas:1
+            }
+          }
+        ])
+        return monturas[0]
+      }
+
+
+      
+    async kpiGafas(kpiDto:KpiDto){
+      const filtrador:FiltroVentaI={
+        fecha:{
+          $gte:new Date(kpiDto.fechaInicio),
+          $lte: new Date(kpiDto.FechaFin)
+        }
+        
+      }      
+      kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in:kpiDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
+      
+        const dataGafa:any=[]
+        for(let su of  kpiDto.sucursal){
+          filtrador.sucursal = new Types.ObjectId(su)  
+           const gafa = await this.VentaExcelSchema.aggregate([
+            {
+              $match:{
+                ...filtrador,
+                producto:productos.gafa,
+               
+              },
+            },
+            {
+              $lookup:{
+                from:'marcas',
+                foreignField:'_id',
+                localField:'marca',
+                as:'marca'
+              }
+            },
+    
+            {
+              $lookup:{
+                from:'suscursalexcels',
+                foreignField:'_id',
+                localField:'sucursal',
+                as:'sucursal'
+              }
+            },
+            
+    
+            {
+              $unwind:{path:'$marca', preserveNullAndEmptyArrays:false}
+            },
+            {
+              $unwind:{path:'$sucursal', preserveNullAndEmptyArrays:false}
+            }
+            ,
+            {
+              $group:{
+                _id:null,
+               cantidad:{$sum:'$cantidad'},
+               sucursal:{$first:'$sucursal.nombre'},
+               idSucursal:{$first:'$sucursal._id'}
+              }
+    
+            },
+          {
+    
+              $project:{
+    
+                _id:0,
+                sucursal:1,
+                cantidad:1,
+                idSucursal:1
+            
+              }
+            }
+           ])           
+           dataGafa.push(...gafa)
+           
+        }
+        return dataGafa
+    
+      }
+
+      async kpiInformacionGafa(informacionVentaDto:InformacionVentaDto, sucursal:string){
+        const filtrador:FiltroVentaI={
+          fecha:{
+            $gte:new Date(informacionVentaDto.fechaInicio),
+            $lte: new Date(informacionVentaDto.fechaFin)
+          },
+          sucursal:new Types.ObjectId(sucursal)
+        
+        }
+      informacionVentaDto.tipoVenta.length> 0 ? filtrador.tipoVenta = {$in: informacionVentaDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
+        
+        const gafa = await this.VentaExcelSchema.aggregate([
+          {
+            $match:{
+              ...filtrador,
+              producto:productos.gafa
+            }
+          },
+          {
+            $lookup:{
+              from:'marcas',
+              foreignField:'_id',
+              localField:'marca',
+              as:'marca'
+            }
+          },
+       
+          {
+            $unwind:{path:'$marca',preserveNullAndEmptyArrays:false}
+          },
+        
+          {
+            $group:{
+              _id:'$marca.nombre',
+              cantidad:{$sum:'$cantidad'},
+       
+            }
+          },
+          {
+            $group:{
+              _id:null,
+              gafas:{$sum:'$cantidad'},
+              marcas:{$push:{
+                marca:'$_id',
+                cantidad:'$cantidad'
+    
+              }}
+            }
+          },
+          
+          {
+            $project:{
+              gafas:1,
+              marcas:1
+            }
+          }
+        ])
+        return gafa[0]
+      }
+
+
 
 }

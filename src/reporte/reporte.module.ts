@@ -17,9 +17,11 @@ import { MaterialModule } from 'src/material/material.module';
 import { TipoColorModule } from 'src/tipo-color/tipo-color.module';
 import { MarcasModule } from 'src/marcas/marcas.module';
 import { MarcaLenteModule } from 'src/marca-lente/marca-lente.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports:[
+    ScheduleModule.forRoot(),
     MongooseModule.forFeature(
       [
         { name: SuscursalExcel.name, schema: SuscursalExcelSchema },

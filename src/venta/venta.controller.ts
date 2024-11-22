@@ -93,12 +93,27 @@ export class VentaController {
 
 
 
-   @Post('kpi/monturas')
+   @Post('kpi/monturasvip')
    kpiMonturasPorEmpresa(@Body() kpiDto: KpiDto){
 
 
     return this.ventaKpiService.kpiMonturasPorEmpresa(kpiDto)
    }
+
+   @Post('kpi/monturas')
+   kipMonturas(@Body() kpiDto: KpiDto){
+
+
+    return this.ventaKpiService.kpiMonturas(kpiDto)
+   }
+
+   
+
+   @Post('kpi/monturas/informacion/:sucursal')
+   kipMonturasInformacion(@Param('sucursal', new ValidacionIdPipe) sucursal:string ,@Body() informacionVentaDto: InformacionVentaDto){
+    return this.ventaKpiService.kpiInformacionMonturas(informacionVentaDto, sucursal)
+   }
+
 
    
    @Post('kpi/monturas/vip/:sucursal')
@@ -129,6 +144,23 @@ export class VentaController {
   finalizarVenta() {
     return this.ventaService.finalizarVentas();
   }
+
+
+  //-----------------rutas gafas
+  
+  @Post('kpi/gafas')
+  kipiGafas(@Body() kpiDto: KpiDto){
+   return this.ventaKpiService.kpiGafas(kpiDto)
+  }
+
+  @Post('kpi/gafa/informacion/:sucursal')
+  kipGafaInformacion(@Param('sucursal', new ValidacionIdPipe) sucursal:string ,@Body() informacionVentaDto: InformacionVentaDto){
+   return this.ventaKpiService.kpiInformacionGafa(informacionVentaDto, sucursal)
+  }
+
+
+  
+
 
 
 

@@ -274,6 +274,7 @@ export class VentaService {
     const ventaPorDia = parseFloat((parseFloat(total) / dias).toFixed(2));
     this.ticketPromedio;
     const resultado = {
+      
       total,
       cantidad,
       ventaPorDia,
@@ -489,13 +490,7 @@ export class VentaService {
     };
      ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id)) }:filtrador
 
-    /*if (ventaDto.estado) {
-      if (ventaDto.estado === EstadoEnum.finalizado) {
-        filtrador.flagVenta = ventaDto.estado;
-      } else if (ventaDto.estado === EstadoEnum.realizadas) {
-        filtrador.flagVenta = { $ne: EstadoEnum.finalizado };
-      }
-    }*/
+ 
 
     for (let idsucursal of ventaDto.sucursal) {
       const sucursal = await this.sucursalExcelSchema.findOne({
@@ -701,9 +696,7 @@ export class VentaService {
       }
     }
 
-    //if (informacionVentaDto.tipoVenta) {
-     // filtrador.tipoVenta = new Types.ObjectId(informacionVentaDto.tipoVenta);
-   // }
+
 
     const ventaSucursal = await this.VentaExcelSchema.aggregate([
       {

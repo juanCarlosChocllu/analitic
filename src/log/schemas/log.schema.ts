@@ -13,6 +13,12 @@ export class Log {
         @Prop()
         schema:string
 
+        @Prop()
+        codigoError:string
+
+        
+        @Prop()
+        tipoError:string
         
         @Prop({type:Date , default:Date.now})
         fecha:Date

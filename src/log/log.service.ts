@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateLogDto } from './dto/create-log.dto';
 import { UpdateLogDto } from './dto/update-log.dto';
 import { Model, Types } from 'mongoose';
@@ -29,9 +29,8 @@ export class LogService {
     return `This action removes a #${id} log`;
   }
 
-   public async  registroLogDescarga(descripcion:string, schema:string){
-    await this.logSchema.create({ descripcion, schema})
-    return
-
+   public async  registroLogDescarga(descripcion:string, schema:string,codigoError:HttpStatus, tipoError:string){
+     return this.logSchema.create({ descripcion, schema,codigoError , tipoError })
+     
   }
 }

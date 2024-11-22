@@ -23,10 +23,14 @@ import { MarcasService } from 'src/marcas/marcas.service';
 import { MarcaLenteService } from 'src/marca-lente/marca-lente.service';
 import { FechaDto } from './dto/fecha.dto';
 import { fechasArray } from './util/fecha.array.util';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 
 @Injectable()
 export class ReporteService {
+
+    private readonly logger = new Logger(ReporteService.name)
+
   constructor(  
 
     @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
@@ -62,9 +66,6 @@ export class ReporteService {
   
       const[aqo, mes, dia]= [fecha.getFullYear(), (fecha.getMonth() + 1).toString().padStart(2, '0') ,  fecha.getDate().toString().padStart(2, '0') ]
       console.log(aqo, mes, dia);
-      
-      const fechaInicio= new Date(aqo, parseNumber(mes) - 1, parseNumber(dia), 0, 0, 0);
-      const fechaFin= new Date(aqo, parseNumber(mes) - 1, parseNumber(dia), 23, 59, 59);
     try {
      const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
      
@@ -238,6 +239,24 @@ export class ReporteService {
           });
         }
       }
+    }
+  }
+
+
+@Cron(CronExpression.EVERY_DAY_AT_11PM)
+ async  descargaAutomaticaventas(){
+    const date = new Date()
+    const[año, mes, dia]= [date.getFullYear(), (date.getMonth() + 1).toString().padStart(2, '0') , (date.getDate() - 2).toString().padStart(2, '0')  ]
+    const fecha:FechaDto={
+      fechaInicio: `${año}-${mes}-${dia}`,
+      fechaFin:`${año}-${mes}-${dia}`
+    }
+    this.logger.debug('Iniciando la descarga');
+    const response = await this.allExcel(fecha)
+    if(response.status == HttpStatus.CREATED){
+      this.logger.debug('Descarga completada');
+    }else{
+      this.logger.debug('Descarga fallida');
     }
   }
 

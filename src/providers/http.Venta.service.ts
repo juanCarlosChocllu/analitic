@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import {
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -10,6 +11,7 @@ import { flag } from 'src/venta/enums/flag.enum';
 import { log } from 'node:console';
 import { LogService } from 'src/log/log.service';
 import { Types } from 'mongoose';
+import { Log } from 'src/log/schemas/log.schema';
 @Injectable()
 export class HttpAxiosVentaService {
   constructor(
@@ -38,22 +40,17 @@ export class HttpAxiosVentaService {
         const mensage = error.message.split(' ');
         if (mensage[5] == 404) {
           const descripcion:string = `Archivo no encontrado error 404 de la fecha: ${anio}/${mes}/${dia}`
-          this.logService.registroLogDescarga(descripcion,'Venta' )
+          await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.NOT_FOUND,'Not found')
           throw new NotFoundException('Error no se encontro ningun archivo');
         } else if (error.code === 'ECONNABORTED') {
-          
-          console.log(
-           `Intento fallido: la solicitud tomó demasiado tiempo.`,
-          );
+          const descripcion = `Intento fallido: la solicitud tomó demasiado tiempo.  fecha: ${anio}/${mes}/${dia}`
+          this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.GATEWAY_TIMEOUT, 'ECONNABORTED' )
         } else if (error.message.includes('socket hang up')) {
           const descripcion:string = `Intento  fallido: se perdió la conexión con el servidor: socket hang up: fecha: ${anio}/${mes}/${dia}`
-            this.logService.registroLogDescarga(descripcion,'Venta' )
-          console.log(
-            `Intento  fallido: se perdió la conexión con el servidor: socket hang up: fecha: ${anio}/${mes}/${dia}`,
-          );
+           await this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.REQUEST_TIMEOUT, 'socket hang up' )
         } else {
           const descripcion:string = `Error: ocurrió un problema al procesar la solicitud de la fecha: ${anio}/${mes}/${dia}`
-          this.logService.registroLogDescarga(descripcion,'Venta' )
+          await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.BAD_REQUEST, 'BAD REQUEST' )
           throw new InternalServerErrorException(
             'Error: ocurrió un problema al procesar la solicitud.',
           );
