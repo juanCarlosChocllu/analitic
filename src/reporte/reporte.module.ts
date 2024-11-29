@@ -8,7 +8,7 @@ import { TipoVentaModule } from 'src/tipo-venta/tipo-venta.module';
 import { SucursalModule } from 'src/sucursal/sucursal.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
-import { AsesorExcel, AsesorExcelSchema,VentaExcel, VentaExcelSchema   } from 'src/venta/schemas/venta.schema';
+import { VentaExcel, VentaExcelSchema   } from 'src/venta/schemas/venta.schema';
 import { Abono, AbonoSchema } from 'src/abono/schema/abono.abono';
 import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucursal.schema';
 
@@ -18,6 +18,10 @@ import { TipoColorModule } from 'src/tipo-color/tipo-color.module';
 import { MarcasModule } from 'src/marcas/marcas.module';
 import { MarcaLenteModule } from 'src/marca-lente/marca-lente.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { VentaService } from 'src/venta/venta.service';
+import { VentaModule } from 'src/venta/venta.module';
+import { OftalmologoModule } from 'src/oftalmologo/oftalmologo.module';
+import { AsesorExcel, AsesorExcelSchema } from 'src/asesores/schemas/asesore.schema';
 
 @Module({
   imports:[
@@ -39,7 +43,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     MaterialModule,
     TipoColorModule,
     MarcasModule,
-    MarcaLenteModule
+    MarcaLenteModule,
+    VentaModule,
+    OftalmologoModule,
+    SucursalModule
   ],
   controllers: [ReporteController],
   providers: [ReporteService],

@@ -1,28 +1,15 @@
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsMongoId,
   IsOptional,
   IsString,
 } from 'class-validator';
-import { flag } from '../enums/flag.enum';
+
 import { Types } from 'mongoose';
 import { EstadoEnum } from '../enums/estado.enum';
-export class VentaDto {
-  @IsMongoId({ each: true })
-  sucursal: string[];
-  @IsMongoId({ each: true })
-  tipoVenta: string[];
-  @IsEnum(flag)
-  flag: flag;
 
-  @IsOptional()
-  @IsDateString()
-  fechaInicio: string;
-  @IsOptional()
-  @IsDateString()
-  FechaFin: string;
-}
 
 export class VentaExcelDto {
   @IsMongoId()
@@ -41,6 +28,9 @@ export class VentaExcelDto {
   @IsOptional()
   estado: string;
 
+  @IsOptional()
+  @IsBoolean()
+   comisiona:boolean | null
 
   @IsDateString()
   fechaInicio: string;

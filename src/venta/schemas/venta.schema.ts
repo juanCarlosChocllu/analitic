@@ -38,6 +38,11 @@ export class VentaExcel {
   @Prop({ type: Types.ObjectId, ref: 'Marca' })//se aplica depente al rubro
   marca: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Oftalmologo' })
+  oftalmologo: Types.ObjectId;
+
+  @Prop()
+  comisiona: Boolean
 
   @Prop()
   producto: string;
@@ -72,7 +77,6 @@ export class VentaExcel {
   fechaCreacion: Date;
 }
 export const VentaExcelSchema = SchemaFactory.createForClass(VentaExcel);
-//indices
 VentaExcelSchema.index({ sucursal: 1 });
 VentaExcelSchema.index({ empresa: 1 });
 VentaExcelSchema.index({ asesor: 1 });
@@ -80,13 +84,3 @@ VentaExcelSchema.index({ asesor: 1 });
 
 
 
-@Schema()
-export class AsesorExcel {
-  @Prop()
-  usuario: string;
-
-  @Prop({ type: Types.ObjectId, ref: 'SuscursalExcel' })
-  sucursal: Types.ObjectId;
-}
-
-export const AsesorExcelSchema = SchemaFactory.createForClass(AsesorExcel);

@@ -11,9 +11,9 @@ export interface VentaTotalI {
 export interface VentaPorProductoI {
   _id: string;
   producto: {
-    nombre: string[]; // Puede ser un array si hay múltiples nombres, de lo contrario, usar solo string
-    venta: string[]; // Puede ser un array si hay múltiples ventas relacionadas
-    sucursal: string[]; // Puede ser un array si hay múltiples sucursales relacionadas
+    nombre: string[]; 
+    venta: string[]; 
+    sucursal: string[]; 
     preciototal: number;
     cantidad: number;
   };

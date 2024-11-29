@@ -8,7 +8,12 @@ export class ReporteController {
 
   @Post()
   async allExcel(@Body()fechaDto:FechaDto) {   
-    return await this.reporteService.allExcel(fechaDto);
+    return  this.reporteService.allExcel(fechaDto);
   }
 
+
+  @Post('verificacion')
+  async informacionRestanteVenta(@Body()fechaDto:FechaDto) {   
+    return  this.reporteService.informacionRestanteVenta(fechaDto);
+  }
 }

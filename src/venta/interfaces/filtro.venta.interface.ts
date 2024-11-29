@@ -9,4 +9,5 @@ export interface FiltroVentaI {
   sucursal?: Types.ObjectId;
   tipoVenta?: Types.ObjectId | {$in :Types.ObjectId[] } ;
   flagVenta?: string | { $ne: string };
+  comisiona?:boolean | null
 }

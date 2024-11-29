@@ -23,6 +23,8 @@ import { TokenGuard } from './autenticacion/guard/token/token.guard';
 import { LogModule } from './log/log.module';
 import { ConfigModule } from '@nestjs/config';
 import { databaseConeccion } from './config/variables.entorno.config';
+import { OftalmologoModule } from './oftalmologo/oftalmologo.module';
+import { AsesoresModule } from './asesores/asesores.module';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { databaseConeccion } from './config/variables.entorno.config';
     UsuariosModule,
     AutenticacionModule,
     LogModule,
+    OftalmologoModule,
+    AsesoresModule,
   ],
   controllers: [],
   providers: [{

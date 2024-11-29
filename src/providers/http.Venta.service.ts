@@ -24,9 +24,8 @@ export class HttpAxiosVentaService {
     anio: number,
     retries = 3,
   ): Promise<any> {
-   const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
-     //const url= 'http://localhost/opticentro/web/cibelesVenta20240919.csv'
-  for (let attempt = 1; attempt <= retries; attempt++) {
+   //const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
+    const url =`http://localhost/opticentro/web/cibeles${anio}${mes}${dia}.csv`
       try {
         const response = await firstValueFrom(
           this.httpService.get(url, { timeout: 30000 }),
@@ -40,28 +39,21 @@ export class HttpAxiosVentaService {
         const mensage = error.message.split(' ');
         if (mensage[5] == 404) {
           const descripcion:string = `Archivo no encontrado error 404 de la fecha: ${anio}/${mes}/${dia}`
-          await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.NOT_FOUND,'Not found')
+          await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.NOT_FOUND,'Not found',`${anio}-${mes}-${dia}`)
           throw new NotFoundException('Error no se encontro ningun archivo');
         } else if (error.code === 'ECONNABORTED') {
           const descripcion = `Intento fallido: la solicitud tomó demasiado tiempo.  fecha: ${anio}/${mes}/${dia}`
-          this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.GATEWAY_TIMEOUT, 'ECONNABORTED' )
+          this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.GATEWAY_TIMEOUT, 'ECONNABORTED',`${anio}-${mes}-${dia}` )
         } else if (error.message.includes('socket hang up')) {
           const descripcion:string = `Intento  fallido: se perdió la conexión con el servidor: socket hang up: fecha: ${anio}/${mes}/${dia}`
-           await this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.REQUEST_TIMEOUT, 'socket hang up' )
+           await this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.REQUEST_TIMEOUT, 'socket hang up',`${anio}-${mes}-${dia}` )
         } else {
           const descripcion:string = `Error: ocurrió un problema al procesar la solicitud de la fecha: ${anio}/${mes}/${dia}`
-          await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.BAD_REQUEST, 'BAD REQUEST' )
+          await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.BAD_REQUEST, 'BAD REQUEST',`${anio}-${mes}-${dia}` )
           throw new InternalServerErrorException(
             'Error: ocurrió un problema al procesar la solicitud.',
           );
         }
-        if (attempt === retries) {
-         throw new InternalServerErrorException(
-            'Error: se agotaron los reintentos para la solicitud.',
-          );
-        }
-        await this.delay(1000);
-      }
     }
   }
 
@@ -99,5 +91,23 @@ export class HttpAxiosVentaService {
       return resultado;
     });
     return venta;
+  }
+
+
+  async informacionRestanteVenta(fechaInicio:string, fechaFin:string){
+      try {
+            const url ='http://localhost/opticentro/web/app_dev.php/listar/venta/api'
+            const data={
+              fechaInicio,
+              fechaFin
+            }    
+            const response = await firstValueFrom(this.httpService.post(url, data))
+            return response.data
+            
+      } catch (error) {
+          throw error
+        
+      }
+
   }
 }

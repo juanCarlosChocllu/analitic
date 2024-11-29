@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types } from "mongoose";
+import { estadoLogEnum } from "../enum/estadoLog.enum";
 
 @Schema({collection:'Log'})
 export class Log {
@@ -19,7 +20,13 @@ export class Log {
         
         @Prop()
         tipoError:string
-        
+
+        @Prop({type:String, enum:estadoLogEnum ,default:estadoLogEnum.PENDIENTE})
+        estado:string
+
+        @Prop()
+        fechaFallida:string
+
         @Prop({type:Date , default:Date.now})
         fecha:Date
 

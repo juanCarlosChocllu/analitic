@@ -11,6 +11,7 @@ import { productos } from "./enums/productos.enum";
 
 import { InformacionVentaDto } from "./dto/informacion.venta.dto";
 import { log } from "node:console";
+import { filtradorKpi } from "./util/filtrador.kpi.util";
 
 @Injectable()
 export class VentaKpiService {
@@ -61,15 +62,9 @@ private async verificacionEmpresa(kpiDto:KpiDto){
   //'-----------------------kpi econovision--------------------
     
     private async kpiEconovision(kpiDto: KpiDto){
+      const filtrador = filtradorKpi(kpiDto)
       const data:any[]=[]
-      let filtrador:FiltroVentaI={
-        fecha: {
-          $gte: new Date(kpiDto.fechaInicio),
-          $lte: new Date(kpiDto.FechaFin),
-          
-        },
-      }      
-     kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: kpiDto.tipoVenta.map((id)=>new Types.ObjectId( id))} : filtrador
+      
       for (let  su of kpiDto.sucursal ){
         const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))      
         filtrador.sucursal= new Types.ObjectId(su)  
@@ -380,16 +375,8 @@ private async verificacionEmpresa(kpiDto:KpiDto){
   //------------------------------
 
   
-    private async kpiOpticentro(kpiDto: KpiDto){
-      let filtrador:FiltroVentaI={
-        fecha: {
-          $gte: new Date(kpiDto.fechaInicio),
-          $lte: new Date(kpiDto.FechaFin),
-          
-        },
-      
-      }
-      kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: kpiDto.tipoVenta.map((id)=>new Types.ObjectId( id))} : filtrador
+    private async kpiOpticentro(kpiDto: KpiDto){     
+      const filtrador = filtradorKpi(kpiDto)
       const data:any[]=[]
       for (let su of kpiDto.sucursal) {
         filtrador.sucursal = new Types.ObjectId(su)  
@@ -507,19 +494,6 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                     $cond:{
                       if:{$or:[
                         {$eq:['$tipoLente.nombre','PROGRESIVO']}
-                       /* {$eq:['$marcaLente.nombre','TALLADO TRADICIONAL']},
-  
-                        {$eq:['$marcaLente.nombre','DISEÑO DIGITAL']},
-  
-                        {$eq:['$marcaLente.nombre','DIGITAL HP OPTIMIZADO']},
-  
-                        {$eq:['$marcaLente.nombre','DIGITAL HP MUNDO TACTIL']},//dudoso
-  
-                        //digital driver
-                        //gtz byte zesse
-                        {$eq:['$marcaLente.nombre','DIGITAL PRIMER USUARIO']},
-                        {$eq:['$marcaLente.nombre','DIGITAL SENIOR']},
-                        {$eq:['$marcaLente.nombre','AILENS']},*/
                       ]},
                       then:'$cantidad',
                       else:0
@@ -913,18 +887,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
   
   
    private  async kpiMonturasVipOpticentro(kpiDto:KpiDto){
-    const filtrador:FiltroVentaI={
-      fecha:{
-        $gte:new Date(kpiDto.fechaInicio),
-        $lte: new Date(kpiDto.FechaFin)
-      }
-      
-
-    }
-  
-    
-    kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in:kpiDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
-
+    const filtrador = filtradorKpi(kpiDto)
       const dataMonturasVip:any=[]
       for(let su of  kpiDto.sucursal){
         filtrador.sucursal = new Types.ObjectId(su)  
@@ -999,17 +962,8 @@ private async verificacionEmpresa(kpiDto:KpiDto){
     //----------kpi tu optica
   
      private async kpiTuOptica(kpiDto:KpiDto){
-      
-  
+      const filtrador = filtradorKpi(kpiDto)
       const data:any[]= []
-      let filtrador:FiltroVentaI={
-        fecha: {
-          $gte: new Date(kpiDto.fechaInicio),
-          $lte: new Date(kpiDto.FechaFin),
-          
-        },
-      }
-      kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: kpiDto.tipoVenta.map((id)=>new Types.ObjectId( id))} : filtrador
       for(let su of kpiDto.sucursal){
         const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))
         filtrador.sucursal= new Types.ObjectId(su)
@@ -1110,11 +1064,6 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                   $cond:{
                     if:{$or:[
                     {$eq:['$tipoLente.nombre','PROGRESIVO']},
-                      /*{$eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']},
-                      {$eq:['$marcaLente.nombre','DISEÑO DIGITAL']},
-                      {$eq:['$marcaLente.nombre','DIGITAL PLATINIUM']},
-                      {$eq:['$marcaLente.nombre','DIGITAL GOLD']},
-                      {$eq:['$marcaLente.nombre','DIGITAL RUBY']},*/ // no se encontro en la base de datos
                     ]},
                     then:1,
                     else:0
@@ -1127,7 +1076,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                   $cond:{
                     if:{
                       $eq:['$tipoLente.nombre','OCUPACIONAL']
-                     // $eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']
+                    
                     },
                     then:1,
                     else:0
@@ -1142,14 +1091,6 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                     if: {
                       $or: [
                         { $eq: ["$tipoColor.nombre", "SOLAR ACTIVE"] },
-                        { $eq: ["$tipoColor.nombre", "VIOLETA"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "NARANJA"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "AZUL"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "ROSADO"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "VERDE HI INDEX"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "DRIVE"] },  //NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "SUPER HI LITE RESINA - 1.74"] },   // DUDOSO
-                      
                       ]
                     },
                     then: "$cantidad",
@@ -1288,16 +1229,9 @@ private async verificacionEmpresa(kpiDto:KpiDto){
       //-------------- kpi optiservice
   
       private async kpiOptiservice(kpiDto: KpiDto){
-        const data:any[]=[]
-        let filtrador:FiltroVentaI={
-          fecha: {
-            $gte: new Date(kpiDto.fechaInicio),
-            $lte: new Date(kpiDto.FechaFin),
-            
-          },
-        }
+        const filtrador = filtradorKpi(kpiDto)
 
-        kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: kpiDto.tipoVenta.map((id)=>new Types.ObjectId( id))} : filtrador
+        const data:any[]=[]
         for (let  su of kpiDto.sucursal ){
           const sucursal = await this.sucursalService.listarSucursalId(new Types.ObjectId(su))      
           filtrador.sucursal= new Types.ObjectId(su)  
@@ -1418,8 +1352,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                     $cond:{
                       if:{$or:[
                         {$eq:['$tipoLente.nombre','PROGRESIVO']}
-                       // {$eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']},
-                        //{$eq:['$marcaLente.nombre','DISEÑO DIGITAL']},
+             
                       ]},
                       then:'$cantidad',
                       else:0
@@ -1520,15 +1453,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
   
      public async kpiMaterial(kpiDto:KpiDto){
       const data:any[]=[]
-      const filtrador:FiltroVentaI={
-        fecha:{
-          $gte: new Date(kpiDto.fechaInicio),
-          $lte: new Date(kpiDto.FechaFin)
-        }
-      }
-      
-      kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: kpiDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
-    
+      const filtrador = filtradorKpi(kpiDto)
       for(let su of kpiDto.sucursal){
 
         filtrador.sucursal = new Types.ObjectId(su)      
@@ -1635,15 +1560,9 @@ private async verificacionEmpresa(kpiDto:KpiDto){
 
 
      async kpiLentesDeContacto(kpiDto: KpiDto){
+      const filtrador = filtradorKpi(kpiDto)
       const data : any[]=[]
-        const filtrador : FiltroVentaI={
-          fecha:{
-            $gte:new Date(kpiDto.fechaInicio),
-            $lte:new  Date(kpiDto.FechaFin)
-          }
-        }
-
-        kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in:kpiDto.tipoVenta.map((id)=> new Types.ObjectId(id)) }:filtrador
+      
         for (let su of kpiDto.sucursal){
           filtrador.sucursal= new Types.ObjectId(su)
           const lc = await this.VentaExcelSchema.aggregate([
@@ -1764,18 +1683,9 @@ private async verificacionEmpresa(kpiDto:KpiDto){
 
 
     async kpiMonturas(kpiDto:KpiDto){
-      const filtrador:FiltroVentaI={
-        fecha:{
-          $gte:new Date(kpiDto.fechaInicio),
-          $lte: new Date(kpiDto.FechaFin)
-        }
-        
-      }
 
+      const filtrador = filtradorKpi(kpiDto)
 
-      
-      kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in:kpiDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
-      
         const dataMonturas:any=[]
         for(let su of  kpiDto.sucursal){
           filtrador.sucursal = new Types.ObjectId(su)  
@@ -1904,15 +1814,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
 
       
     async kpiGafas(kpiDto:KpiDto){
-      const filtrador:FiltroVentaI={
-        fecha:{
-          $gte:new Date(kpiDto.fechaInicio),
-          $lte: new Date(kpiDto.FechaFin)
-        }
-        
-      }      
-      kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in:kpiDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
-      
+       const filtrador = filtradorKpi(kpiDto)
         const dataGafa:any=[]
         for(let su of  kpiDto.sucursal){
           filtrador.sucursal = new Types.ObjectId(su)  

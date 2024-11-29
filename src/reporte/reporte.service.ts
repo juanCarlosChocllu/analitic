@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 import { HttpAxiosVentaService } from 'src/providers/http.Venta.service';
-import { diasDelAnio } from 'src/providers/util/dias.anio';
 import { TipoLenteService } from 'src/tipo-lente/tipo-lente.service';
 import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 import { TratamientoService } from 'src/tratamiento/tratamiento.service';
@@ -11,12 +10,10 @@ import { productos } from 'src/venta/enums/productos.enum';
 import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
 
 import { parseNumber } from 'src/venta/util/validar.numero.util';
-import { dataEmpresa } from '../sucursal/data.empresas';
+
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
-import { EmpresaExcel } from 'src/empresa/schemas/empresa.schema';
-import { AsesorExcel, VentaExcel } from 'src/venta/schemas/venta.schema';
-import { Console, log } from 'node:console';
-import { constants } from 'node:buffer';
+
+
 import { MaterialService } from 'src/material/material.service';
 import { TipoColorService } from 'src/tipo-color/tipo-color.service';
 import { MarcasService } from 'src/marcas/marcas.service';
@@ -24,6 +21,13 @@ import { MarcaLenteService } from 'src/marca-lente/marca-lente.service';
 import { FechaDto } from './dto/fecha.dto';
 import { fechasArray } from './util/fecha.array.util';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ventaInformacionRI } from './interface/ventaInformacion.interface';
+import { VentaService } from 'src/venta/venta.service';
+import { OftalmologoService } from 'src/oftalmologo/oftalmologo.service';
+import { SucursalService } from 'src/sucursal/sucursal.service';
+import { Log } from 'src/log/schemas/log.schema';
+import { AsesorExcel } from 'src/asesores/schemas/asesore.schema';
+import { VentaExcel } from 'src/venta/schemas/venta.schema';
 
 
 @Injectable()
@@ -56,8 +60,15 @@ export class ReporteService {
     private readonly tipoColorService: TipoColorService,
 
     private readonly marcaService: MarcasService,
+
     private readonly marcaLenteService: MarcaLenteService,
 
+    private readonly ventaService:VentaService,
+
+    private readonly oftalmologoService:OftalmologoService,
+
+    private readonly sucursalService:SucursalService,
+    
   ){}
  
   async allExcel(fechaDto:FechaDto) {
@@ -65,19 +76,19 @@ export class ReporteService {
     for(let fecha of diasFechasArray){
   
       const[aqo, mes, dia]= [fecha.getFullYear(), (fecha.getMonth() + 1).toString().padStart(2, '0') ,  fecha.getDate().toString().padStart(2, '0') ]
-      console.log(aqo, mes, dia);
+   
     try {
      const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
      
       const ventaSinServicio = this.quitarServiciosVentas(dataExcel);
       const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
       const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
-      
+      console.log('descargando de :' , aqo, mes, dia);
       await this.guardarAsesorExcel(ventaLimpia);
       await this.guardarAtributosLente(ventaLimpia);
       await this.guardarAtributosProductos(ventaLimpia)
       await this.guardaVentaLimpiaEnLaBBDD(ventaLimpia);
-     
+
     } catch (error) {
       if (error instanceof NotFoundException) {
         console.log(
@@ -133,9 +144,9 @@ export class ReporteService {
   private async guardaVentaLimpiaEnLaBBDD(Venta: VentaExcelI[]) {
 
     try {
-      for (let data of Venta) {
+      for (let data of Venta) {        
         const venta = await this.VentaExcelSchema.exists({
-          numeroTicket: data.numeroTicket,
+          numeroTicket: data.numeroTicket.toUpperCase(),
           producto: data.producto,     
       });      
       
@@ -150,7 +161,7 @@ export class ReporteService {
         
         if (sucursal) {
           const asesor = await this.AsesorExcelSchema.findOne({
-            usuario: data.asesor,
+            usuario: data.asesor.toUpperCase(),
             sucursal: sucursal._id,
           });
     
@@ -172,7 +183,7 @@ export class ReporteService {
               fecha: data.fecha,
               sucursal: sucursal._id,
               empresa: sucursal.empresa,
-              numeroTicket: data.numeroTicket,
+              numeroTicket: data.numeroTicket.toUpperCase().trim(),
               aperturaTicket: data.aperturaTicket,
               producto: data.producto,
               importe: parseNumber(data.importe),
@@ -213,7 +224,7 @@ export class ReporteService {
 
   private async guardarAsesorExcel(venta: VentaExcelI[]) {
     const data = venta.map((item) => ({
-      asesor: item.asesor,
+      asesor: item.asesor.toUpperCase(),
       sucursal: item.sucursal,
     }));
 
@@ -234,7 +245,7 @@ export class ReporteService {
 
         if (!usuario) {
           await this.AsesorExcelSchema.create({
-            usuario: data.asesor,
+            usuario: data.asesor.trim(),
             sucursal: sucursal._id,
           });
         }
@@ -260,7 +271,51 @@ export class ReporteService {
     }
   }
 
+  async informacionRestanteVenta(fechaDto:FechaDto){
+    try {
+          const response:ventaInformacionRI[]= await this.httpAxiosVentaService.informacionRestanteVenta(fechaDto.fechaInicio, fechaDto.fechaFin )
+          for(let ve of response){ 
+              const venta = await this.ventaService.findOneNumeroTickectVenta(ve.id_venta)
+              if(venta){
+               
+                if (ve.sucursal === 'SUCRE - CENTRAL'){
+                  ve.sucursal = 'SUCRE  CENTRAL'
+                }
+                const sucursal = await this.sucursalService.buscarSucursal(ve.sucursal.toUpperCase())
+                   
+                 if(sucursal){
+                  const oftalmologo= await this.oftalmologoService.findOneOftalmologo(ve.oftalmologo.toUpperCase().trim())   
+                  if(!oftalmologo ){
 
+                    const of =  await this.oftalmologoService.crearOftalmologo(ve.oftalmologo.toUpperCase().trim(), ve.especialidad.toUpperCase(),sucursal._id)
+                      await this.ventaService.guardarVentaInformacionRestante(venta.numeroTicket, ve.comisiona, of._id)
+             
+                   }else{
+                     await this.ventaService.guardarVentaInformacionRestante(venta.numeroTicket, ve.comisiona, oftalmologo._id)
+                     
+                   }
+                 }
+              }else{
+                console.log(ve.id_venta);
+                
+                 if(ve.id_venta ==='VEN-OPT-SUCRE-CON-10186'){
+                  console.log('venta no encontrada');
+                  
+                  console.log(ve);
+                  
+                 }
+                
+              }  
+          }
+          return {status:HttpStatus.OK}
+        
+        } catch (error) {
+          console.log(error);
+          throw new BadRequestException(error)
+          
+    }
+
+  }
     
 
 }

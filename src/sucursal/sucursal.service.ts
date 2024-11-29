@@ -19,7 +19,11 @@ export class SucursalService {
     private readonly EmpresaSchema: Model<EmpresaExcel>,
   ) {}
 
+   public async buscarSucursal(sucursal:string){
+     const sucur =await this.SucursalSchema.findOne({nombre:sucursal})
+     return sucur
 
+   }
 
    public async  listarSucursalId(id:Types.ObjectId){
     const sucursal = await this.SucursalSchema.findById(id)

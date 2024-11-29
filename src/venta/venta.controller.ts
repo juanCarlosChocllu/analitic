@@ -3,33 +3,28 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
-  Type,
-  Query,
-  UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
 import { VentaService } from './venta.service';
-import { VentaDto, VentaExcelDto } from './dto/venta.dto';
-import { VentaExcel } from './schemas/venta.schema';
+import { VentaExcelDto } from './dto/venta.dto';
+
 import { InformacionVentaDto } from './dto/informacion.venta.dto';
 import { KpiDto } from './dto/kpi.venta.dto';
 import { ValidacionIdPipe } from 'src/util/validacion-id/validacion-id.pipe';
-import { FechaFinPipe } from 'src/util/fechas/fechaFin.pipe';
-import { FechaInicioPipe } from 'src/util/fechas/fechaInicion.pipe';
+
 import { VentaKpiService } from './venta.kpi.service';
-import { TipoVenta } from 'src/tipo-venta/schemas/tipo-venta.schema';
-import { log } from 'node:console';
+
 import { TokenGuard } from 'src/autenticacion/guard/token/token.guard';
+import { VentaGestionService } from './venta.gestion.service';
 
 @UseGuards(TokenGuard)
 @Controller('venta')
 export class VentaController {
   constructor(
     private readonly ventaService: VentaService,
-    private readonly ventaKpiService: VentaKpiService
+    private readonly ventaKpiService: VentaKpiService,
+    private readonly ventaGestionService: VentaGestionService
   
   ) {}
 
@@ -51,12 +46,12 @@ export class VentaController {
   @Post('excel/indicadores/asesor')
   async indicadoresPorAsesor(@Body() ventaDto: VentaExcelDto) {
       
-    return await this.ventaService.indicadoresPorAsesor(ventaDto);
+    return await this.ventaGestionService.indicadoresPorAsesor(ventaDto);
   }
 
   @Post('excel/indicadores/sucursal')
   async indicadoresPorSucursal(@Body() ventaDto: VentaExcelDto) {   
-    return await this.ventaService.indicadoresPorSucursal(ventaDto);
+    return await this.ventaGestionService.indicadoresPorSucursal(ventaDto);
   }
 
  
@@ -66,7 +61,7 @@ export class VentaController {
     @Param('id') id: string,
     @Body() informacionVentaDto: InformacionVentaDto,
   ) {
-    return this.ventaService.sucursalVentaInformacion(id, informacionVentaDto);
+    return this.ventaGestionService.sucursalVentaInformacion(id, informacionVentaDto);
   }
 
   @Post('lente/:id')
@@ -77,7 +72,7 @@ export class VentaController {
   
   @Post('indicadores/fecha')
    indicadoresPorFecha(@Body() ventaDto: VentaExcelDto){
-    return this.ventaService.indicadoresPorFecha(ventaDto)
+    return this.ventaGestionService.indicadoresPorFecha(ventaDto)
    }
 
    @Post('kpi/lentes')

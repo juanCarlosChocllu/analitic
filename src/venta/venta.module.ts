@@ -3,8 +3,6 @@ import { VentaService } from './venta.service';
 import { VentaController } from './venta.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
-  AsesorExcel,
-  AsesorExcelSchema,
   VentaExcel,
   VentaExcelSchema,
 } from './schemas/venta.schema';
@@ -19,6 +17,8 @@ import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.sc
 import { AbonoModule } from 'src/abono/abono.module';
 import { EmpresaModule } from 'src/empresa/empresa.module';
 import { VentaKpiService } from './venta.kpi.service';
+import { VentaGestionService } from './venta.gestion.service';
+import { AsesorExcel, AsesorExcelSchema } from 'src/asesores/schemas/asesore.schema';
 
 
 @Module({
@@ -30,6 +30,8 @@ import { VentaKpiService } from './venta.kpi.service';
         { name: VentaExcel.name, schema: VentaExcelSchema },
         { name: EmpresaExcel.name, schema: EmpresaExcelSchema },
         { name: AsesorExcel.name, schema: AsesorExcelSchema },
+
+
       ],
       NombreBdConexion.oc,
     ),
@@ -41,7 +43,7 @@ import { VentaKpiService } from './venta.kpi.service';
  
   ],
   controllers: [VentaController],
-  providers: [VentaService, VentaKpiService],
+  providers: [VentaService, VentaKpiService, VentaGestionService],
 
   exports: [VentaService],
 })
