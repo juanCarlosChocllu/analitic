@@ -12,6 +12,7 @@ import { productos } from "./enums/productos.enum";
 import { InformacionVentaDto } from "./dto/informacion.venta.dto";
 import { log } from "node:console";
 import { filtradorKpi } from "./util/filtrador.kpi.util";
+import { filtradorKpiInformacion } from "./util/filtrador.kpi.informacion.util";
 
 @Injectable()
 export class VentaKpiService {
@@ -619,16 +620,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
     } 
   
     async kpiInformacion(sucursal:string,informacionVentaDto :InformacionVentaDto){
-      const filtrador:FiltroVentaI ={
-        fecha:{
-          $gte:new Date(informacionVentaDto.fechaInicio),
-          $lte:new Date(informacionVentaDto.fechaFin)
-        },
-        sucursal:new Types.ObjectId(sucursal)
-      }
-      
-      informacionVentaDto.tipoVenta.length > 0 ? filtrador.tipoVenta= {$in: informacionVentaDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
-      
+      const filtrador= filtradorKpiInformacion(sucursal, informacionVentaDto)
       const [antireflejo, progresivos, ocupacional, su] =  await Promise.all([
          this.kpiAntireflejo(filtrador),
          this.kpiProgresivos(filtrador),
@@ -810,16 +802,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
 
 
   async kpiInformacionMonturasVip(informacionVentaDto:InformacionVentaDto, sucursal:string){
-    const filtrador:FiltroVentaI={
-      fecha:{
-        $gte:new Date(informacionVentaDto.fechaInicio),
-        $lte: new Date(informacionVentaDto.fechaFin)
-      },
-      sucursal:new Types.ObjectId(sucursal)
-    
-    }
-  informacionVentaDto.tipoVenta.length> 0 ? filtrador.tipoVenta = {$in: informacionVentaDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
-    
+    const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto)
     const monturasVip = await this.VentaExcelSchema.aggregate([
       {
         $match:{
@@ -1619,16 +1602,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
      }
 
      async kpiIformacionLentesDeContacto ( informacionVentaDto: InformacionVentaDto, sucursal:string){
-      
-        const filtrador : FiltroVentaI={
-          fecha:{
-            $gte:new Date(informacionVentaDto.fechaInicio),
-            $lte:new  Date(informacionVentaDto.fechaFin)
-          },
-          sucursal:new Types.ObjectId(sucursal)
-        }
-        informacionVentaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in:informacionVentaDto.tipoVenta.map((id)=> new Types.ObjectId(id)) }:filtrador
-
+       const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto)
           const lc = await this.VentaExcelSchema.aggregate([
               {
                 $match:{
@@ -1752,16 +1726,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
       }
 
       async kpiInformacionMonturas(informacionVentaDto:InformacionVentaDto, sucursal:string){
-        const filtrador:FiltroVentaI={
-          fecha:{
-            $gte:new Date(informacionVentaDto.fechaInicio),
-            $lte: new Date(informacionVentaDto.fechaFin)
-          },
-          sucursal:new Types.ObjectId(sucursal)
-        
-        }
-      informacionVentaDto.tipoVenta.length> 0 ? filtrador.tipoVenta = {$in: informacionVentaDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
-        
+        const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto)
         const monturas = await this.VentaExcelSchema.aggregate([
           {
             $match:{
@@ -1881,16 +1846,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
       }
 
       async kpiInformacionGafa(informacionVentaDto:InformacionVentaDto, sucursal:string){
-        const filtrador:FiltroVentaI={
-          fecha:{
-            $gte:new Date(informacionVentaDto.fechaInicio),
-            $lte: new Date(informacionVentaDto.fechaFin)
-          },
-          sucursal:new Types.ObjectId(sucursal)
-        
-        }
-      informacionVentaDto.tipoVenta.length> 0 ? filtrador.tipoVenta = {$in: informacionVentaDto.tipoVenta.map((id)=> new Types.ObjectId(id))}:filtrador
-        
+        const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto)
         const gafa = await this.VentaExcelSchema.aggregate([
           {
             $match:{

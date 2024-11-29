@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsMongoId, IsOptional } from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsMongoId, IsOptional } from 'class-validator';
 import { EstadoEnum } from '../enums/estado.enum';
 import { Types } from 'mongoose';
 
@@ -11,6 +11,10 @@ export class InformacionVentaDto {
   @IsEnum(EstadoEnum)
   @IsOptional()
   estado: string;
+
+  @IsOptional()
+  @IsBoolean()
+  comisiona:boolean | null
 
   @IsDateString()
   fechaInicio: string;

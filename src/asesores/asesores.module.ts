@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AsesoresService } from './asesores.service';
-import { AsesoresController } from './asesores.controller';
+
 import { MongooseModule } from '@nestjs/mongoose';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 import { AsesorExcel, AsesorExcelSchema } from './schemas/asesore.schema';
@@ -12,7 +12,8 @@ import { AsesorExcel, AsesorExcelSchema } from './schemas/asesore.schema';
       name:AsesorExcel.name ,schema:AsesorExcelSchema
     }], NombreBdConexion.oc)
   ],
-  controllers: [AsesoresController],
+
   providers: [AsesoresService],
+  exports:[AsesoresService]
 })
 export class AsesoresModule {}

@@ -38,6 +38,13 @@ export class SucursalService {
     return suscursales;
   }
 
+  async listarEmpresDeSucursal(empresa:Types.ObjectId){
+    const suscursales = await this.SucursalSchema.find({
+      empresa: new Types.ObjectId(empresa),
+    });
+    return suscursales
+
+  }
   
   public async guardarEmpresaYsusSucursales() {
     const data = dataEmpresa();  

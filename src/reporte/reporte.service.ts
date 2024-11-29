@@ -28,6 +28,7 @@ import { SucursalService } from 'src/sucursal/sucursal.service';
 import { Log } from 'src/log/schemas/log.schema';
 import { AsesorExcel } from 'src/asesores/schemas/asesore.schema';
 import { VentaExcel } from 'src/venta/schemas/venta.schema';
+import { AsesoresService } from 'src/asesores/asesores.service';
 
 
 @Injectable()
@@ -43,10 +44,6 @@ export class ReporteService {
     
     @InjectModel(VentaExcel.name, NombreBdConexion.oc)
     private readonly VentaExcelSchema: Model<VentaExcel>,
-   
-    @InjectModel(AsesorExcel.name, NombreBdConexion.oc)
-    
-    private readonly AsesorExcelSchema: Model<AsesorExcel>,
     
     private readonly httpAxiosVentaService: HttpAxiosVentaService,
       
@@ -68,6 +65,8 @@ export class ReporteService {
     private readonly oftalmologoService:OftalmologoService,
 
     private readonly sucursalService:SucursalService,
+
+    private readonly asesorService:AsesoresService,
     
   ){}
  
@@ -81,8 +80,8 @@ export class ReporteService {
      const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
      
       const ventaSinServicio = this.quitarServiciosVentas(dataExcel);
-      const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
-      const ventaLimpia = this.quitarDescuento(ventaSinParaguay);
+     // const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
+      const ventaLimpia = this.quitarDescuento(ventaSinServicio);
       console.log('descargando de :' , aqo, mes, dia);
       await this.guardarAsesorExcel(ventaLimpia);
       await this.guardarAtributosLente(ventaLimpia);
@@ -160,11 +159,7 @@ export class ReporteService {
     
         
         if (sucursal) {
-          const asesor = await this.AsesorExcelSchema.findOne({
-            usuario: data.asesor.toUpperCase(),
-            sucursal: sucursal._id,
-          });
-    
+          const asesor = await this.asesorService.buscarAsesorPorScursal(data.asesor, sucursal._id)
           const tipoVenta = await this.tipoVentaService.tipoVentaAbreviatura(tipo);
           const tratamiento = data.producto === productos.lente? await this.tratamientoService.listarTratamiento( data.atributo6,): null;
 
@@ -238,16 +233,10 @@ export class ReporteService {
       });
 
       if (sucursal) {
-        const usuario = await this.AsesorExcelSchema.findOne({
-          usuario: data.asesor,
-          sucursal: sucursal._id,
-        });
+        const asesor = await this.asesorService.buscarAsesorPorScursal(data.asesor, sucursal._id)
 
-        if (!usuario) {
-          await this.AsesorExcelSchema.create({
-            usuario: data.asesor.trim(),
-            sucursal: sucursal._id,
-          });
+        if (!asesor) {
+          await this.asesorService.crearAsesor(data.asesor, sucursal._id)
         }
       }
     }
@@ -295,17 +284,7 @@ export class ReporteService {
                      
                    }
                  }
-              }else{
-                console.log(ve.id_venta);
-                
-                 if(ve.id_venta ==='VEN-OPT-SUCRE-CON-10186'){
-                  console.log('venta no encontrada');
-                  
-                  console.log(ve);
-                  
-                 }
-                
-              }  
+              } 
           }
           return {status:HttpStatus.OK}
         

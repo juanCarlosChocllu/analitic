@@ -18,10 +18,10 @@ import { TipoColorModule } from 'src/tipo-color/tipo-color.module';
 import { MarcasModule } from 'src/marcas/marcas.module';
 import { MarcaLenteModule } from 'src/marca-lente/marca-lente.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { VentaService } from 'src/venta/venta.service';
+
 import { VentaModule } from 'src/venta/venta.module';
 import { OftalmologoModule } from 'src/oftalmologo/oftalmologo.module';
-import { AsesorExcel, AsesorExcelSchema } from 'src/asesores/schemas/asesore.schema';
+import { AsesoresModule } from 'src/asesores/asesores.module';
 
 @Module({
   imports:[
@@ -30,7 +30,6 @@ import { AsesorExcel, AsesorExcelSchema } from 'src/asesores/schemas/asesore.sch
       [
         { name: SuscursalExcel.name, schema: SuscursalExcelSchema },
         { name: VentaExcel.name, schema: VentaExcelSchema },
-        { name: AsesorExcel.name, schema: AsesorExcelSchema },
         { name: Abono.name, schema: AbonoSchema },
       ],
       NombreBdConexion.oc,
@@ -46,7 +45,8 @@ import { AsesorExcel, AsesorExcelSchema } from 'src/asesores/schemas/asesore.sch
     MarcaLenteModule,
     VentaModule,
     OftalmologoModule,
-    SucursalModule
+    SucursalModule,
+    AsesoresModule
   ],
   controllers: [ReporteController],
   providers: [ReporteService],

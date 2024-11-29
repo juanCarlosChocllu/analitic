@@ -61,7 +61,7 @@ export class VentaController {
     @Param('id') id: string,
     @Body() informacionVentaDto: InformacionVentaDto,
   ) {
-    return this.ventaGestionService.sucursalVentaInformacion(id, informacionVentaDto);
+        return this.ventaGestionService.sucursalVentaInformacion(id, informacionVentaDto);
   }
 
   @Post('lente/:id')

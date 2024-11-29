@@ -7,13 +7,13 @@ import { filtradorDeGestion } from './util/filtrador.gestion.util';
 import { FiltroVentaI } from './interfaces/filtro.venta.interface';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
-import { EstadoEnum } from './enums/estado.enum';
 import { InformacionVentaDto } from './dto/informacion.venta.dto';
 import { ticketPromedio } from './util/tickectPromedio.util';
 import { diasHAbiles } from './util/dias.habiles.util';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { VentaExcel } from './schemas/venta.schema';
-import { AsesorExcel } from 'src/asesores/schemas/asesore.schema';
+import { AsesoresService } from 'src/asesores/asesores.service';
+import { sucursalesEnum } from './enums/sucursales.enum';
 
 @Injectable()
 export class VentaGestionService {
@@ -22,10 +22,9 @@ export class VentaGestionService {
         private readonly VentaExcelSchema: Model<VentaExcel>,
         @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
         private readonly sucursalExcelSchema: Model<SuscursalExcel>,
-        @InjectModel(AsesorExcel.name, NombreBdConexion.oc)
-        private readonly AsesorExcelSchema: Model<AsesorExcel>,
-    
+  
         private readonly sucursalService: SucursalService,
+        private readonly asesoresService: AsesoresService,
      
     
       ) {}
@@ -33,13 +32,15 @@ export class VentaGestionService {
     public async indicadoresPorAsesor(ventaDto: VentaExcelDto) {
         const listaAsesor: AsesorExcelI[] = [];
         const filtrador = filtradorDeGestion(ventaDto)
-      
-        
         for (let sucursal of ventaDto.sucursal) {
-          const asesores: AsesorExcelI[] = await this.AsesorExcelSchema.find({
-            sucursal: new Types.ObjectId(sucursal),
-          });
-          listaAsesor.push(...asesores);
+          const sucur = await this.sucursalService.listarSucursalId(sucursal);
+           if(ventaDto.sucursal.length > 0 && sucur.nombre != sucursalesEnum.opticentroParaguay){
+            const asesores: AsesorExcelI[] = await this.asesoresService.listarAsesorPorSucursal(sucursal)    
+            listaAsesor.push(...asesores);
+           }else if(ventaDto.sucursal.length == 1 && sucur.nombre ==sucursalesEnum.opticentroParaguay){
+            const asesores: AsesorExcelI[] = await this.asesoresService.listarAsesorPorSucursal(sucursal)    
+            listaAsesor.push(...asesores);
+           }
         }
         const ventaPorAsesor = await this.ventaPorAsesores(
           listaAsesor,
@@ -53,126 +54,133 @@ export class VentaGestionService {
         const venPorAsesor: any[] = [];
         for (let asesor of asesores) {
           const sucursal = await this.sucursalExcelSchema.findOne({ _id: asesor.sucursal }).select('nombre');
-          const asesorNombre = await this.AsesorExcelSchema.findOne({ _id: asesor.id,}).select('usuario');
-          const resultado = await this.VentaExcelSchema.aggregate([
-            {
-              $match: {
-                asesor: new Types.ObjectId(asesor.id),
-                ...filtrador
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                ventaTotal: {
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ['$aperturaTicket', '1'] },
-                      then: '$montoTotal',
-                      else: 0,
-                    },
-                  },
-                },
-                totalTicket: {
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ['$aperturaTicket', '1'] },
-                      then: 1,
-                      else: 0,
-                    },
-                  },
-                },
-                cantidad: {
-                  $sum: {
-                    $cond: {
-                      if: { $ne: ['$producto', 'DESCUENTO'] },
-                      then: '$cantidad',
-                      else: 0,
-                    },
-                  },
-                },
-                totalImporte: {
-                  $sum: {
-                    $cond: {
-                      if: { $ne: ['$producto', 'DESCUENTO'] },
-                      then: '$importe',
-                      else: 0,
-                    },
-                  },
-                },
-                totalDescuentos: {
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ['$producto', 'DESCUENTO'] },
-                      then: '$importe',
-                      else: 0,
-                    },
-                  },
+          
+
+         
+            const asesorNombre = await this.asesoresService.asesorFindOne(asesor.id)
+            const resultado = await this.VentaExcelSchema.aggregate([
+              {
+                $match: {
+                  asesor: new Types.ObjectId(asesor.id),
+                  ...filtrador
                 },
               },
-            },
-            {
-              $project: {
-                ventaTotal: 1,
-                cantidad: 1,
-                totalTicket: 1,
-                importeTotalSuma: {
-                  $subtract: ['$totalImporte', '$totalDescuentos'],
-                },
-    
-                ticketPromedio: {
-                  $cond: {
-                    if: { $ne: ['$totalTicket', 0] },
-                    then: {
-                      $round: [{ $divide: ['$ventaTotal', '$totalTicket'] }, 2],
-                    },
-                    else: 0,
-                  },
-                },
-    
-                precioPromedio: {
-                  $cond: {
-                    if: { $ne: ['$cantidad', 0] },
-                    then: {
-                      $round: [{ $divide: ['$ventaTotal', '$cantidad'] }, 2],
-                    },
-                    else: 0,
-                  },
-                },
-                unidadPorTicket: {
-                  $cond: {
-                    if: { $ne: ['$cantidad', 0] },
-                    then: {
-                      $round: [{ $divide: ['$cantidad', '$totalTicket'] }, 2],
-                    },
-                    else: 0,
-                  },
-                },
-              },
-            },
-          ]);
-    
-          const resultadoFinal =
-            resultado.length > 0
-              ? resultado[0]
-              : {
+              {
+                $group: {
                   _id: null,
-                  unidadPorTicket: 0,
-                  importeTotalSuma: 0,
-                  ventaTotal: 0,
-                  cantidad: 0,
-                  totalTicket: 0,
-                  ticketPromedio: 0,
-                  precioPromedio: 0,
-                };
-    
-          const data = {
-            sucursal: sucursal.nombre,
-            asesor: asesorNombre.usuario,
-            ...resultadoFinal,
-          };
-    
-          venPorAsesor.push(data);
+                  ventaTotal: {
+                    $sum: {
+                      $cond: {
+                        if: { $eq: ['$aperturaTicket', '1'] },
+                        then: '$montoTotal',
+                        else: 0,
+                      },
+                    },
+                  },
+                  totalTicket: {
+                    $sum: {
+                      $cond: {
+                        if: { $eq: ['$aperturaTicket', '1'] },
+                        then: 1,
+                        else: 0,
+                      },
+                    },
+                  },
+                  cantidad: {
+                    $sum: {
+                      $cond: {
+                        if: { $ne: ['$producto', 'DESCUENTO'] },
+                        then: '$cantidad',
+                        else: 0,
+                      },
+                    },
+                  },
+                  totalImporte: {
+                    $sum: {
+                      $cond: {
+                        if: { $ne: ['$producto', 'DESCUENTO'] },
+                        then: '$importe',
+                        else: 0,
+                      },
+                    },
+                  },
+                  totalDescuentos: {
+                    $sum: {
+                      $cond: {
+                        if: { $eq: ['$producto', 'DESCUENTO'] },
+                        then: '$importe',
+                        else: 0,
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                $project: {
+                  ventaTotal: 1,
+                  cantidad: 1,
+                  totalTicket: 1,
+                  importeTotalSuma: {
+                    $subtract: ['$totalImporte', '$totalDescuentos'],
+                  },
+      
+                  ticketPromedio: {
+                    $cond: {
+                      if: { $ne: ['$totalTicket', 0] },
+                      then: {
+                        $round: [{ $divide: ['$ventaTotal', '$totalTicket'] }, 2],
+                      },
+                      else: 0,
+                    },
+                  },
+      
+                  precioPromedio: {
+                    $cond: {
+                      if: { $ne: ['$cantidad', 0] },
+                      then: {
+                        $round: [{ $divide: ['$ventaTotal', '$cantidad'] }, 2],
+                      },
+                      else: 0,
+                    },
+                  },
+                  unidadPorTicket: {
+                    $cond: {
+                      if: { $ne: ['$cantidad', 0] },
+                      then: {
+                        $round: [{ $divide: ['$cantidad', '$totalTicket'] }, 2],
+                      },
+                      else: 0,
+                    },
+                  },
+                },
+              },
+            ]);
+      
+            const resultadoFinal =
+              resultado.length > 0
+                ? resultado[0]
+                : {
+                    _id: null,
+                    unidadPorTicket: 0,
+                    importeTotalSuma: 0,
+                    ventaTotal: 0,
+                    cantidad: 0,
+                    totalTicket: 0,
+                    ticketPromedio: 0,
+                    precioPromedio: 0,
+                  };
+      
+            const data = {
+              sucursal: sucursal.nombre,
+              asesor: asesorNombre.usuario,
+              ...resultadoFinal,
+            };
+      
+            venPorAsesor.push(data);
+
+          
+          
+       
         }
     
         return venPorAsesor;
@@ -194,158 +202,17 @@ export class VentaGestionService {
           ticketPromedio: 0,
           tasaConversion: 0,
         };
-      
         for (let idsucursal of ventaDto.sucursal) {
-          const sucursal = await this.sucursalExcelSchema.findOne({
-            _id: idsucursal,
-          });
-          const sucusarsalData = await this.VentaExcelSchema.aggregate([
-            {
-              $match: {
-                sucursal: new Types.ObjectId(idsucursal),
-                ...filtrador,
-              },
-            },
-            {
-              $group: {
-                _id: '$sucursal',
-                ventaTotal: {
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ['$aperturaTicket', '1'] },
-                      then: '$montoTotal',
-                      else: 0,
-                    },
-                  },
-                },
-                totalTicket: {
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ['$aperturaTicket', '1'] },
-                      then: 1,
-                      else: 0,
-                    },
-                  },
-                },
-                traficoCliente: {
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ['$aperturaTicket', '1'] },
-                      then: 1,
-                      else: 0,
-                    },
-                  },
-                },
-                totalImporte: {
-                  $sum: {
-                    $cond: {
-                      if: { $ne: ['$producto', 'DESCUENTO'] },
-                      then: '$importe',
-                      else: 0,
-                    },
-                  },
-                },
-                totalDescuentos: {
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ['$producto', 'DESCUENTO'] },
-                      then: '$importe',
-                      else: 0,
-                    },
-                  },
-                },
-    
-                cantidad: {
-                  $sum: {
-                    $cond: {
-                      if: { $ne: ['$producto', 'DESCUENTO'] },
-                      then: '$cantidad',
-                      else: 0,
-                    },
-                  },
-                },
-              },
-            },
-            {
-              $project: {
-                _id: 0,
-                ventaTotal: 1,
-                totalTicket: 1,
-                traficoCliente: 1,
-                cantidad: 1,
-                importeTotalSuma: {
-                  $subtract: ['$totalImporte', '$totalDescuentos'],
-                },
-                ticketPromedio: {
-                  $cond: {
-                    if: { $ne: ['$totalTicket', 0] },
-                    then: {
-                      $round: [{ $divide: ['$ventaTotal', '$totalTicket'] }, 2],
-                    },
-                    else: 0,
-                  },
-                },
-                unidadPorTicket: {
-                  $cond: {
-                    if: { $ne: ['$cantidad', 0] },
-                    then: {
-                      $round: [{ $divide: ['$cantidad', '$totalTicket'] }, 2],
-                    },
-                    else: 0,
-                  },
-                },
-    
-                precioPromedio: {
-                  $cond: {
-                    if: { $ne: ['$ventaTotal', 0] },
-                    then: {
-                      $round: [{ $divide: ['$ventaTotal', '$cantidad'] }, 2],
-                    },
-                    else: 0,
-                  },
-                },
-    
-                tasaConversion: {
-                  $cond: {
-                    if: { $ne: ['$traficoCliente', 0] },
-                    then: {
-                      $round: [
-                        {
-                          $multiply: [
-                            { $divide: ['$totalTicket', '$traficoCliente'] },
-                            100,
-                          ],
-                        },
-                        2,
-                      ],
-                    },
-                    else: 0,
-                  },
-                },
-              },
-            },
-          ]);
-          const resultadoFinal =
-            sucusarsalData.length > 0
-              ? sucusarsalData[0]
-              : {
-                  _id: null,
-                  traficoCliente: 0,
-                  ventaTotal: 0,
-                  totalTicket: 0,
-                  cantidad: 0,
-                  ticketPromedio: 0,
-                  unidadPorTicket: 0,
-                  precioPromedio: 0,
-                };
-    
-          const data = {
-            sucursal: sucursal.nombre,
-            id: sucursal._id,
-            ...resultadoFinal,
-          };
-    
-          dataSucursal.push(data);
+          const sucur = await this.sucursalService.listarSucursalId(idsucursal);
+          console.log(sucur);
+          
+          if(ventaDto.sucursal.length > 0 && sucur.nombre != sucursalesEnum.opticentroParaguay){
+            const indicadorData = await this.idicadorSucursal(idsucursal, filtrador)
+            dataSucursal.push(indicadorData)
+          }else if (ventaDto.sucursal.length == 1 && sucur.nombre ==sucursalesEnum.opticentroParaguay){
+            const indicadorData = await this.idicadorSucursal(idsucursal, filtrador)
+            dataSucursal.push(indicadorData)
+          }
         }
         const traficoCliente = dataSucursal.reduce(
           (total, item) => total + item.traficoCliente,
@@ -381,6 +248,155 @@ export class VentaGestionService {
         return resultado;
       }
     
+      private async idicadorSucursal(idsucursal:Types.ObjectId, filtrador:FiltroVentaI){
+        const sucursal = await this.sucursalService.listarSucursalId( idsucursal);
+            const sucusarsalData = await this.VentaExcelSchema.aggregate([
+              {
+                $match: {
+                  sucursal: new Types.ObjectId(idsucursal),
+                  ...filtrador,
+                },
+              },
+              {
+                $group: {
+                  _id: '$sucursal',
+                  ventaTotal: {
+                    $sum: {
+                      $cond: {
+                        if: { $eq: ['$aperturaTicket', '1'] },
+                        then: '$montoTotal',
+                        else: 0,
+                      },
+                    },
+                  },
+                  totalTicket: {
+                    $sum: {
+                      $cond: {
+                        if: { $eq: ['$aperturaTicket', '1'] },
+                        then: 1,
+                        else: 0,
+                      },
+                    },
+                  },
+                  traficoCliente: {
+                    $sum: {
+                      $cond: {
+                        if: { $eq: ['$aperturaTicket', '1'] },
+                        then: 1,
+                        else: 0,
+                      },
+                    },
+                  },
+                  totalImporte: {
+                    $sum: {
+                      $cond: {
+                        if: { $ne: ['$producto', 'DESCUENTO'] },
+                        then: '$importe',
+                        else: 0,
+                      },
+                    },
+                  },
+                  totalDescuentos: {
+                    $sum: {
+                      $cond: {
+                        if: { $eq: ['$producto', 'DESCUENTO'] },
+                        then: '$importe',
+                        else: 0,
+                      },
+                    },
+                  },
+      
+                  cantidad: {
+                    $sum: {
+                      $cond: {
+                        if: { $ne: ['$producto', 'DESCUENTO'] },
+                        then: '$cantidad',
+                        else: 0,
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  ventaTotal: 1,
+                  totalTicket: 1,
+                  traficoCliente: 1,
+                  cantidad: 1,
+                  importeTotalSuma: {
+                    $subtract: ['$totalImporte', '$totalDescuentos'],
+                  },
+                  ticketPromedio: {
+                    $cond: {
+                      if: { $ne: ['$totalTicket', 0] },
+                      then: {
+                        $round: [{ $divide: ['$ventaTotal', '$totalTicket'] }, 2],
+                      },
+                      else: 0,
+                    },
+                  },
+                  unidadPorTicket: {
+                    $cond: {
+                      if: { $ne: ['$cantidad', 0] },
+                      then: {
+                        $round: [{ $divide: ['$cantidad', '$totalTicket'] }, 2],
+                      },
+                      else: 0,
+                    },
+                  },
+      
+                  precioPromedio: {
+                    $cond: {
+                      if: { $ne: ['$ventaTotal', 0] },
+                      then: {
+                        $round: [{ $divide: ['$ventaTotal', '$cantidad'] }, 2],
+                      },
+                      else: 0,
+                    },
+                  },
+      
+                  tasaConversion: {
+                    $cond: {
+                      if: { $ne: ['$traficoCliente', 0] },
+                      then: {
+                        $round: [
+                          {
+                            $multiply: [
+                              { $divide: ['$totalTicket', '$traficoCliente'] },
+                              100,
+                            ],
+                          },
+                          2,
+                        ],
+                      },
+                      else: 0,
+                    },
+                  },
+                },
+              },
+            ]);
+            const resultadoFinal =
+              sucusarsalData.length > 0
+                ? sucusarsalData[0]
+                : {
+                    _id: null,
+                    traficoCliente: 0,
+                    ventaTotal: 0,
+                    totalTicket: 0,
+                    cantidad: 0,
+                    ticketPromedio: 0,
+                    unidadPorTicket: 0,
+                    precioPromedio: 0,
+                  };
+      
+            const data = {
+              sucursal: sucursal.nombre,
+              id: sucursal._id,
+              ...resultadoFinal,
+            };
+          return data
+      } 
       public async sucursalVentaInformacion(
         id: string,
         informacionVentaDto: InformacionVentaDto,
@@ -390,17 +406,11 @@ export class VentaGestionService {
             $gte: new Date(informacionVentaDto.fechaInicio),
             $lte: new Date(informacionVentaDto.fechaFin),
           },
+        
         };
-        if (informacionVentaDto.estado) {
-          if (informacionVentaDto.estado === EstadoEnum.finalizado) {
-            filtrador.flagVenta = informacionVentaDto.estado;
-          } else if (informacionVentaDto.estado === EstadoEnum.realizadas) {
-            filtrador.flagVenta = { $ne: EstadoEnum.finalizado };
-          }
+        if(informacionVentaDto.comisiona != null){
+          filtrador.comisiona = informacionVentaDto.comisiona
         }
-    
-    
-    
         const ventaSucursal = await this.VentaExcelSchema.aggregate([
           {
             $match: {

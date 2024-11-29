@@ -33,6 +33,10 @@ import { productos } from './enums/productos.enum';
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
 
 import { AbonoService } from 'src/abono/abono.service';
+import { AsesoresService } from 'src/asesores/asesores.service';
+import { SucursalService } from 'src/sucursal/sucursal.service';
+import { Log } from 'src/log/schemas/log.schema';
+import { sucursalesEnum } from './enums/sucursales.enum';
 
 
 @Injectable()
@@ -43,6 +47,8 @@ export class VentaService {
     @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
     private readonly sucursalExcelSchema: Model<SuscursalExcel>,
 
+   
+    private readonly sucursalService:SucursalService,
  
     @Inject(forwardRef(() =>AbonoService))
     private readonly abonoService: AbonoService,
@@ -132,7 +138,7 @@ export class VentaService {
     },
     empresa: new Types.ObjectId(ventaDto.empresa),
   }
-
+   
     ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id) ) } :filtrador
 
    const venta = await this.VentaExcelSchema.aggregate([
@@ -142,6 +148,22 @@ export class VentaService {
           producto:{$ne:'DESCUENTO'}
         },
        
+      },
+      {
+        $lookup:{
+          from:'suscursalexcels',
+          foreignField:'_id',
+          localField:'sucursal',
+          as:'sucursal'
+        }
+      },
+      {
+        $unwind: '$sucursal' 
+      },
+      {
+        $match:{
+          'sucursal.nombre': { $ne: 'OPTICENTRO PARAGUAY' }
+        }
       },
       {
         $group: {
@@ -172,8 +194,7 @@ export class VentaService {
       $gte: new Date(ventaDto.fechaInicio),
       $lte: new Date(ventaDto.FechaFin),
     },
-  }
-
+   }
     ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id) ) } :filtrador
     
     for (let sucursal of ventaDto.sucursal) {
@@ -184,6 +205,17 @@ export class VentaService {
             ...filtrador,
             producto:{$ne: 'DESCUENTO' }
           }
+        },
+        {
+          $lookup:{
+            from:'suscursalexcels',
+            foreignField:'_id',
+            localField:'sucursal',
+            as:'sucursal'
+          }
+        },
+        {
+          $unwind: '$sucursal' 
         },
         {
           $group: {
@@ -245,21 +277,26 @@ export class VentaService {
     ventaPorSucursal: any[],
     ventaDto: VentaExcelDto,
   ) {
+    
+    
     const dias = diasHAbiles(ventaDto.fechaInicio, ventaDto.FechaFin);
 
     const totalVenta: number[] = [];
     const cantidadTotal: number[] = [];
     for (let venta of ventaPorSucursal) {
-      const total = venta.data.reduce(
-        (total: number, venta: VentaExcelI) => total + venta.montoTotal,
-        0,
-      );
-      const cantidad = venta.data.reduce(
-        (total: number, venta: VentaExcelI) => total + venta.cantidad,
-        0,
-      );
-      totalVenta.push(total);
-      cantidadTotal.push(cantidad);
+     
+        if(venta.sucursal != sucursalesEnum.opticentroParaguay){
+          const total = venta.data.reduce(
+            (total: number, venta: VentaExcelI) => total + venta.montoTotal,
+            0,
+          );
+          const cantidad = venta.data.reduce(
+            (total: number, venta: VentaExcelI) => total + venta.cantidad,
+            0,
+          );
+          totalVenta.push(total);
+          cantidadTotal.push(cantidad);
+        }
     }
     const total = totalVenta
       .reduce((total, venta) => total + venta, 0)

@@ -19,6 +19,7 @@ import { EmpresaModule } from 'src/empresa/empresa.module';
 import { VentaKpiService } from './venta.kpi.service';
 import { VentaGestionService } from './venta.gestion.service';
 import { AsesorExcel, AsesorExcelSchema } from 'src/asesores/schemas/asesore.schema';
+import { AsesoresModule } from 'src/asesores/asesores.module';
 
 
 @Module({
@@ -29,8 +30,6 @@ import { AsesorExcel, AsesorExcelSchema } from 'src/asesores/schemas/asesore.sch
         { name: SuscursalExcel.name, schema: SuscursalExcelSchema },
         { name: VentaExcel.name, schema: VentaExcelSchema },
         { name: EmpresaExcel.name, schema: EmpresaExcelSchema },
-        { name: AsesorExcel.name, schema: AsesorExcelSchema },
-
 
       ],
       NombreBdConexion.oc,
@@ -39,6 +38,7 @@ import { AsesorExcel, AsesorExcelSchema } from 'src/asesores/schemas/asesore.sch
     TipoVentaModule,
     SucursalModule,
     EmpresaModule,
+    AsesoresModule,
     forwardRef(()=> AbonoModule)
  
   ],
