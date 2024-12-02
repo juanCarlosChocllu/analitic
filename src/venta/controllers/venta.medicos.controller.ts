@@ -1,5 +1,6 @@
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { VentaMedicosService } from '../services/venta.medicos.service';
+import { VentaExcelDto } from '../dto/venta.dto';
 
 @Controller('venta')
 export class VentaMedicosController {
@@ -10,12 +11,12 @@ export class VentaMedicosController {
    }
    
    @Post('medidas/oftalmologos')
-   kpiOftalmologos(){
-    return this.ventaKpiMedicos.kpiOtalmologos()
+   kpiOftalmologos(@Body () ventaExcelDto:VentaExcelDto){
+    return this.ventaKpiMedicos.kpiOtalmologos(ventaExcelDto)
  
    }
-   @Post('medidas/optometras')
-   kpiOptometras(){
-        return this.ventaKpiMedicos.kpiOptometras()
+   @Post('medidas/optometra')
+   kpiOptometras(@Body () ventaExcelDto:VentaExcelDto){
+        return this.ventaKpiMedicos.kpiOptometras(ventaExcelDto)
    }
 }

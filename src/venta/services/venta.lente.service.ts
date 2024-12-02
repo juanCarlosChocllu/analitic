@@ -245,8 +245,6 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                   },
                   else:0
                 }
-               
-              
               },
               progresivos:1,
               ocupacional:1,
