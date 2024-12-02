@@ -6,8 +6,7 @@ import { Abono } from './schema/abono.abono';
 import { Model, Types } from 'mongoose';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 import { abonoI } from './interfaces/abono.interface';
-import { VentaService } from 'src/venta/venta.service';
-import { log } from 'node:console';
+import { VentaService } from 'src/venta/services/venta.service';
 
 @Injectable()
 export class AbonoService {

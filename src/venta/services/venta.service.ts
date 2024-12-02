@@ -3,40 +3,38 @@ import {
   HttpStatus,
   Inject,
   Injectable,
-  Logger,
-
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   VentaExcel,
-} from './schemas/venta.schema';
+} from '../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
-import {VentaExcelDto } from './dto/venta.dto';
+import {VentaExcelDto } from '../dto/venta.dto';
 
-import { VentaExcelI } from './interfaces/ventaExcel.interface';
+import { VentaExcelI } from '../interfaces/ventaExcel.interface';
 
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 
 
-import { diasHAbiles } from './util/dias.habiles.util';
-import { InformacionVentaDto } from './dto/informacion.venta.dto';
+import { diasHAbiles } from '../util/dias.habiles.util';
 
 
-import { flag } from './enums/flag.enum';
+
+import { flag } from '../enums/flag.enum';
 
 
-import { FiltroVentaI } from './interfaces/filtro.venta.interface';
+import { FiltroVentaI } from '../interfaces/filtro.venta.interface';
 
-import { productos } from './enums/productos.enum';
+
 
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
 
 import { AbonoService } from 'src/abono/abono.service';
-import { AsesoresService } from 'src/asesores/asesores.service';
+
 import { SucursalService } from 'src/sucursal/sucursal.service';
-import { Log } from 'src/log/schemas/log.schema';
-import { sucursalesEnum } from './enums/sucursales.enum';
+
+import { sucursalesEnum } from '../enums/sucursales.enum';
 
 
 @Injectable()
@@ -46,8 +44,6 @@ export class VentaService {
     private readonly VentaExcelSchema: Model<VentaExcel>,
     @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
     private readonly sucursalExcelSchema: Model<SuscursalExcel>,
-
-   
     private readonly sucursalService:SucursalService,
  
     @Inject(forwardRef(() =>AbonoService))
@@ -284,19 +280,19 @@ export class VentaService {
     const totalVenta: number[] = [];
     const cantidadTotal: number[] = [];
     for (let venta of ventaPorSucursal) {
-     
-        if(venta.sucursal != sucursalesEnum.opticentroParaguay){
-          const total = venta.data.reduce(
-            (total: number, venta: VentaExcelI) => total + venta.montoTotal,
-            0,
-          );
-          const cantidad = venta.data.reduce(
-            (total: number, venta: VentaExcelI) => total + venta.cantidad,
-            0,
-          );
-          totalVenta.push(total);
-          cantidadTotal.push(cantidad);
-        }
+      
+     if(ventaDto.sucursal.length > 0 && venta.sucursal != sucursalesEnum.opticentroParaguay){
+        const total = this.total(venta.data)
+        const cantidad = this.cantidadTotal(venta.data)
+        totalVenta.push(total);
+        cantidadTotal.push(cantidad);
+     }else if(ventaDto.sucursal.length == 1 && venta.sucursal == sucursalesEnum.opticentroParaguay){
+      const total = this.total(venta.data)
+        const cantidad = this.cantidadTotal(venta.data)
+        totalVenta.push(total);
+        cantidadTotal.push(cantidad);
+      }
+       
     }
     const total = totalVenta
       .reduce((total, venta) => total + venta, 0)
@@ -318,7 +314,21 @@ export class VentaService {
     return resultado;
   }
 
-
+  
+    private cantidadTotal(venta:any[]){
+      const cantidad = venta.reduce(
+        (total: number, venta: VentaExcelI) => total + venta.cantidad,
+        0,
+      );
+    return cantidad
+     }
+     private total(venta:any[]){
+      const total = venta.reduce(
+        (total: number, venta: VentaExcelI) => total + venta.montoTotal,
+        0,
+      );
+      return total
+     }
 
 
 
@@ -349,106 +359,7 @@ export class VentaService {
   }
 
 
-  public async informacionLente(id:string ,  informacionVentaDto: InformacionVentaDto){
-   const tratamiento= await this.lenteTratamiento(id, informacionVentaDto)
-   const tipoLente = await this.tipoDeLente(id,informacionVentaDto )   
-    return{
-      tratamiento,
-      tipoLente
-    }
-     
-  }
 
-
-  private async lenteTratamiento(id:string ,  informacionVentaDto: InformacionVentaDto){
-
-    const lente = await this.VentaExcelSchema.aggregate([
-      {
-        $match:{
-           producto:productos.lente,
-           sucursal:new Types.ObjectId(id),
-           fecha: {
-            $gte: new Date(informacionVentaDto.fechaInicio),
-            $lte: new Date(informacionVentaDto.fechaFin),
-          },
-
-        }
-      },
-      {
-        $lookup:{
-          from:'tratamientos',
-          foreignField:'_id',
-          localField:'tratamiento',
-          as:'tratamiento'
-        }
-      },
-      {
-        $unwind:'$tratamiento'
-      },
-      {
-        $group:{
-          _id:'$tratamiento._id',
-          tratamiendo:{$first:'$tratamiento.nombre'},
-          cantidad: { $sum: 1},
-           importe:{$sum:'$importe'}
-        }
-      },
-      {
-        $project:{
-           tratamiendo:1,
-           cantidad:1,
-           importe:1
-        }
-      }
-    ])    
-    return lente
-  }
-
-
-  private async tipoDeLente(id:string ,  informacionVentaDto: InformacionVentaDto){
-    const lente = await this.VentaExcelSchema.aggregate(
-     [ {
-        $match:{
-           producto:productos.lente,
-           sucursal:new Types.ObjectId(id),
-           fecha: {
-            $gte: new Date(informacionVentaDto.fechaInicio),
-            $lte: new Date(informacionVentaDto.fechaFin),
-          },
-
-        }
-      }
-      ,
-      {
-        $lookup:{
-          from:'tipolentes',
-          foreignField:'_id',
-          localField:'tipoLente',
-          as:'tipoLente'
-        }
-       },{
-        $unwind :'$tipoLente'
-       },
-
-       {
-        $group:{
-          _id:'$tipoLente._id',
-          tipoLente:{$first:'$tipoLente.nombre'},
-          cantidad:{$sum:1},
-          importe :{$sum:'$importe'}
-        }
-       },{
-        $project:{
-          tipoLente:1,
-          cantidad:1,
-          importe:1,
-        }
-       }
-      
-      ])
-  return lente
-    
-  }
 
 
 

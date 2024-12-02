@@ -38,7 +38,7 @@ export class SucursalService {
     return suscursales;
   }
 
-  async listarEmpresDeSucursal(empresa:Types.ObjectId){
+  async listarEmpresaDeSucursal(empresa:Types.ObjectId){
     const suscursales = await this.SucursalSchema.find({
       empresa: new Types.ObjectId(empresa),
     });

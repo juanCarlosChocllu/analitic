@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { AsesorExcelI } from './interfaces/asesor.interface';
+
 import { Model, Types } from 'mongoose';
-import { VentaExcelDto } from './dto/venta.dto';
-import { filtradorDeGestion } from './util/filtrador.gestion.util';
-import { FiltroVentaI } from './interfaces/filtro.venta.interface';
+import { VentaExcelDto } from '../dto/venta.dto';
+
+import { FiltroVentaI } from '../interfaces/filtro.venta.interface';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
-import { InformacionVentaDto } from './dto/informacion.venta.dto';
-import { ticketPromedio } from './util/tickectPromedio.util';
-import { diasHAbiles } from './util/dias.habiles.util';
+import { InformacionVentaDto } from '../dto/informacion.venta.dto';
+import { ticketPromedio } from '../util/tickectPromedio.util';
+import { diasHAbiles } from '../util/dias.habiles.util';
 import { SucursalService } from 'src/sucursal/sucursal.service';
-import { VentaExcel } from './schemas/venta.schema';
+import { VentaExcel } from '../schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
-import { sucursalesEnum } from './enums/sucursales.enum';
+import { sucursalesEnum } from '../enums/sucursales.enum';
+import { filtradorDeGestion } from '../util/filtrador.gestion.util';
+import { AsesorExcelI } from '../interfaces/asesor.interface';
 
 @Injectable()
 export class VentaGestionService {
@@ -204,7 +206,6 @@ export class VentaGestionService {
         };
         for (let idsucursal of ventaDto.sucursal) {
           const sucur = await this.sucursalService.listarSucursalId(idsucursal);
-          console.log(sucur);
           
           if(ventaDto.sucursal.length > 0 && sucur.nombre != sucursalesEnum.opticentroParaguay){
             const indicadorData = await this.idicadorSucursal(idsucursal, filtrador)

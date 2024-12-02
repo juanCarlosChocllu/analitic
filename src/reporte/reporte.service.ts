@@ -1,4 +1,4 @@
-import { BadRequestException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
@@ -22,7 +22,7 @@ import { FechaDto } from './dto/fecha.dto';
 import { fechasArray } from './util/fecha.array.util';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ventaInformacionRI } from './interface/ventaInformacion.interface';
-import { VentaService } from 'src/venta/venta.service';
+import { VentaService } from 'src/venta/services/venta.service';
 import { OftalmologoService } from 'src/oftalmologo/oftalmologo.service';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { Log } from 'src/log/schemas/log.schema';
@@ -289,7 +289,9 @@ export class ReporteService {
           return {status:HttpStatus.OK}
         
         } catch (error) {
-          console.log(error);
+          if(error.response.status == HttpStatus.UNAUTHORIZED){
+             throw new UnauthorizedException()
+          }
           throw new BadRequestException(error)
           
     }

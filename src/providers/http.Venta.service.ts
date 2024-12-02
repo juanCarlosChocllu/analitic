@@ -8,10 +8,8 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
 import { flag } from 'src/venta/enums/flag.enum';
-import { log } from 'node:console';
 import { LogService } from 'src/log/log.service';
-import { Types } from 'mongoose';
-import { Log } from 'src/log/schemas/log.schema';
+
 @Injectable()
 export class HttpAxiosVentaService {
   constructor(
@@ -24,8 +22,8 @@ export class HttpAxiosVentaService {
     anio: number,
     retries = 3,
   ): Promise<any> {
-   const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
-   // const url =`http://localhost/opticentro/web/cibeles${anio}${mes}${dia}.csv`
+   //const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
+    const url =`http://localhost/opticentro/web/cibeles${anio}${mes}${dia}.csv`
       try {
         const response = await firstValueFrom(
           this.httpService.get(url, { timeout: 30000 }),
@@ -99,14 +97,13 @@ export class HttpAxiosVentaService {
             const url ='http://localhost/opticentro/web/app_dev.php/listar/venta/api'
             const data={
               fechaInicio,
-              fechaFin
+              fechaFin,
+              token:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzIyYTEyMTU5ZmZmMzAzYWY3ODkxNjYiLCJ1c2VybmFtZSI6Imthbm5hMiIsImlhdCI6MTczMzE0NTM0NCwiZXhwIjoxNzMzMTYzMzQ0fQ.p1wF-qQ_xLOjQ85vMFfxXCJBYEHgOqCcjmZ3YpU5Y2g'
             }    
             const response = await firstValueFrom(this.httpService.post(url, data))
             return response.data
-            
       } catch (error) {
           throw error
-        
       }
 
   }
