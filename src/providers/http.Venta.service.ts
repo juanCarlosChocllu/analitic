@@ -22,8 +22,8 @@ export class HttpAxiosVentaService {
     anio: number,
     retries = 3,
   ): Promise<any> {
-   //const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
-    const url =`http://localhost/opticentro/web/cibeles${anio}${mes}${dia}.csv`
+   const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
+   // const url =`http://localhost/opticentro/web/cibeles${anio}${mes}${dia}.csv`
       try {
         const response = await firstValueFrom(
           this.httpService.get(url, { timeout: 30000 }),

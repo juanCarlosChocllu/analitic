@@ -31,7 +31,7 @@ export class SucursalService {
 
    }
 
-   async sucursalExcel(id: string) {
+   async sucursalListaEmpresas(id: Types.ObjectId) {
     const suscursales = await this.SucursalSchema.find({
       empresa: new Types.ObjectId(id),
     });

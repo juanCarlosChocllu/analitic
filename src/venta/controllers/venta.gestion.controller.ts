@@ -2,6 +2,7 @@ import { Body, Controller ,Param,Post} from '@nestjs/common';
 import { VentaGestionService } from '../services/venta.gestion.service';
 import { VentaExcelDto } from '../dto/venta.dto';
 import { InformacionVentaDto } from '../dto/informacion.venta.dto';
+import { ValidacionIdPipe } from 'src/util/validacion-id/validacion-id.pipe';
 
 @Controller('gestion')
 export class VentaGestionController {
@@ -21,7 +22,7 @@ export class VentaGestionController {
 
     @Post('informacion/:id')
     sucursalVentaInformacion(
-      @Param('id') id: string,
+      @Param('id', ValidacionIdPipe) id: string,
       @Body() informacionVentaDto: InformacionVentaDto,
     ) {
           return this.ventaGestionService.sucursalVentaInformacion(id, informacionVentaDto);

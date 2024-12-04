@@ -1,8 +1,9 @@
 import { Types } from "mongoose";
 import { KpiDto } from "../dto/kpi.venta.dto";
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface";
+import { KpiEmpresaDto } from "../dto/kpi.venta.empresas.dto";
 
-export function filtradorKpi(kpiDto:KpiDto){
+export function filtradorKpi(kpiDto:KpiDto | KpiEmpresaDto){
     let filtrador:FiltroVentaI={
         fecha: {
           $gte: new Date(kpiDto.fechaInicio),

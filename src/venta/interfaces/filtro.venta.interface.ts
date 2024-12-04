@@ -5,7 +5,7 @@ export interface FiltroVentaI {
     $gte: Date;
     $lte: Date;
   };
-  empresa?: Types.ObjectId;
+  empresa?: Types.ObjectId|{$in :Types.ObjectId[] };
   sucursal?: Types.ObjectId;
   tipoVenta?: Types.ObjectId | {$in :Types.ObjectId[] } ;
   flagVenta?: string | { $ne: string };

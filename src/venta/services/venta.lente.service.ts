@@ -10,9 +10,13 @@ import { SucursalService } from "src/sucursal/sucursal.service";
 import { productos } from "../enums/productos.enum";
 
 import { InformacionVentaDto } from "../dto/informacion.venta.dto";
-import { log } from "node:console";
+
 import { filtradorKpi } from "../util/filtrador.kpi.util";
 import { filtradorKpiInformacion } from "../util/filtrador.kpi.informacion.util";
+import { KpiEmpresaDto } from "../dto/kpi.venta.empresas.dto";
+import { filtradorKpiInformacionEmpresa } from "../util/filtrador.kpi.informacion.empresa.util";
+import { InformacionEmpresasTodasVentaDto } from "../dto/informacion.empresas.todas.dto";
+import { filtradorKpiInformacionTodasEmpresas } from "../util/filtrador.infomacion.todas.empresas.util";
 
 @Injectable()
 export class VentaLenteService {
@@ -28,9 +32,6 @@ export class VentaLenteService {
 
     
 private async verificacionEmpresa(kpiDto:KpiDto){  
-
-
-  
     const empresa = await this.empresaService.buscarEmpresa(kpiDto.empresa)
     if(empresa.nombre === 'OPTICENTRO'){
       return this.kpiOpticentro(kpiDto)
@@ -45,8 +46,6 @@ private async verificacionEmpresa(kpiDto:KpiDto){
       return this.kpiOptiservice(kpiDto)
   
     }
-    
-    
     else{
       throw new NotFoundException()
     }
@@ -172,11 +171,6 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                   $cond:{
                     if:{$or:[
                       {$eq:['$tipoLente.nombre','PROGRESIVO']}
-                      //{$eq:['$marcaLente.nombre','TALLADO  CONVENCIONAL']},
-                      //{$eq:['$marcaLente.nombre','DISEÑO DIGITAL']},
-                      //{$eq:['$marcaLente.nombre','DIGITAL PLATINIUM']},
-                      //{$eq:['$marcaLente.nombre','DIGITAL GOLD']},
-                      //{$eq:['$marcaLente.nombre','Digital Ruby']}, no se encontro en la base de datos
                     ]},
                     then:1,
                     else:0
@@ -201,14 +195,6 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                     if: {
                       $or: [
                         { $eq: ["$tipoColor.nombre", "SOLAR ACTIVE"] },
-                       /* { $eq: ["$tipoColor.nombre", "VIOLETA"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "NARANJA"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "AZUL"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "ROSADO"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "VERDE HI INDEX"] },//NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "DRIVE"] },  //NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "GRIS"] },   //NO SE ENCONTRO EN LA DB
-                        { $eq: ["$tipoColor.nombre", "CAFE"] },   //NO SE ENCONTRO EN LA DB*/
                       ]
                     },
                     then: "$cantidad",
@@ -217,10 +203,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
                 }
               },
   
-           
-            
-  
-           
+   
             }
           },
   
@@ -616,6 +599,29 @@ private async verificacionEmpresa(kpiDto:KpiDto){
       }
       return data
     } 
+
+
+    async kpiInformacionTodasEmpresas(informacionEmpresasTodasVentaDto :InformacionEmpresasTodasVentaDto){      
+      const filtrador= filtradorKpiInformacionTodasEmpresas(informacionEmpresasTodasVentaDto)
+      const [antireflejo, progresivos, ocupacional] =  await Promise.all([
+         this.kpiAntireflejo(filtrador),
+         this.kpiProgresivos(filtrador),
+         this.kpiOcupacional(filtrador),
+  
+      ])         
+        return {antireflejo, progresivos, ocupacional}
+    }
+  
+    async kpiInformacionEmpresa(empresa:string,informacionVentaDto :InformacionVentaDto){      
+      const filtrador= filtradorKpiInformacionEmpresa(empresa, informacionVentaDto)
+      const [antireflejo, progresivos, ocupacional, en] =  await Promise.all([
+         this.kpiAntireflejo(filtrador),
+         this.kpiProgresivos(filtrador),
+         this.kpiOcupacional(filtrador),
+         this.empresaService.buscarEmpresa(empresa)
+      ])         
+        return {antireflejo, progresivos, ocupacional,empresa:en.nombre }
+    }
   
     async kpiInformacion(sucursal:string,informacionVentaDto :InformacionVentaDto){
       const filtrador= filtradorKpiInformacion(sucursal, informacionVentaDto)
@@ -625,6 +631,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
          this.kpiOcupacional(filtrador),
          this.sucursalService.listarSucursalId(new Types.ObjectId(sucursal))
       ])   
+      
         return {antireflejo, progresivos, ocupacional,sucursal:su.nombre }
     }
   
@@ -644,7 +651,7 @@ private async verificacionEmpresa(kpiDto:KpiDto){
               },
            
               {
-                $unwind:'$tratamiento'
+                $unwind:{path:'$tratamiento', preserveNullAndEmptyArrays:false}
               },
               
           
@@ -734,10 +741,10 @@ private async verificacionEmpresa(kpiDto:KpiDto){
           },
 
           {
-            $unwind:'$marcaLente'
+            $unwind:{path:'$marcaLente',preserveNullAndEmptyArrays:false}
           },
           {
-            $unwind:'$tipoLente'
+            $unwind: {path:'$tipoLente', preserveNullAndEmptyArrays:false}
           },
           {
             $match:{
@@ -778,10 +785,10 @@ private async verificacionEmpresa(kpiDto:KpiDto){
           },
 
           {
-            $unwind:'$marcaLente'
+            $unwind:{path:'$marcaLente',preserveNullAndEmptyArrays:false}
           },
           {
-            $unwind:'$tipoLente'
+            $unwind: {path:'$tipoLente', preserveNullAndEmptyArrays:false}
           },
           {
             $match:{
@@ -1403,8 +1410,1048 @@ private async verificacionEmpresa(kpiDto:KpiDto){
       return data
   
       }
+     
+      async kpiEmpresas(kpiEmpresaDto:KpiEmpresaDto){
+         const dataEmpresas:any=[]
+         for(let e of kpiEmpresaDto.empresa){
+          const sucursales:any[]=[]
+          const empresa = await this.empresaService.buscarEmpresa(e)
+           if (kpiEmpresaDto.sucursal.length > 0) {
+            const sucursalesPromises = kpiEmpresaDto.sucursal.map(s =>this.sucursalService.listarSucursalId(new Types.ObjectId(s)));
+            sucursales.push(...await Promise.all(sucursalesPromises));
+          }else{
+            const s = await this.sucursalService.sucursalListaEmpresas(empresa._id)
+            sucursales.push(...s)
+           }
+          if(empresa.nombre === 'OPTICENTRO'){            
+            const data=  await this.kpiOpticentroEmpresa(kpiEmpresaDto,sucursales)  
+            const resultado ={
+              idEmpresa:empresa._id,
+              empresa:empresa.nombre,
+              data
+            }          
+            dataEmpresas.push(resultado)
+          }
+          else if(empresa.nombre=== 'ECONOVISION'){
+            const data=  await this.kpiEconovisionEmpresa(kpiEmpresaDto,sucursales)
+            const resultado ={
+              idEmpresa:empresa._id,
+              empresa:empresa.nombre,
+              data
+            }          
+            dataEmpresas.push(resultado)
+          }else if(empresa.nombre=== 'TU OPTICA'){
+            const data=  await this.kpiTuOpticaEmpresa(kpiEmpresaDto,sucursales)
+            const resultado ={
+              idEmpresa:empresa._id,
+              empresa:empresa.nombre,
+              data
+            }          
+            dataEmpresas.push(resultado)
+          }else if(empresa.nombre=== 'OPTISERVICE S.R.L'){
+            const data=  await this.kpiOptiserviceEmpresa(kpiEmpresaDto,sucursales)
+            const resultado ={
+              idEmpresa:empresa._id,
+              empresa:empresa.nombre,
+              data
+            }          
+            dataEmpresas.push(resultado)
+          }
+         }
+          return dataEmpresas
+      }
 
+        
+    private async kpiOpticentroEmpresa(kpiEmpresaDto:KpiEmpresaDto, sucursal:any[]){  
+           
+      const filtrador = filtradorKpi(kpiEmpresaDto)
+      const data:any[]=[];
+         for(let su of sucursal){
+          const dataKpi = await this.VentaExcelSchema.aggregate([
+            {
+              $match: {
+                ...filtrador,
+                sucursal:su._id,
+    
+              },
+         
+              },
+               {
+                $lookup:{
+                  from:'tratamientos',
+                  foreignField:'_id',
+                  localField:'tratamiento',
+                  as:'tratamiento',
+                  
+                }
+              },
+              {
+                $lookup:{
+                  from:'marcalentes',
+                  foreignField:'_id',
+                  localField:'marcaLente',
+                  as:'marcaLente'
+                }
+              },
+          
+    
+              {
+                $lookup:{
+                  from:'tipoventas',
+                  foreignField:'_id',
+                  localField:'tipoVenta',
+                  as:'tipoVenta'
+                }
+              },
+    
+            
+              {
+                $lookup:{
+                  from:'tipolentes',
+                  foreignField:'_id',
+                  localField:'tipoLente',
+                  as:'tipoLente'
+                }
+              },
+             {
+                $unwind:{ path: '$tratamiento', preserveNullAndEmptyArrays: true }
+              },
+              {
+                $unwind:{ path: '$marcaLente', preserveNullAndEmptyArrays: true }
+              },
+              {
+                $unwind:{ path: '$tipoVenta', preserveNullAndEmptyArrays: true }
+              },
+              
+            
+              {
+                $unwind:{ path: '$tipoLente', preserveNullAndEmptyArrays: true }
+              },
+    
+              {
+                $group:{
+                  _id:null,
+    
+                  lentes:{
+                    $sum:{
+                      $cond:{
+                        if:{$eq:['$producto','LENTE']},
+                        then:'$cantidad',
+                        else:0
+                      }
+                    }
+                  },
+    
+                  tickets:{
+                    $sum:{
+                      $cond:{
+                        if:{$and:[
+                          {$eq:['$aperturaTicket', '1']},
+                        
+                          
+                        ]},
+                        then:1,
+                        else:0
+                      }
+                    }
+                  },
+    
+          
+    
+                  antireflejo:{
+                    $sum:{
+                      $cond:{
+                        if:{ $or:[
+                          {$eq:['$tratamiento.nombre','CLARITY']},
+                          {$eq:['$tratamiento.nombre','CLARITY PLUS']},
+                          {$eq:['$tratamiento.nombre','BLUCLARITY']},
+                          {$eq:['$tratamiento.nombre','STOP AGE']},
+                          {$eq:['$tratamiento.nombre','ANTIREFLEJO']}
+                        ]},
+                        then:'$cantidad',
+                        else:0
+                      }
+                    }
+                  },
+                 
+                  progresivos:{
+                    $sum:{
+                      $cond:{
+                        if:{$or:[
+                          {$eq:['$tipoLente.nombre','PROGRESIVO']}
+                        ]},
+                        then:'$cantidad',
+                        else:0
+                      }
+                    }
+                  
+                  },
+                  ocupacional:{
+                    $sum:{
+                      $cond:{
+                        if:{$eq:['$tipoLente.nombre','OCUPACIONAL']},
+                        then:'$cantidad',
+                        else:0
+                      }
+                    }
+                  
+                  },
+                }
+              },
+             {
+                $project: {            
+                  lentes: 1,
+                  progresivos: 1,
+                  
+                  ocupacional: 1,
+                  ocupacionalProgresivos: 1,
+                  antireflejo: 1,
+                  tickets:1,
+                  progresivosOcupacionales: { $add: ['$progresivos', '$ocupacional'] },
+                  progresivosOcupacionalesPorcentaje: {
+                  $cond:{
+                    if:{$gt:['$lentes',0]},
+                      then:{
+                        $round: [
+                          {
+                            $multiply: [
+                              { $divide: [{ $add: ['$progresivos', '$ocupacional'] }, '$lentes'] },
+                              100
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      else:0
+  
+                    }
+                  },
+                  porcentajeAntireflejo: {
+                    $cond:{
+                      if:{$gt:['$lentes',0]},
+                      then:{
+                        $round: [
+                          {
+                            $multiply: [
+                              { $divide: ['$antireflejo', '$lentes'] },
+                              100
+                            ]
+                          },
+                          2
+                        ]
+                       
+                      },
+                      else:0
+  
+                    }
+                  
+                  
+                  },
+                  porcentajeProgresivos: {
+                  $cond:{
+                    if:{$gt:['$lentes',0]},
+                     then:{
+                      $round: [
+                        {
+                          $multiply: [
+                            { $divide: ['$progresivos','$lentes'] },
+                            100
+                          ]
+                        },
+                        2
+                      ]
+                     },
+                     else:0
+                  }
+                  
+                  },
+                  porcentajeOcupacionales: {
+                   $cond:{
+                    if:{$gt:['$lentes',0]},
+                    then:{
+                      $round: [
+                        {
+                          $multiply: [
+                            { $divide: ['$ocupacional','$lentes'] },
+                            100
+                          ]
+                        },
+                        2
+                      ]
+                    },
+                    else:0
+                   },
+                
+                  
+                  }
+    
+               
+            
+                }
+              }
+            
+          ]);           
+       
+          const resultado ={
+            sucursal:su.nombre,
+            id:su._id,
+            dataKpi
+          }      
+          data.push(resultado)
+         }
+  
 
+      return data
+    } 
+    private async kpiEconovisionEmpresa(kpiEmpresaDto:KpiEmpresaDto, sucursales:any[]){
+      const filtrador = filtradorKpi(kpiEmpresaDto)
+      const data:any[]=[]
+
+     for(let su of sucursales){
+      const dataKpi = await this.VentaExcelSchema.aggregate([
+        {
+          $match:{
+            ...filtrador,
+            sucursal:su._id
+          //producto:productos.lente
+          }
+        },
+        {
+          $lookup:{
+            from:'tratamientos',
+            foreignField:'_id',
+            localField:'tratamiento',
+            as:'tratamiento',
+            
+          }
+        },
+
+        {
+          $lookup:{
+            from:'marcalentes',
+            foreignField:'_id',
+            localField:'marcaLente',
+            as:'marcaLente'
+          }
+        },
+        {
+          $lookup:{
+            from:'tipocolors',
+            foreignField:'_id',
+            localField:'tipoColor',
+            as:'tipoColor'
+          }
+        },
+      
+        {
+          $lookup:{
+            from:'tipolentes',
+            foreignField:'_id',
+            localField:'tipoLente',
+            as:'tipoLente'
+          }
+        },
+        {
+          $unwind:{ path: '$tratamiento', preserveNullAndEmptyArrays: true }
+        },
+
+        {
+          $unwind:{ path: '$marcaLente', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $unwind:{ path: '$tipoColor', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $unwind:{ path: '$material', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $unwind:{ path: '$tipoLente', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $group:{
+            _id:null,
+            lentes:{
+              $sum:{
+                $cond:{
+                  if:{$eq:['$producto','LENTE']},
+                  then:'$cantidad',
+                  else:0
+                }
+              }
+            },
+            antireflejo:{
+              $sum:{
+                $cond:{
+                  if:{ $or:[
+                    {$eq:['$tratamiento.nombre','ANTIREFLEJO']},
+                    {$eq:['$tratamiento.nombre','BLUE SHIELD']},
+                    {$eq:['$tratamiento.nombre','GREEN SHIELD']},
+                 
+                  ]},
+                  then:'$cantidad',
+                  else:0
+                }
+              }
+            },
+            tickets:{
+              $sum:{
+                $cond:{
+                  if:{$and:[
+                    {$eq:['$aperturaTicket', '1']},
+                    {$ne:['$producto', 'OTRO PRODUCTO']}
+                    
+                  ]},
+                  then:'$cantidad',
+                  else:0
+
+                }
+              }
+            },
+            progresivos:{
+              $sum:{
+                $cond:{
+                  if:{$or:[
+                    {$eq:['$tipoLente.nombre','PROGRESIVO']}
+                  ]},
+                  then:1,
+                  else:0
+                }
+              }
+            
+            },
+            ocupacional:{
+              $sum:{
+                $cond:{
+                  if:{$eq:['$tipoLente.nombre','OCUPACIONAL']},
+                  then:'$cantidad',
+                  else:0
+                }
+              }
+            
+            },
+
+            fotosensibles: {
+              $sum: {
+                $cond: {
+                  if: {
+                    $or: [
+                      { $eq: ["$tipoColor.nombre", "SOLAR ACTIVE"] },
+                    ]
+                  },
+                  then: "$cantidad",
+                  else: 0
+                }
+              }
+            },
+
+ 
+          }
+        },
+
+        {
+          $project:{
+            lentes:1,
+            antireflejo:1,
+            tickets:1,
+            porcentajeAntireflejo: {
+              $cond:{
+                if :{$gt: ['$lentes', 0]},
+                then:{
+                  $round: [
+                    {
+                      $multiply: [
+                        { $divide: ['$antireflejo', '$lentes'] },
+                        100
+                      ]
+                    },
+                    2
+                  ]
+                },
+                else:0
+              }
+            },
+            progresivos:1,
+            ocupacional:1,
+            progresivosOcupacionales: { $add: ['$progresivos', '$ocupacional'] },
+            progresivosOcupacionalesPorcentaje: {
+             $cond:{
+              if:{$gt:['$lentes',0]},
+              then:{
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: [{ $add: ['$progresivos', '$ocupacional'] }, '$lentes'] },
+                      100
+                    ]
+                  },
+                  2
+                ]
+              },
+              else:0
+
+             }
+            },
+            porcentajeProgresivos: {
+              $cond:{
+                if:{$gt:['$lentes',0]},
+                then:{
+                  $round: [
+                    {
+                      $multiply: [
+                        { $divide: ['$progresivos','$lentes'] },
+                        100
+                      ]
+                    },
+                    2
+                  ]
+
+                },
+                else:0
+              }
+
+           
+              
+            
+            },
+            porcentajeOcupacionales: {
+              $cond:{
+                if:{$gt:['$lentes',0]},
+                then:{
+                  $round: [
+                    {
+                      $multiply: [
+                        { $divide: ['$ocupacional','$lentes'] },
+                        100
+                      ]
+                    },
+                    2
+                  ]
+                },
+                else:0
+              }
+             
+            
+            },
+            fotosensibles:1,
+            procentajeFotosensibles:{
+              $cond:{
+                if:{$gt:['$lentes',0]},
+                then:{
+                  $round:[
+                    {
+                      $multiply:[
+                        { $divide: ['$fotosensibles','$lentes'] },
+                        100
+    
+                      ]
+                    }
+                    ,2
+                  ]
+                },
+                else:0
+
+              }
+            
+            },
+          
+            
+              
+          }
+        }
+    
+      ])
+      const resultado ={
+        sucursal:su.nombre,
+        id:su._id,
+        dataKpi
+      }      
+      data.push(resultado)
      
 
+     }
+      return data
+  
+      
+    }
+    private async kpiTuOpticaEmpresa(kpiEmpresaDto:KpiEmpresaDto, sucursales:any[]){
+      const filtrador = filtradorKpi(kpiEmpresaDto)
+      const data:any[]=[]
+      for (let su of sucursales){
+        const dataKpi = await this.VentaExcelSchema.aggregate([
+          {
+            $match:{
+              ...filtrador,
+              sucursal:su._id
+            }
+          },
+          {
+            $lookup:{
+              from:'tratamientos',
+              foreignField:'_id',
+              localField:'tratamiento',
+              as:'tratamiento',
+              
+            }
+          },
+  
+          {
+            $lookup:{
+              from:'marcalentes',
+              foreignField:'_id',
+              localField:'marcaLente',
+              as:'marcaLente'
+            }
+          },
+          {
+            $lookup:{
+              from:'tipocolors',
+              foreignField:'_id',
+              localField:'tipoColor',
+              as:'tipoColor'
+            }
+          },
+          {
+            $lookup:{
+              from:'tipolentes',
+              foreignField:'_id',
+              localField:'tipoLente',
+              as:'tipoLente'
+            }
+          },
+       
+       
+      
+          {
+            $unwind:{ path: '$tratamiento', preserveNullAndEmptyArrays: true }
+          },
+  
+          {
+            $unwind:{ path: '$marcaLente', preserveNullAndEmptyArrays: true }
+          },
+          {
+            $unwind:{ path: '$tipoColor', preserveNullAndEmptyArrays: true }
+          },
+        
+          {
+            $unwind:{ path: '$tipoLente', preserveNullAndEmptyArrays: true }
+          },
+          {
+            $group:{
+              _id:null,
+              lentes:{
+                $sum:{
+                  $cond:{
+                    if:{$eq:['$producto','LENTE']},
+                    then:'$cantidad',
+                    else:0
+                  }
+                }
+              },  
+              
+              antireflejo:{
+                $sum:{
+                  $cond:{
+                    if:{ $or:[
+                      {$eq:['$tratamiento.nombre','BLUE SHIELD']},
+                      {$eq:['$tratamiento.nombre','GREEN SHIELD']},
+                      {$eq:['$tratamiento.nombre','ANTIREFLEJO']}
+                   
+                    ]},
+                    then:'$cantidad',
+                    else:0
+                  }
+                }
+              },
+              tickets:{
+                $sum:{
+                  $cond:{
+                    if:{$and:[
+                      {$eq:['$aperturaTicket', '1']},
+                      {$ne:['$producto', 'OTRO PRODUCTO']}
+                      
+                    ]},
+                    then:1,
+                    else:0
+  
+                  }
+                }
+              },
+              progresivos:{
+                $sum:{
+                  $cond:{
+                    if:{$or:[
+                    {$eq:['$tipoLente.nombre','PROGRESIVO']}]},
+                    then:1,
+                    else:0
+                  }
+                }
+              
+              },
+              ocupacional:{
+                $sum:{
+                  $cond:{
+                    if:{
+                      $eq:['$tipoLente.nombre','OCUPACIONAL']
+                    
+                    },
+                    then:1,
+                    else:0
+                  }
+                }
+              
+              },
+  
+              fotosensibles: {
+                $sum: {
+                  $cond: {
+                    if: {
+                      $or: [
+                        { $eq: ["$tipoColor.nombre", "SOLAR ACTIVE"] },
+                      ]
+                    },
+                    then: "$cantidad",
+                    else: 0
+                  }
+                }
+              },
+    
+            
+  
+  
+            }
+          },
+          {
+            $project:{
+              lentes:1,
+              antireflejo:1,
+              tickets:1,
+              porcentajeAntireflejo: {
+               $cond:{
+                if:{$gt:['$lentes',0]},
+                then:{
+                  $round: [
+                    {
+                      $multiply: [
+                        { $divide: ['$antireflejo', '$lentes'] },
+                        100
+                      ]
+                    },
+                    2
+                  ]
+                },
+                else:0
+               }
+              
+              },
+              progresivos:1,
+              ocupacional:1,
+              progresivosOcupacionales: { $add: ['$progresivos', '$ocupacional'] },
+              progresivosOcupacionalesPorcentaje: {
+                $cond:{
+                  if:{$gt:['$lentes',0]},
+                  then:{
+                    $round: [
+                      {
+                        $multiply: [
+                          { $divide: [{ $add: ['$progresivos', '$ocupacional'] }, '$lentes'] },
+                          100
+                        ]
+                      },
+                      2
+                    ]
+                  },
+                  else:0
+                }
+              },
+              porcentajeProgresivos: {
+                $cond:{
+                  if:{$gt:['$lentes',0]},
+                  then:{
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: ['$progresivos','$lentes'] },
+                      100
+                    ]
+                  },
+                  2
+                ]
+              },
+              else:0
+            }
+              
+              },
+              porcentajeOcupacionales: {
+                $cond:{
+                  if:{$gt:['$lentes',0]},
+                  then:{
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: ['$ocupacional','$lentes'] },
+                      100
+                    ]
+                  },
+                  2
+                ]
+              },
+              else:0
+            }
+              
+              },
+              fotosensibles:1,
+              procentajeFotosensibles:{
+                $cond:{
+                  if:{$gt:['$lentes',0]},
+                  then:{
+                $round:[
+                  {
+                    $multiply:[
+                      { $divide: ['$fotosensibles','$lentes'] },
+                      100
+  
+                    ]
+                  }
+                  ,2
+                ]
+              },
+              else:0
+            }
+              },
+           
+              
+                
+            }
+          }
+        ])
+        const resultado ={
+          sucursal:su.nombre,
+          id:su._id,
+          dataKpi
+        }  
+      
+            
+        data.push(resultado)
+      }
+        
+      
+  
+      return data
+     }
+  
+     private async kpiOptiserviceEmpresa(kpiEmpresaDto:KpiEmpresaDto, sucursales:any[]){
+      const filtrador = filtradorKpi(kpiEmpresaDto)
+      const data:any[]=[]
+      for(let su of sucursales){
+        const dataKpi = await this.VentaExcelSchema.aggregate([
+          {
+            $match:{
+              ...filtrador,
+              sucursal:su._id
+            }
+          },
+          {
+            $lookup:{
+              from:'tratamientos',
+              foreignField:'_id',
+              localField:'tratamiento',
+              as:'tratamiento',
+              
+            }
+          },
+  
+          {
+            $lookup:{
+              from:'marcalentes',
+              foreignField:'_id',
+              localField:'marcaLente',
+              as:'marcaLente'
+            }
+          },
+          {
+            $lookup:{
+              from:'tipocolors',
+              foreignField:'_id',
+              localField:'tipoColor',
+              as:'tipoColor'
+            }
+          },
+          {
+            $lookup:{
+              from:'tipoventas',
+              foreignField:'_id',
+              localField:'tipoVenta',
+              as:'tipoVenta'
+            }
+          },
+          {
+            $lookup:{
+              from:'tipolentes',
+              foreignField:'_id',
+              localField:'tipoLente',
+              as:'tipoLente'
+            }
+          },
+          {
+            $unwind:{ path: '$tipoLente', preserveNullAndEmptyArrays: true }
+          },
+          {
+            $unwind:{ path: '$tratamiento', preserveNullAndEmptyArrays: true }
+          },
+  
+          {
+            $unwind:{ path: '$marcaLente', preserveNullAndEmptyArrays: true }
+          },
+          {
+            $unwind:{ path: '$tipoColor', preserveNullAndEmptyArrays: true }
+          },
+        
+          {
+            $unwind:{ path: '$tipoVenta', preserveNullAndEmptyArrays: true }
+          },
+          {
+            $group:{
+              _id:null,
+              lentes:{
+                $sum:{
+                  $cond:{
+                    if:{$eq:['$producto','LENTE']},
+                    then:'$cantidad',
+                    else:0
+                  }
+                }
+              },
+            
+              tickets: {
+                $sum: {
+                  $cond: {
+                    if:{$and:[
+                      {$eq:['$aperturaTicket', '1']},
+                      {$ne:['$producto', 'OTRO PRODUCTO']}
+                    ]},
+                    then: 1,
+                    else: 0
+                  }
+                }
+              },
+
+           
+              antireflejo:{
+                $sum:{
+                  $cond:{
+                    if:{ $or:[
+                  
+                      {$eq:['$tratamiento.nombre','BLUE SHIELD']},
+                      {$eq:['$tratamiento.nombre','GREEN SHIELD']},
+                      {$eq:['$tratamiento.nombre','ANTIREFLEJO']}
+                   
+                    ]},
+                    then:'$cantidad',
+                    else:0
+                  }
+                }
+              },
+       
+           
+              progresivos:{
+                $sum:{
+                  $cond:{
+                    if:{$or:[
+                      {$eq:['$tipoLente.nombre','PROGRESIVO']}
+           
+                    ]},
+                    then:'$cantidad',
+                    else:0
+                  }
+                }
+              
+              },
+             
+  
+              fotoCromatico: {
+                $sum: {
+                  $cond: {
+                    if: {
+                      $or: [
+                        { $eq: ["$tipoColor.nombre", "FOTOCROMATICO GRIS"] },   
+                        { $eq: ["$tipoColor.nombre", "FOTOCROMATICO CAFE"] },
+                        { $eq: ["$tipoColor.nombre", "FOTOCROMATICO"] },  
+                        { $eq: ["$tipoColor.nombre", "SOLAR ACTIVE"] },  
+                      ]
+                    },
+                    then: "$cantidad",
+                    else: 0
+                  }
+                }
+              },
+  
+         
+          
+  
+           
+            }
+          },
+  
+          {
+            $project:{
+              lentes:1,
+              antireflejo:1,
+              progresivos:1,
+              fotoCromatico:1,
+              tickets:1,
+              //ventas:1,
+              porcentajeProgresivos: {
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: ['$progresivos','$lentes'] },
+                      100
+                    ]
+                  },
+                  2
+                ]
+              
+              },
+              porcentajeAntireflejo: {
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: ['$antireflejo', '$lentes'] },
+                      100
+                    ]
+                  },
+                  2
+                ]
+              
+              },
+          
+         
+              procentajeFotoCromatico:{
+                $round:[
+                  {
+                    $multiply:[
+                      { $divide: ['$fotoCromatico','$lentes'] },
+                      100
+  
+                    ]
+                  }
+                  ,2
+                ]
+              },
+          
+            }
+          }
+      
+        ])
+        const resultado ={
+          sucursal:su.nombre,
+          id:su._id,
+          dataKpi
+        }      
+        data.push(resultado)
+      }
+      return data
+    }
+
+    
 }
