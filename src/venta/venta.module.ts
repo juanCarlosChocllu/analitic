@@ -26,6 +26,7 @@ import { VentaMedicosController } from './controllers/venta.medicos.controller';
 import { VentaLenteController } from './controllers/venta.lente.controller';
 import { VentaProductosService } from './services/venta.productos.service';
 import { VentaProductosController } from './controllers/venta.productos.controller';
+import { OftalmologoModule } from 'src/oftalmologo/oftalmologo.module';
 
 
 @Module({
@@ -45,6 +46,7 @@ import { VentaProductosController } from './controllers/venta.productos.controll
     SucursalModule,
     EmpresaModule,
     AsesoresModule,
+    OftalmologoModule,
     forwardRef(()=> AbonoModule)
  
   ],
