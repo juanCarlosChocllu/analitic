@@ -5,12 +5,14 @@ import { log } from 'node:console';
 import { Observable } from 'rxjs';
 import { jwtConstants } from 'src/autenticacion/constants/constants';
 import { PUBLIC_KEY } from 'src/autenticacion/constants/decorator.constants';
-
+import { Request } from 'express';
+import { UsuariosService } from 'src/usuarios/usuarios.service';
 @Injectable()
 export class TokenGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly  reflector:Reflector
+    private readonly  reflector:Reflector,
+    private readonly usuariosService:UsuariosService
   ){}
   async canActivate(
     context: ExecutionContext,
@@ -22,19 +24,24 @@ export class TokenGuard implements CanActivate {
    
         return true
     }
-
-    
     const request = context.switchToHttp().getRequest()
     const header:string = request.headers.authorization  
 
     try {
-      const token = header.split(' ')[1];      
+      const token = header.split(' ')[1];  
+
+          
       const tokenVerificada = await this.jwtService.verify(token,{
         secret:jwtConstants.secret
-      })
-      request.user= tokenVerificada
+      })     
+      
+      const usuario = await this.usuariosService.buscarUsuarioPorId(tokenVerificada.id)      
+      if(!usuario){        
+        return false
+      }
+      request.usuario= usuario
       return true
-    } catch (error) {      
+    } catch (error) {            
        throw new UnauthorizedException()
       
     }

@@ -25,7 +25,7 @@ export class Usuario {
    // permisos:string[]
 
     @Prop({type:String, enum:Flag, default:Flag.nuevo})
-    flag:string[]
+    flag:string
 
 }
 

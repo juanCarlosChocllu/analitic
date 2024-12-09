@@ -324,6 +324,7 @@ export class VentaGestionService {
                   ventaTotal: 1,
                   totalTicket: 1,
                   traficoCliente: 1,
+                  totalImporte:1,
                   cantidad: 1,
                   importeTotalSuma: {
                     $subtract: ['$totalImporte', '$totalDescuentos'],

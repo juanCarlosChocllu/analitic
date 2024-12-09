@@ -9,6 +9,8 @@ import * as argon2 from "argon2";
 import { Flag } from 'src/common/enums/flag';
 import { log } from 'node:console';
 import { flag } from 'src/venta/enums/flag.enum';
+import { ResetearContrasena } from './dto/resetar-contrasena.dto';
+import { PassThrough } from 'node:stream';
 
 
 
@@ -63,5 +65,24 @@ export class UsuariosService {
     return {status:HttpStatus.OK};
   }
 
+  async perfil(idUsuario:Types.ObjectId){
+    const usuario = await this.usuarioSchema.findById(idUsuario)    
+    return usuario
+  }
 
+  async buscarUsuarioPorId(id:Types.ObjectId){
+    const usuario = await this.usuarioSchema.findOne({_id:new Types.ObjectId(id),flag:Flag.nuevo})
+    return usuario
+  }
+
+  async resetarContrasenaUsuario(resetearContrasena: ResetearContrasena, id:Types.ObjectId){
+    const usuario = await this.usuarioSchema.findById(id)
+    if(!usuario){
+      throw new NotFoundException()
+    }
+    resetearContrasena.password = await argon2.hash(resetearContrasena.password, this.opcionesArgon2)
+     await this.usuarioSchema.findByIdAndUpdate(id,{$set:{password:resetearContrasena.password}})
+     return {status:HttpStatus.OK,   message: 'La contraseña se ha cambiado con éxito.' }
+
+  }
 }

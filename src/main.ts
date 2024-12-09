@@ -8,8 +8,6 @@ async function bootstrap() {
 
   
   const app = await NestFactory.create(AppModule);
- 
-  
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -24,9 +22,9 @@ async function bootstrap() {
        throw new BadRequestException(error)
     }
     })
-);
-   app.setGlobalPrefix('api')
-   
+    );
+    
+  app.setGlobalPrefix('api') 
   const config = new DocumentBuilder()
     .setTitle('Cats example')
     .setDescription('The cats API description')
