@@ -9,6 +9,7 @@ import { firstValueFrom } from 'rxjs';
 import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
 import { flag } from 'src/venta/enums/flag.enum';
 import { LogService } from 'src/log/log.service';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class HttpAxiosVentaService {
@@ -29,20 +30,19 @@ export class HttpAxiosVentaService {
           this.httpService.get(url, { timeout: 30000 }),
         );
         let venta = this.extracionDeInformacionValida(response.data);
-       // venta = venta.filter((venta)=> venta.fecha === `${anio}-${mes}-${dia}` )
-        venta.shift(); // Elimina el primer elemento del array donde obtiene los nombres de cada celda
-
+        venta.shift();
         return venta;
-      } catch (error) {
-        const mensage = error.message.split(' ');
-        if (mensage[5] == 404) {
+      } catch (error) {        
+        const e = error as AxiosError
+        const mensage = e.message.split(' ');
+        if (mensage[5] === '404') {
           const descripcion:string = `Archivo no encontrado error 404 de la fecha: ${anio}/${mes}/${dia}`
           await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.NOT_FOUND,'Not found',`${anio}-${mes}-${dia}`)
           throw new NotFoundException('Error no se encontro ningun archivo');
-        } else if (error.code === 'ECONNABORTED') {
+        } else if (e.code === 'ECONNABORTED') {
           const descripcion = `Intento fallido: la solicitud tomó demasiado tiempo.  fecha: ${anio}/${mes}/${dia}`
           this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.GATEWAY_TIMEOUT, 'ECONNABORTED',`${anio}-${mes}-${dia}` )
-        } else if (error.message.includes('socket hang up')) {
+        } else if (e.message.includes('socket hang up')) {
           const descripcion:string = `Intento  fallido: se perdió la conexión con el servidor: socket hang up: fecha: ${anio}/${mes}/${dia}`
            await this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.REQUEST_TIMEOUT, 'socket hang up',`${anio}-${mes}-${dia}` )
         } else {
@@ -55,10 +55,6 @@ export class HttpAxiosVentaService {
     }
   }
 
-  // Método auxiliar para introducir un retraso entre reintentos
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 
   private extracionDeInformacionValida(data: any) {
     const lineas: any[] = data.trim().split('\n');

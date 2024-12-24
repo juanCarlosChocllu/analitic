@@ -29,6 +29,7 @@ import { Log } from 'src/log/schemas/log.schema';
 import { AsesorExcel } from 'src/asesores/schemas/asesore.schema';
 import { VentaExcel } from 'src/venta/schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
+import { AxiosError } from 'axios';
 
 
 @Injectable()
@@ -70,7 +71,9 @@ export class ReporteService {
     
   ){}
  
-  async allExcel(fechaDto:FechaDto) {
+  async allExcel(fechaDto:FechaDto) { 
+    console.log(fechaDto);
+       
     const diasFechasArray:Date[] | String[] = fechasArray(fechaDto.fechaInicio, fechaDto.fechaFin)    
     for(let fecha of diasFechasArray){
   
@@ -89,6 +92,8 @@ export class ReporteService {
       await this.guardaVentaLimpiaEnLaBBDD(ventaLimpia);
 
     } catch (error) {
+      console.log(error);
+      
       if (error instanceof NotFoundException) {
         console.log(
           `Archivo no encontrado para la fecha ${dia}/${mes}/${aqo}. Continuando con el siguiente día.`,
@@ -289,7 +294,8 @@ export class ReporteService {
           return {status:HttpStatus.OK}
         
         } catch (error) {
-          if(error.response.status == HttpStatus.UNAUTHORIZED){
+          const e = error as AxiosError
+          if(e.response.status == HttpStatus.UNAUTHORIZED){
              throw new UnauthorizedException()
           }
           throw new BadRequestException(error)

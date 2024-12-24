@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { AxiosError } from 'axios';
 import { log } from 'node:console';
 
 import { firstValueFrom } from 'rxjs';
@@ -31,14 +32,15 @@ export class HttpAxiosAbonoService {
         venta.shift();
         return venta;
       } catch (error) {
-        const mensage = error.message.split(' ');
-        if (mensage[5] == 404) {
+        const e = error as AxiosError
+        const mensage = e.message.split(' ');
+        if (mensage[5] == '404') {
           throw new NotFoundException('Error no se encontro ningun archivo');
-        } else if (error.code === 'ECONNABORTED') {
+        } else if (e.code === 'ECONNABORTED') {
           console.log(
             `Intento ${attempt} fallido: la solicitud tomó demasiado tiempo.`,
           );
-        } else if (error.message.includes('socket hang up')) {
+        } else if (e.message.includes('socket hang up')) {
           console.log(
             `Intento ${attempt} fallido: se perdió la conexión con el servidor.`,
           );

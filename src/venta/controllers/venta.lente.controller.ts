@@ -11,12 +11,7 @@ export class VentaLenteController {
     constructor(    private readonly ventaLenteService: VentaLenteService,){}
 
 
-  @Post('kpi/lentes')
-  kpi(@Body() kpiDto: KpiDto){    
-  return this.ventaLenteService.kpi(kpiDto)
- }
 
- 
  @Post('kpi/material')
   kpiMaterial(@Body() kpiDto: KpiDto){
   return this.ventaLenteService.kpiMaterial(kpiDto)
