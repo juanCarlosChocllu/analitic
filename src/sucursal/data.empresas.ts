@@ -11,7 +11,8 @@ export function dataEmpresa() {
         'OPTICENTRO AZURDUY',
         'OPTICENTRO TARIJA 2',
         'OPTICENTRO LA PAZ 2',
-        'OPTICENTRO PARAGUAY'
+        'OPTICENTRO PARAGUAY',
+        'ECONOPTICA TARIJA'
       ],
       'ECONOVISION': [
         'ECONOPTICA CENTRAL',

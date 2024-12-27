@@ -90,7 +90,9 @@ export class HttpAxiosVentaService {
 
   async informacionRestanteVenta(fechaInicio:string, fechaFin:string){
       try {
-            const url ='http://localhost/opticentro/web/app_dev.php/listar/venta/api'
+
+            const url = 'https://comercial.opticentro.com.bo/listar/venta/api'
+           // const url ='http://localhost/opticentro/web/app_dev.php/listar/venta/api'
             const data={
               fechaInicio,
               fechaFin,
