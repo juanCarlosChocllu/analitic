@@ -390,6 +390,7 @@ export class VentaGestionService {
                     ticketPromedio: 0,
                     unidadPorTicket: 0,
                     precioPromedio: 0,
+                    totalImporte:0
                   };
       
             const data = {
