@@ -109,16 +109,12 @@ export class VentaMedicosService {
                 sucursal: su.nombre,
                 totalRecetas:dataMedicos.reduce((acc, item)=>acc + item.cantidad, 0),
                 tickets:dataMedicos.reduce((acc, item)=>acc + item.tickets, 0),
+                importe:dataMedicos.reduce((acc, item)=>acc + item.importe, 0),
                 idScursal:su.id,
                 data:dataMedicos
             }
-            data.push(resultado)
-        
-            
+            data.push(resultado)            
         }  
-   
-
-            
         return data
         
     }

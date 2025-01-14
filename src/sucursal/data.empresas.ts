@@ -12,7 +12,7 @@ export function dataEmpresa() {
         'OPTICENTRO TARIJA 2',
         'OPTICENTRO LA PAZ 2',
         'OPTICENTRO PARAGUAY',
-        'ECONOPTICA TARIJA'
+    
       ],
       'ECONOVISION': [
         'ECONOPTICA CENTRAL',
@@ -24,7 +24,8 @@ export function dataEmpresa() {
         'ECONOPTICA POTOSI 2',
         'ECONOPTICA MONTEAGUDO',
         'ECONOPTICA MEDICINA',
-        'ECONOPTICA  CAMARGO CINTI'
+        'ECONOPTICA  CAMARGO CINTI',
+        'ECONOPTICA TARIJA'
       ],
       'TU OPTICA': ['TU OPTICA', 'TU OPTICA 2', 'CEMENTERIO TU OPTICA  2'],
 
