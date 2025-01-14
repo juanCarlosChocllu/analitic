@@ -10,4 +10,5 @@ export interface FiltroVentaI {
   tipoVenta?: Types.ObjectId | {$in :Types.ObjectId[] } ;
   flagVenta?: string | { $ne: string };
   comisiona?:boolean | null
+  especialidad?:string | null
 }

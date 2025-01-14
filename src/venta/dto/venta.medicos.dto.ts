@@ -1,14 +1,10 @@
-import { IsDateString, IsMongoId, IsNotEmpty } from "class-validator";
+import { IsDateString, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { VentaExcelDto } from "./venta.dto";
 
-export class VentaMedicosDto{
-    @IsMongoId({each:true})
-    @IsNotEmpty()
-    oftalmologos:string[]=[]
+export class VentaMedicosDto extends VentaExcelDto{
 
-    @IsDateString()
-    @IsNotEmpty()
-    fechaInicio:string
-    @IsNotEmpty()
-    @IsDateString()
-    fechaFin:string
-}
+    @IsOptional()
+    @IsString()
+    especialidad:string
+
+} 

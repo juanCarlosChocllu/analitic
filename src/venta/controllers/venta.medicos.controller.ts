@@ -11,13 +11,16 @@ export class VentaMedicosController {
 
    }
    
-   @Post('medidas/oftalmologos')
-   kpiOftalmologos(@Body () ventaMedicosDto:VentaMedicosDto){
-    return this.ventaKpiMedicos.kpiOtalmologos(ventaMedicosDto)
- 
+  
+   @Post('recetas/actual/medicos')
+   kpiMedicosActual(@Body () ventaMedicosDto:VentaMedicosDto){
+      console.log(ventaMedicosDto);
+      
+        return this.ventaKpiMedicos.kpiMedicos(ventaMedicosDto)
    }
-   @Post('medidas/optometra')
-   kpiOptometras(@Body () ventaExcelDto:VentaExcelDto){
-        return this.ventaKpiMedicos.kpiOptometras(ventaExcelDto)
+
+   @Post('recetas/anterior/medicos')
+   kpiMedicosAterior(@Body () ventaMedicosDto:VentaMedicosDto){
+        return this.ventaKpiMedicos.kpiMedicos(ventaMedicosDto)
    }
 }
