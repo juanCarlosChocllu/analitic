@@ -32,3 +32,21 @@ export class Log {
 
 }
 export const logSchema= SchemaFactory.createForClass(Log)
+
+
+@Schema({collection:'LogDescarga'})
+export class LogDescarga {
+        @Prop({type:Types.ObjectId , ref:'usuarios'})
+        usuario:Types.ObjectId        
+        @Prop()
+        schema:string
+
+        @Prop()
+        fechaDescarga:string
+
+
+        @Prop({type:Date , default:Date.now})
+        fecha:Date
+
+}
+export const logDescargaSchema= SchemaFactory.createForClass(LogDescarga)

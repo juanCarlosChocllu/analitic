@@ -113,7 +113,7 @@ export class VentaMedicosService {
                 idScursal:su.id,
                 data:dataMedicos
             }
-            data.push(resultado)            
+            data.push(resultado)                
         }  
         return data
         

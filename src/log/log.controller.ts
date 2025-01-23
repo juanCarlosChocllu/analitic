@@ -17,6 +17,12 @@ export class LogController {
     return this.logService.logFindVenta();
   }
 
+  @Get('venta/descarga')
+  logDescargas() {
+    return this.logService.listarLogdescarga();
+  }
+
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.logService.findOne(+id);

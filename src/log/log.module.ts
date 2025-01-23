@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { LogService } from './log.service';
 import { LogController } from './log.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Log, logSchema } from './schemas/log.schema';
+import { Log, LogDescarga, logDescargaSchema, logSchema } from './schemas/log.schema';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 @Module({
@@ -12,6 +12,10 @@ import { NombreBdConexion } from 'src/enums/nombre.db.enum';
         {
           name: Log.name,
           schema: logSchema,
+        },
+        {
+          name: LogDescarga.name,
+          schema: logDescargaSchema,
         },
       ],
       NombreBdConexion.oc,

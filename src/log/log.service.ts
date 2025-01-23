@@ -3,12 +3,15 @@ import { CreateLogDto } from './dto/create-log.dto';
 import { UpdateLogDto } from './dto/update-log.dto';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Log } from './schemas/log.schema';
+import { Log, LogDescarga } from './schemas/log.schema';
 import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 @Injectable()
 export class LogService {
-  constructor(@InjectModel(Log.name, NombreBdConexion.oc) private readonly logSchema:Model<Log> ){}
+  constructor(
+    @InjectModel(Log.name, NombreBdConexion.oc) private readonly logSchema:Model<Log> ,
+    @InjectModel(LogDescarga.name, NombreBdConexion.oc) private readonly logDescarga:Model<LogDescarga> 
+  ){}
   create(createLogDto: CreateLogDto) {
     return 'This action adds a new log';
   }
@@ -29,8 +32,17 @@ export class LogService {
     return `This action removes a #${id} log`;
   }
 
-   public async  registroLogDescarga(descripcion:string, schema:string,codigoError:HttpStatus, tipoError:string, fechaFallida:string){
+   public async  registroLogDescargaError(descripcion:string, schema:string,codigoError:HttpStatus, tipoError:string, fechaFallida:string){
      return this.logSchema.create({ descripcion, schema,codigoError , tipoError , fechaFallida})
-     
   }
+
+
+  public async  registroLogDescarga(schema:string,fechaDescarga:string){
+    return this.logDescarga.create({ schema:schema, fechaDescarga:fechaDescarga})
+ }
+ 
+ public async listarLogdescarga(){
+  return this.logDescarga.find().limit(1).sort({fechaDescarga:-1})
+ }
+
 }

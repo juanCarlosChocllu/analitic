@@ -29,25 +29,29 @@ export class HttpAxiosVentaService {
         const response = await firstValueFrom(
           this.httpService.get(url, { timeout: 30000 }),
         );
+        const fechaDescarga = `${anio}/${mes}/${dia}`
+        await this.logService.registroLogDescarga('venta',fechaDescarga )
         let venta = this.extracionDeInformacionValida(response.data);
         venta.shift();
         return venta;
-      } catch (error) {        
+      } catch (error) {      
+        console.log(error);
+          
         const e = error as AxiosError
         const mensage = e.message.split(' ');
         if (mensage[5] === '404') {
           const descripcion:string = `Archivo no encontrado error 404 de la fecha: ${anio}/${mes}/${dia}`
-          await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.NOT_FOUND,'Not found',`${anio}-${mes}-${dia}`)
+          await this.logService.registroLogDescargaError(descripcion,'Venta',HttpStatus.NOT_FOUND,'Not found',`${anio}-${mes}-${dia}`)
           throw new NotFoundException('Error no se encontro ningun archivo');
         } else if (e.code === 'ECONNABORTED') {
           const descripcion = `Intento fallido: la solicitud tomó demasiado tiempo.  fecha: ${anio}/${mes}/${dia}`
-          this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.GATEWAY_TIMEOUT, 'ECONNABORTED',`${anio}-${mes}-${dia}` )
+          this.logService.registroLogDescargaError(descripcion,'Venta', HttpStatus.GATEWAY_TIMEOUT, 'ECONNABORTED',`${anio}-${mes}-${dia}` )
         } else if (e.message.includes('socket hang up')) {
           const descripcion:string = `Intento  fallido: se perdió la conexión con el servidor: socket hang up: fecha: ${anio}/${mes}/${dia}`
-           await this.logService.registroLogDescarga(descripcion,'Venta', HttpStatus.REQUEST_TIMEOUT, 'socket hang up',`${anio}-${mes}-${dia}` )
+           await this.logService.registroLogDescargaError(descripcion,'Venta', HttpStatus.REQUEST_TIMEOUT, 'socket hang up',`${anio}-${mes}-${dia}` )
         } else {
           const descripcion:string = `Error: ocurrió un problema al procesar la solicitud de la fecha: ${anio}/${mes}/${dia}`
-          await this.logService.registroLogDescarga(descripcion,'Venta',HttpStatus.BAD_REQUEST, 'BAD REQUEST',`${anio}-${mes}-${dia}` )
+          await this.logService.registroLogDescargaError(descripcion,'Venta',HttpStatus.BAD_REQUEST, 'BAD REQUEST',`${anio}-${mes}-${dia}` )
           throw new InternalServerErrorException(
             'Error: ocurrió un problema al procesar la solicitud.',
           );
