@@ -3,6 +3,7 @@ import { AutenticacionDto } from './dto/autenticacion.dto';
 import { UsuariosService } from 'src/usuarios/usuarios.service';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
+import { jwtConstants } from './constants/constants';
 
 
 @Injectable()
@@ -20,6 +21,8 @@ export class AutenticacionService {
        const token = await this.jwtService.signAsync({
         sub: usuario.id, username: usuario.username,
         id: usuario.id
+       }, {
+         secret:jwtConstants.secret
        })
        return {
         status:HttpStatus.OK,

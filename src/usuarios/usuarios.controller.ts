@@ -24,8 +24,8 @@ export class UsuariosController {
 
   
   @Get('perfil')
-  perfil(@Req() request:Request) {   
-    return this.usuariosService.perfil(request.user.id);
+  perfil(@Req() request:Request) {       
+    return this.usuariosService.perfil(request.user);
   }
 
   @Post('resetear/contrasena/:id')
