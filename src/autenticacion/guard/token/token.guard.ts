@@ -24,7 +24,7 @@ export class TokenGuard implements CanActivate {
    
         return true
     }
-    const request = context.switchToHttp().getRequest()
+    const request:Request = context.switchToHttp().getRequest()
     const header:string = request.headers.authorization  
 
     try {
@@ -39,7 +39,7 @@ export class TokenGuard implements CanActivate {
       if(!usuario){        
         return false
       }
-      request.usuario= usuario
+      request.user= usuario.id
       return true
     } catch (error) {            
        throw new UnauthorizedException()

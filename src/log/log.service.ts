@@ -17,7 +17,7 @@ export class LogService {
   }
 
   logFindVenta() {
-    return this.logSchema.find({schema:'Venta'});
+    return this.logSchema.find({schema:'Venta'}).sort({fecha:-1}) ;
   }
 
   findOne(id: number) {
