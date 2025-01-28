@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
-import { port , interfaceRed} from './config/variables.entorno.config';
+import { port , interfaceRed} from './core/config/variables.entorno.config';
 
 async function bootstrap() {
 

@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { VentaExcelDto } from "../../dto/venta.dto";
-import { filtradorKpi } from "../../core/util/filtrador.kpi.util";
+
 import { InjectModel } from "@nestjs/mongoose";
 
 import { VentaExcel } from "../../schemas/venta.schema";
@@ -11,7 +10,7 @@ import { VentaMedicosDto } from "../../dto/venta.medicos.dto";
 import { OftalmologoService } from "src/oftalmologo/oftalmologo.service";
 import { filtradorMedicos } from "../../core/util/filtro.medicos.util";
 import { NombreBdConexion } from "src/core/enums/nombre.db.enum";
-import { log } from "node:console";
+
 
 
 @Injectable()
@@ -70,16 +69,19 @@ export class VentaMedicosService {
 
 
                          medico:{$first:'$oftalmologo._id'},
+                         e:{$first:'$oftalmologo.especialidad'},
+                         lenteContacto:{
+                            $sum:{
+                                $cond:{
+                                    if:{$eq:['$producto','LENTE DE CONTACTO']},
+                                    then:'$cantidad',
+                                    else:0
+                                
+                                }
+                            }   
+                         },
 
-
-                         tickets:{$sum:{
-                            $cond:{
-                                if:{$eq:['$aperturaTicket','1']},
-                                then:'$cantidad',
-                                else:0
-                            
-                            }
-                         }},
+                       
 
 
                          importe:{$sum:{
@@ -98,19 +100,20 @@ export class VentaMedicosService {
                         nombre:'$_id',
                         cantidad:1,
                         medico:1,
-                        tickets:1,
+                        ventas:{
+                                $sum:['$lenteContacto','$cantidad']
+                        },
                         importe:1,
-                        especialidad:'$oftalmologo.especialidad'
+                        e:1 //especialidad
                        
                     }
                 }
             ])
-            console.log(dataMedicos);
-            
+                    
             const resultado = {
                 sucursal: su.nombre,
                 totalRecetas:dataMedicos.reduce((acc, item)=>acc + item.cantidad, 0),
-                tickets:dataMedicos.reduce((acc, item)=>acc + item.tickets, 0),
+                ventas:dataMedicos.reduce((acc, item)=>acc + item.ventas, 0),
                 importe:dataMedicos.reduce((acc, item)=>acc + item.importe, 0),
                 idScursal:su.id,
                 data:dataMedicos

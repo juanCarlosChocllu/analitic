@@ -22,7 +22,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { TokenGuard } from './autenticacion/guard/token/token.guard';
 import { LogModule } from './log/log.module';
 import { ConfigModule } from '@nestjs/config';
-import { databaseConeccion } from './config/variables.entorno.config';
+import { databaseConeccion } from './core/config/variables.entorno.config';
 import { OftalmologoModule } from './oftalmologo/oftalmologo.module';
 import { AsesoresModule } from './asesores/asesores.module';
 import { NombreBdConexion } from './core/enums/nombre.db.enum';
