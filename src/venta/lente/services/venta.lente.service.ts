@@ -1,22 +1,23 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { VentaExcel } from "../schemas/venta.schema";
-import { NombreBdConexion } from "src/enums/nombre.db.enum";
+import { VentaExcel } from "../../schemas/venta.schema";
+
 import { Model, Types } from "mongoose";
 import { EmpresaService } from "src/empresa/empresa.service";
-import { KpiDto } from "../dto/kpi.venta.dto";
-import { FiltroVentaI } from "../interfaces/filtro.venta.interface";
+import { KpiDto } from "../../dto/kpi.venta.dto";
+import { FiltroVentaI } from "../../core/interfaces/filtro.venta.interface";
 import { SucursalService } from "src/sucursal/sucursal.service";
-import { productos } from "../enums/productos.enum";
+import { productos } from "../../core/enums/productos.enum";
 
-import { InformacionVentaDto } from "../dto/informacion.venta.dto";
+import { InformacionVentaDto } from "../../dto/informacion.venta.dto";
 
-import { filtradorKpi } from "../util/filtrador.kpi.util";
-import { filtradorKpiInformacion } from "../util/filtrador.kpi.informacion.util";
-import { KpiEmpresaDto } from "../dto/kpi.venta.empresas.dto";
-import { filtradorKpiInformacionEmpresa } from "../util/filtrador.kpi.informacion.empresa.util";
-import { InformacionEmpresasTodasVentaDto } from "../dto/informacion.empresas.todas.dto";
-import { filtradorKpiInformacionTodasEmpresas } from "../util/filtrador.infomacion.todas.empresas.util";
+import { filtradorKpi } from "../../core/util/filtrador.kpi.util";
+import { filtradorKpiInformacion } from "../../core/util/filtrador.kpi.informacion.util";
+import { KpiEmpresaDto } from "../../dto/kpi.venta.empresas.dto";
+import { filtradorKpiInformacionEmpresa } from "../../core/util/filtrador.kpi.informacion.empresa.util";
+import { InformacionEmpresasTodasVentaDto } from "../../dto/informacion.empresas.todas.dto";
+import { filtradorKpiInformacionTodasEmpresas } from "../../core/util/filtrador.infomacion.todas.empresas.util";
+import { NombreBdConexion } from "src/core/enums/nombre.db.enum";
 
 @Injectable()
 export class VentaLenteService {

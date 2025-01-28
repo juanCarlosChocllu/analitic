@@ -11,20 +11,20 @@ import {
 import { Model, Types } from 'mongoose';
 import {VentaExcelDto } from '../dto/venta.dto';
 
-import { VentaExcelI } from '../interfaces/ventaExcel.interface';
-
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { VentaExcelI } from '../core/interfaces/ventaExcel.interface';
 
 
 
-import { diasHAbiles } from '../util/dias.habiles.util';
+
+
+import { diasHAbiles } from '../core/util/dias.habiles.util';
 
 
 
-import { flag } from '../enums/flag.enum';
+import { flag } from '../core/enums/flag.enum';
 
 
-import { FiltroVentaI } from '../interfaces/filtro.venta.interface';
+import { FiltroVentaI } from '../core/interfaces/filtro.venta.interface';
 
 
 
@@ -34,7 +34,8 @@ import { AbonoService } from 'src/abono/abono.service';
 
 import { SucursalService } from 'src/sucursal/sucursal.service';
 
-import { sucursalesEnum } from '../enums/sucursales.enum';
+import { sucursalesEnum } from '../core/enums/sucursales.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 
 @Injectable()

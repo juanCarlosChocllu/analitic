@@ -3,7 +3,8 @@ import { OftalmologoService } from './oftalmologo.service';
 import { OftalmologoController } from './oftalmologo.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Oftalmologo ,oftalmologoSchema} from './schemas/oftalmologo.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+
 
 @Module({
   imports:[

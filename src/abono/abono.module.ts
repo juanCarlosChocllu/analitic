@@ -4,8 +4,9 @@ import { AbonoController } from './abono.controller';
 import { ProvidersModule } from 'src/providers/providers.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Abono, AbonoSchema } from './schema/abono.abono';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+
 import { VentaModule } from 'src/venta/venta.module';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Module({
   imports: [

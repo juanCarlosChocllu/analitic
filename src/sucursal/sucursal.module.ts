@@ -3,8 +3,9 @@ import { SucursalService } from './sucursal.service';
 import { SucursalController } from './sucursal.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SuscursalExcel, SuscursalExcelSchema } from './schema/sucursal.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+
 import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.schema';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Module({
   imports: [

@@ -4,13 +4,14 @@ import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Usuario } from './schema/usuario.schema';
 import { Model, Types } from 'mongoose';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+
 import * as argon2 from "argon2";
-import { Flag } from 'src/common/enums/flag';
-import { log } from 'node:console';
-import { flag } from 'src/venta/enums/flag.enum';
+
+
 import { ResetearContrasena } from './dto/resetar-contrasena.dto';
-import { PassThrough } from 'node:stream';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+import { Flag } from 'src/core/enums/flag';
+;
 
 
 

@@ -1,16 +1,17 @@
 import { Injectable } from "@nestjs/common";
-import { VentaExcelDto } from "../dto/venta.dto";
-import { filtradorKpi } from "../util/filtrador.kpi.util";
+import { VentaExcelDto } from "../../dto/venta.dto";
+import { filtradorKpi } from "../../core/util/filtrador.kpi.util";
 import { InjectModel } from "@nestjs/mongoose";
-import { NombreBdConexion } from "src/enums/nombre.db.enum";
-import { VentaExcel } from "../schemas/venta.schema";
+
+import { VentaExcel } from "../../schemas/venta.schema";
 import { Model, Types } from "mongoose";
 import { SucursalService } from "src/sucursal/sucursal.service";
 
-import { VentaMedicosDto } from "../dto/venta.medicos.dto";
+import { VentaMedicosDto } from "../../dto/venta.medicos.dto";
 import { OftalmologoService } from "src/oftalmologo/oftalmologo.service";
-import { filtradorMedicos } from "../util/filtro.medicos.util";
-import { especialidad } from "../enums/especialidad.enum";
+import { filtradorMedicos } from "../../core/util/filtro.medicos.util";
+import { NombreBdConexion } from "src/core/enums/nombre.db.enum";
+import { log } from "node:console";
 
 
 @Injectable()
@@ -99,11 +100,12 @@ export class VentaMedicosService {
                         medico:1,
                         tickets:1,
                         importe:1,
-                        e:'$oftalmologo.especialidad'
+                        especialidad:'$oftalmologo.especialidad'
                        
                     }
                 }
             ])
+            console.log(dataMedicos);
             
             const resultado = {
                 sucursal: su.nombre,
@@ -115,6 +117,7 @@ export class VentaMedicosService {
             }
             data.push(resultado)                
         }  
+        
         return data
         
     }

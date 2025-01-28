@@ -1,5 +1,5 @@
 
-import { flagVenta } from "src/venta/enums/flgaVenta.enum";
+import { flagVenta } from "src/venta/core/enums/flgaVenta.enum";
 
 export interface ventaInformacionRI {
     id_venta: string,

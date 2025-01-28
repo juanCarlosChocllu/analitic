@@ -4,18 +4,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { VentaExcelDto } from '../dto/venta.dto';
 
-import { FiltroVentaI } from '../interfaces/filtro.venta.interface';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { FiltroVentaI } from '../core/interfaces/filtro.venta.interface';
+
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
 import { InformacionVentaDto } from '../dto/informacion.venta.dto';
-import { ticketPromedio } from '../util/tickectPromedio.util';
-import { diasHAbiles } from '../util/dias.habiles.util';
+import { ticketPromedio } from '../core/util/tickectPromedio.util';
+import { diasHAbiles } from '../core/util/dias.habiles.util';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { VentaExcel } from '../schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
-import { sucursalesEnum } from '../enums/sucursales.enum';
-import { filtradorDeGestion } from '../util/filtrador.gestion.util';
-import { AsesorExcelI } from '../interfaces/asesor.interface';
+import { sucursalesEnum } from '../core/enums/sucursales.enum';
+import { filtradorDeGestion } from '../core/util/filtrador.gestion.util';
+import { AsesorExcelI } from '../core/interfaces/asesor.interface';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Injectable()
 export class VentaGestionService {

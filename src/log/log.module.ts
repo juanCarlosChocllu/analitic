@@ -3,7 +3,8 @@ import { LogService } from './log.service';
 import { LogController } from './log.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Log, LogDescarga, logDescargaSchema, logSchema } from './schemas/log.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+
 
 @Module({
   imports:[

@@ -2,11 +2,12 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
-import { ValidacionIdPipe } from 'src/util/validacion-id/validacion-id.pipe';
-import { Public } from 'src/autenticacion/decorators/public.decorator';
+
+
 import { Request } from 'express';
 import { ResetearContrasena } from './dto/resetar-contrasena.dto';
 import { Types } from 'mongoose';
+import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
 
 @Controller('usuarios')
 export class UsuariosController {

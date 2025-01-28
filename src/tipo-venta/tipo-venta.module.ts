@@ -3,7 +3,8 @@ import { TipoVentaService } from './tipo-venta.service';
 import { TipoVentaController } from './tipo-venta.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TipoVenta, TipoVentaSchema } from './schemas/tipo-venta.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+
 
 @Module({
   imports: [

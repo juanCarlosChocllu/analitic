@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 
 import { Types } from 'mongoose';
-import { EstadoEnum } from '../enums/estado.enum';
+import { EstadoEnum } from '../core/enums/estado.enum';
 
 
 export class VentaExcelDto {

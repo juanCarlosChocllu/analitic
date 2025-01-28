@@ -3,7 +3,8 @@ import { TratamientoService } from './tratamiento.service';
 import { TratamientoController } from './tratamiento.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Tratamiento, TratamientoSchema } from './schema/tratamiento.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+
 
 @Module({
   imports: [

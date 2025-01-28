@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Marca } from './schema/marca.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+
 import { Model } from 'mongoose';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Injectable()
 export class MarcasService {

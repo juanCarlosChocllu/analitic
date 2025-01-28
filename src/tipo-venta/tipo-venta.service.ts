@@ -2,7 +2,8 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { TipoVenta } from './schemas/tipo-venta.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+
 
 @Injectable()
 export class TipoVentaService {

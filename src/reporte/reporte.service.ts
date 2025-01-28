@@ -1,15 +1,15 @@
 import { BadRequestException, HttpStatus, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+
 import { HttpAxiosVentaService } from 'src/providers/http.Venta.service';
 import { TipoLenteService } from 'src/tipo-lente/tipo-lente.service';
 import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 import { TratamientoService } from 'src/tratamiento/tratamiento.service';
-import { productos } from 'src/venta/enums/productos.enum';
-import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
+import { productos } from 'src/venta/core/enums/productos.enum';
+import { VentaExcelI } from 'src/venta/core/interfaces/ventaExcel.interface';
 
-import { parseNumber } from 'src/venta/util/validar.numero.util';
+import { parseNumber } from 'src/venta/core/util/validar.numero.util';
 
 import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
 
@@ -30,6 +30,7 @@ import { AsesorExcel } from 'src/asesores/schemas/asesore.schema';
 import { VentaExcel } from 'src/venta/schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
 import { AxiosError } from 'axios';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 
 @Injectable()

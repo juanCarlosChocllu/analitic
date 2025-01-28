@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Flag } from "src/common/enums/flag";
-import { flag } from "src/venta/enums/flag.enum";
+import { Flag } from "src/core/enums/flag";
+
 
 
 @Schema()

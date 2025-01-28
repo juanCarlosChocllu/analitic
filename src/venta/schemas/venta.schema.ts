@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
-import { flagVenta } from '../enums/flgaVenta.enum';
+import { flagVenta } from '../core/enums/flgaVenta.enum';
 
 @Schema()
 export class VentaExcel {

@@ -2,7 +2,7 @@ import { Body, Controller ,Param,Post} from '@nestjs/common';
 import { VentaGestionService } from '../services/venta.gestion.service';
 import { VentaExcelDto } from '../dto/venta.dto';
 import { InformacionVentaDto } from '../dto/informacion.venta.dto';
-import { ValidacionIdPipe } from 'src/util/validacion-id/validacion-id.pipe';
+import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
 
 @Controller('gestion')
 export class VentaGestionController {

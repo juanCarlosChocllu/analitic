@@ -1,5 +1,5 @@
 import { Types } from "mongoose"
-import { VentaExcelDto } from "../dto/venta.dto"
+import { VentaExcelDto } from "../../dto/venta.dto"
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
 
 export function filtradorDeGestion( ventaDto: VentaExcelDto){

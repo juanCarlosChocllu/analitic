@@ -4,11 +4,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SuscursalExcel } from './schema/sucursal.schema';
 import { Model, Types } from 'mongoose';
 
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
 
 import {dataEmpresa} from './data.empresas'
 import { EmpresaExcel } from 'src/empresa/schemas/empresa.schema';
-import { log } from 'node:console';
+
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Injectable()
 export class SucursalService {

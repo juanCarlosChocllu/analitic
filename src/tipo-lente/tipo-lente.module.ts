@@ -3,7 +3,7 @@ import { TipoLenteService } from './tipo-lente.service';
 
 import { MongooseModule } from '@nestjs/mongoose';
 import { TipoLente, TipoLenteSchema } from './schema/tipo-lente.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Module({
   imports: [

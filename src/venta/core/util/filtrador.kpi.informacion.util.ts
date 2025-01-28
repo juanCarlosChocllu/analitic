@@ -1,6 +1,6 @@
 import { Types } from "mongoose"
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
-import { InformacionVentaDto } from "../dto/informacion.venta.dto"
+import { InformacionVentaDto } from "../../dto/informacion.venta.dto"
 
 export function filtradorKpiInformacion(sucursal:string,informacionVentaDto :InformacionVentaDto):FiltroVentaI{
     const filtrador:FiltroVentaI ={

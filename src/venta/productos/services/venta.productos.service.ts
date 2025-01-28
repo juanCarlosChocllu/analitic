@@ -1,15 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
-import { VentaExcel } from '../schemas/venta.schema';
+
+import { VentaExcel } from '../../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
-import { filtradorKpiInformacion } from '../util/filtrador.kpi.informacion.util';
-import { InformacionVentaDto } from '../dto/informacion.venta.dto';
-import { productos } from '../enums/productos.enum';
-import { filtradorKpi } from '../util/filtrador.kpi.util';
-import { KpiDto } from '../dto/kpi.venta.dto';
+import { filtradorKpiInformacion } from '../../core/util/filtrador.kpi.informacion.util';
+import { InformacionVentaDto } from '../../dto/informacion.venta.dto';
+import { productos } from '../../core/enums/productos.enum';
+import { filtradorKpi } from '../../core/util/filtrador.kpi.util';
+import { KpiDto } from '../../dto/kpi.venta.dto';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { EmpresaService } from 'src/empresa/empresa.service';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Injectable()
 export class VentaProductosService {

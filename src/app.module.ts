@@ -6,7 +6,7 @@ import { SucursalModule } from './sucursal/sucursal.module';
 import { EmpresaModule } from './empresa/empresa.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ProvidersModule } from './providers/providers.module';
-import { NombreBdConexion } from './enums/nombre.db.enum';
+
 import { AbonoModule } from './abono/abono.module';
 import { TratamientoModule } from './tratamiento/tratamiento.module';
 import { TipoLenteModule } from './tipo-lente/tipo-lente.module';
@@ -25,6 +25,7 @@ import { ConfigModule } from '@nestjs/config';
 import { databaseConeccion } from './config/variables.entorno.config';
 import { OftalmologoModule } from './oftalmologo/oftalmologo.module';
 import { AsesoresModule } from './asesores/asesores.module';
+import { NombreBdConexion } from './core/enums/nombre.db.enum';
 
 @Module({
   imports: [

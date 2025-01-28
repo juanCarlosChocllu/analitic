@@ -10,7 +10,8 @@ import {
 import { SucursalService } from './sucursal.service';
 import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
-import { ValidacionIdPipe } from 'src/util/validacion-id/validacion-id.pipe';
+import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
+
 
 @Controller()
 export class SucursalController {

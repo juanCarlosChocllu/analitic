@@ -4,8 +4,9 @@ import { UpdateAsesoreDto } from './dto/update-asesore.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { AsesorExcel } from './schemas/asesore.schema';
 import { Model, Types } from 'mongoose';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
-import { AsesorExcelI } from 'src/venta/interfaces/asesor.interface';
+
+import { AsesorExcelI } from 'src/venta/core/interfaces/asesor.interface';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Injectable()
 export class AsesoresService {

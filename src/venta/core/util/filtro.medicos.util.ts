@@ -1,9 +1,8 @@
-import { Types } from "mongoose";
-import { KpiDto } from "../dto/kpi.venta.dto";
-import { FiltroVentaI } from "../interfaces/filtro.venta.interface";
-import { KpiEmpresaDto } from "../dto/kpi.venta.empresas.dto";
+import { Types } from "mongoose"
+import { VentaMedicosDto } from "../../dto/venta.medicos.dto"
+import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
 
-export function filtradorKpi(kpiDto:KpiDto | KpiEmpresaDto){
+export function filtradorMedicos(kpiDto:VentaMedicosDto){
     let filtrador:FiltroVentaI={
         fecha: {
           $gte: new Date(kpiDto.fechaInicio),
@@ -14,6 +13,9 @@ export function filtradorKpi(kpiDto:KpiDto | KpiEmpresaDto){
       }
       if(kpiDto.comisiona != null){
         filtrador.comisiona = kpiDto.comisiona
+      }
+      if(kpiDto.especialidad != null){
+        filtrador.especialidad = kpiDto.especialidad
       }
       kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: kpiDto.tipoVenta.map((id)=>new Types.ObjectId( id))} : filtrador
       return filtrador

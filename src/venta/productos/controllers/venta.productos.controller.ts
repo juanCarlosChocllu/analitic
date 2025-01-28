@@ -1,8 +1,9 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { VentaProductosService } from '../services/venta.productos.service';
-import { KpiDto } from '../dto/kpi.venta.dto';
-import { ValidacionIdPipe } from 'src/util/validacion-id/validacion-id.pipe';
-import { InformacionVentaDto } from '../dto/informacion.venta.dto';
+import { KpiDto } from '../../dto/kpi.venta.dto';
+
+import { InformacionVentaDto } from '../../dto/informacion.venta.dto';
+import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
 
 @Controller('venta')
 export class VentaProductosController {

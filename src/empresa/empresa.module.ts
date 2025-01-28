@@ -3,7 +3,8 @@ import { EmpresaService } from './empresa.service';
 import { EmpresaController } from './empresa.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EmpresaExcel, EmpresaExcelSchema } from './schemas/empresa.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+
 
 @Module({
   imports: [

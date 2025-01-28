@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { TipoLente } from './schema/tipo-lente.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+
 import { Model } from 'mongoose';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Injectable()
 export class TipoLenteService {

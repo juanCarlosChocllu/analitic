@@ -1,16 +1,14 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { CreateOftalmologoDto } from './dto/create-oftalmologo.dto';
-import { UpdateOftalmologoDto } from './dto/update-oftalmologo.dto';
+import { Injectable } from '@nestjs/common';
+
 import { InjectModel } from '@nestjs/mongoose';
 import { Oftalmologo } from './schemas/oftalmologo.schema';
-import { NombreBdConexion } from 'src/enums/nombre.db.enum';
+
 import { Model, Types } from 'mongoose';
-import { stat } from 'fs';
+
 import { BuscarOftalmologoDto } from './dto/buscador-oftalmologo.dto';
-import { especialidad } from 'src/venta/enums/especialidad.enum';
-import { VentaMedicosDto } from 'src/venta/dto/venta.medicos.dto';
-import { log } from 'console';
-import { productos } from 'src/venta/enums/productos.enum';
+import { especialidad } from 'src/venta/core/enums/especialidad.enum';
+import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+
 
 @Injectable()
 export class OftalmologoService {

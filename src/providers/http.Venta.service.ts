@@ -6,8 +6,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
-import { VentaExcelI } from 'src/venta/interfaces/ventaExcel.interface';
-import { flag } from 'src/venta/enums/flag.enum';
+import { VentaExcelI } from 'src/venta/core/interfaces/ventaExcel.interface';
+import { flag } from 'src/venta/core/enums/flag.enum';
 import { LogService } from 'src/log/log.service';
 import { AxiosError } from 'axios';
 
