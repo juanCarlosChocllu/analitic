@@ -153,7 +153,7 @@ export class ReporteService {
         const venta = await this.VentaExcelSchema.exists({
           numeroTicket: data.numeroTicket.toUpperCase(),
           producto: data.producto,     
-      });      
+        });      
       
         if(!venta){
         const textoTipo= data.numeroTicket.split('-')
@@ -211,9 +211,10 @@ export class ReporteService {
           }
         }
       }
+      
       }
     } catch (error) {
-      console.log(error);
+
 
       throw new BadRequestException();
     }

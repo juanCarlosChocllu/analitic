@@ -13,9 +13,7 @@ export class VentaMedicosController {
    
   
    @Post('recetas/actual/medicos')
-   kpiMedicosActual(@Body () ventaMedicosDto:VentaMedicosDto){
-      console.log(ventaMedicosDto);
-      
+   kpiMedicosActual(@Body () ventaMedicosDto:VentaMedicosDto){      
         return this.ventaKpiMedicos.kpiMedicos(ventaMedicosDto)
    }
 

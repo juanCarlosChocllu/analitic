@@ -35,16 +35,12 @@ export class TokenGuard implements CanActivate {
       const tokenVerificada = await this.jwtService.verify(token,{
         secret:jwtConstants.secret
       })     
-      console.log(tokenVerificada);
-      
+  
       const usuario = await this.usuariosService.buscarUsuarioPorId(tokenVerificada.id)      
       if(!usuario){        
         return false
       }
-      console.log(usuario);
-      
-      request.user= usuario._id
-            
+      request.user= usuario._id              
       return true
     } catch (error) {          
       console.log(error);

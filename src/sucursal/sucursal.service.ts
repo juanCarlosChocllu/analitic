@@ -9,6 +9,7 @@ import {dataEmpresa} from './data.empresas'
 import { EmpresaExcel } from 'src/empresa/schemas/empresa.schema';
 
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+import { SucursalI } from 'src/core/interfaces/sucursalInterface';
 
 @Injectable()
 export class SucursalService {
@@ -25,8 +26,8 @@ export class SucursalService {
 
    }
 
-   public async  listarSucursalId(id:Types.ObjectId){
-    const sucursal = await this.SucursalSchema.findById(id)
+   public async  listarSucursalId(id:Types.ObjectId):Promise<SucursalI>{
+    const sucursal:SucursalI = await this.SucursalSchema.findById(id)
     return sucursal
 
    }
