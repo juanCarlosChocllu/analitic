@@ -32,20 +32,14 @@ export class SucursalService {
 
    }
 
-   async sucursalListaEmpresas(id: Types.ObjectId) {
-    const suscursales = await this.SucursalSchema.find({
+   async sucursalListaEmpresas(id: Types.ObjectId):Promise<SucursalI[]>{
+    const suscursales:SucursalI[] = await this.SucursalSchema.find({
       empresa: new Types.ObjectId(id),
     });
     return suscursales;
   }
 
-  async listarEmpresaDeSucursal(empresa:Types.ObjectId){
-    const suscursales = await this.SucursalSchema.find({
-      empresa: new Types.ObjectId(empresa),
-    });
-    return suscursales
 
-  }
   
   public async guardarEmpresaYsusSucursales() {
     const data = dataEmpresa();  

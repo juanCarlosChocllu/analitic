@@ -8,7 +8,7 @@ import { TipoVentaModule } from 'src/tipo-venta/tipo-venta.module';
 import { SucursalModule } from 'src/sucursal/sucursal.module';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { VentaExcel, VentaExcelSchema   } from 'src/venta/schemas/venta.schema';
+import { Venta, VentaSchema   } from 'src/venta/schemas/venta.schema';
 import { Abono, AbonoSchema } from 'src/abono/schema/abono.abono';
 import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucursal.schema';
 
@@ -30,7 +30,7 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
     MongooseModule.forFeature(
       [
         { name: SuscursalExcel.name, schema: SuscursalExcelSchema },
-        { name: VentaExcel.name, schema: VentaExcelSchema },
+        { name: Venta.name, schema: VentaSchema },
         { name: Abono.name, schema: AbonoSchema },
       ],
       NombreBdConexion.oc,

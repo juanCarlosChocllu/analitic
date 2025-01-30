@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 
 import { flagVenta } from '../core/enums/flgaVenta.enum';
 
-@Schema()
-export class VentaExcel {
+@Schema({collection:'Venta'})
+export class Venta {
   @Prop()
   aperturaTicket: string;
   @Prop()
@@ -76,10 +76,10 @@ export class VentaExcel {
   @Prop({ type: Date, default: Date.now() })
   fechaCreacion: Date;
 }
-export const VentaExcelSchema = SchemaFactory.createForClass(VentaExcel);
-VentaExcelSchema.index({ sucursal: 1 });
-VentaExcelSchema.index({ empresa: 1 });
-VentaExcelSchema.index({ asesor: 1 });
+export const VentaSchema = SchemaFactory.createForClass(Venta);
+VentaSchema.index({ sucursal: 1 });
+VentaSchema.index({ empresa: 1 });
+VentaSchema.index({ asesor: 1 });
 
 
 

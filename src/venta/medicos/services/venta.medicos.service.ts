@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { InjectModel } from '@nestjs/mongoose';
 
-import { VentaExcel } from '../../schemas/venta.schema';
+import { Venta } from '../../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 
@@ -11,13 +11,14 @@ import { OftalmologoService } from 'src/oftalmologo/oftalmologo.service';
 import { filtradorMedicos } from '../../core/util/filtro.medicos.util';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { SucursalI } from 'src/core/interfaces/sucursalInterface';
+import { CoreService } from 'src/venta/core/service/core.service';
 
 @Injectable()
 export class VentaMedicosService {
   constructor(
-    @InjectModel(VentaExcel.name, NombreBdConexion.oc)
-    private readonly VentaExcelSchema: Model<VentaExcel>,
-    private readonly sucursalServiece: SucursalService,
+    @InjectModel(Venta.name, NombreBdConexion.oc)
+    private readonly VentaExcelSchema: Model<Venta>,
+    private readonly coreService:CoreService
   ) {}
 
   public async kpiMedicos(ventaMedicosDto: VentaMedicosDto) {
@@ -25,7 +26,7 @@ export class VentaMedicosService {
     const data: any[] = [];
 
         try {
-            const sucursales = await this.filtroSucursal(ventaMedicosDto.sucursal);
+            const sucursales = await this.coreService.filtroSucursal(ventaMedicosDto.sucursal);
             for (let sucursal of sucursales) {
               const dataMedicos = await this.VentaExcelSchema.aggregate([
                 {
@@ -124,25 +125,5 @@ export class VentaMedicosService {
         }   
   }
 
-  private async filtroSucursal(sucursal: Types.ObjectId[]) {
-    const sucursales: SucursalI[] = [];
-    if (sucursal.length > 1) {
-      for (const s of sucursal) {
-        const su:SucursalI = await this.sucursalServiece.listarSucursalId(s);
-        if (su.nombre !== 'OPTICENTRO PARAGUAY') {
-          sucursales.push(su);
-        }
-      }
-    } else if (sucursal.length == 1) {
-      for (const s of sucursal) {
-        const su:SucursalI = await this.sucursalServiece.listarSucursalId(s);
-        if (su.nombre == 'OPTICENTRO PARAGUAY') {
-          sucursales.push(su);
-        } else {
-          sucursales.push(su);
-        }
-      }
-    }   
-    return sucursales;
-  }
+ 
 }

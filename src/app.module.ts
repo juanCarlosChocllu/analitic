@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TipoVentaModule } from './tipo-venta/tipo-venta.module';
 import { SucursalModule } from './sucursal/sucursal.module';
 import { EmpresaModule } from './empresa/empresa.module';
-import { ScheduleModule } from '@nestjs/schedule';
+
 import { ProvidersModule } from './providers/providers.module';
 
 import { AbonoModule } from './abono/abono.module';
@@ -26,6 +26,8 @@ import { databaseConeccion } from './core/config/variables.entorno.config';
 import { OftalmologoModule } from './oftalmologo/oftalmologo.module';
 import { AsesoresModule } from './asesores/asesores.module';
 import { NombreBdConexion } from './core/enums/nombre.db.enum';
+
+import { MetasSucursalModule } from './metas-sucursal/metas-sucursal.module';
 
 @Module({
   imports: [
@@ -54,6 +56,7 @@ import { NombreBdConexion } from './core/enums/nombre.db.enum';
     LogModule,
     OftalmologoModule,
     AsesoresModule,
+    MetasSucursalModule,
   ],
   controllers: [],
   providers: [{

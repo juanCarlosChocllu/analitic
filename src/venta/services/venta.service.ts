@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  VentaExcel,
+  Venta,
 } from '../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
-import {VentaExcelDto } from '../dto/venta.dto';
+import {VentaDto } from '../dto/venta.dto';
 
 import { VentaExcelI } from '../core/interfaces/ventaExcel.interface';
 
@@ -41,8 +41,8 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 @Injectable()
 export class VentaService {
   constructor(
-    @InjectModel(VentaExcel.name, NombreBdConexion.oc)
-    private readonly VentaExcelSchema: Model<VentaExcel>,
+    @InjectModel(Venta.name, NombreBdConexion.oc)
+    private readonly VentaExcelSchema: Model<Venta>,
     @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
     private readonly sucursalExcelSchema: Model<SuscursalExcel>,
     private readonly sucursalService:SucursalService,
@@ -105,7 +105,7 @@ export class VentaService {
 
 
 
-  async ventaExel(ventaDto: VentaExcelDto) {
+  async ventaExel(ventaDto: VentaDto) {
  
     const [venta, ventaSucursal]= await Promise.all([
         this.ventaExcel(ventaDto),
@@ -128,7 +128,7 @@ export class VentaService {
     return resultado;
   }
 
-  private async ventaExcel(ventaDto: VentaExcelDto) {    
+  private async ventaExcel(ventaDto: VentaDto) {    
     const filtrador:FiltroVentaI={ fecha: {
       $gte: new Date(ventaDto.fechaInicio),
       $lte: new Date(ventaDto.FechaFin),
@@ -148,7 +148,7 @@ export class VentaService {
       },
       {
         $lookup:{
-          from:'suscursalexcels',
+          from:'Sucursal',
           foreignField:'_id',
           localField:'sucursal',
           as:'sucursal'
@@ -185,7 +185,7 @@ export class VentaService {
     return venta;
   }
 
-  private async ventaExcelSucursal(ventaDto: VentaExcelDto) {
+  private async ventaExcelSucursal(ventaDto: VentaDto) {
     const ventaSucursal: any[] = [];
     const filtrador:FiltroVentaI={ fecha: {
       $gte: new Date(ventaDto.fechaInicio),
@@ -205,7 +205,7 @@ export class VentaService {
         },
         {
           $lookup:{
-            from:'suscursalexcels',
+            from:'Sucursal',
             foreignField:'_id',
             localField:'sucursal',
             as:'sucursal'
@@ -272,7 +272,7 @@ export class VentaService {
 
   private calcularDatosSucursal(
     ventaPorSucursal: any[],
-    ventaDto: VentaExcelDto,
+    ventaDto: VentaDto,
   ) {
     
     

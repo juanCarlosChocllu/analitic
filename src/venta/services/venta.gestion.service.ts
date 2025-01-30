@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model, Types } from 'mongoose';
-import { VentaExcelDto } from '../dto/venta.dto';
+import { VentaDto } from '../dto/venta.dto';
 
 import { FiltroVentaI } from '../core/interfaces/filtro.venta.interface';
 
@@ -11,7 +11,7 @@ import { InformacionVentaDto } from '../dto/informacion.venta.dto';
 import { ticketPromedio } from '../core/util/tickectPromedio.util';
 import { diasHAbiles } from '../core/util/dias.habiles.util';
 import { SucursalService } from 'src/sucursal/sucursal.service';
-import { VentaExcel } from '../schemas/venta.schema';
+import { Venta } from '../schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
 import { sucursalesEnum } from '../core/enums/sucursales.enum';
 import { filtradorDeGestion } from '../core/util/filtrador.gestion.util';
@@ -21,18 +21,15 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 @Injectable()
 export class VentaGestionService {
     constructor(
-        @InjectModel(VentaExcel.name, NombreBdConexion.oc)
-        private readonly VentaExcelSchema: Model<VentaExcel>,
+        @InjectModel(Venta.name, NombreBdConexion.oc)
+        private readonly VentaExcelSchema: Model<Venta>,
         @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
         private readonly sucursalExcelSchema: Model<SuscursalExcel>,
-  
         private readonly sucursalService: SucursalService,
-        private readonly asesoresService: AsesoresService,
-     
-    
+        private readonly asesoresService: AsesoresService,  
       ) {}
 
-    public async indicadoresPorAsesor(ventaDto: VentaExcelDto) {
+    public async indicadoresPorAsesor(ventaDto: VentaDto) {
         const listaAsesor: AsesorExcelI[] = [];
         const filtrador = filtradorDeGestion(ventaDto)
         for (let sucursal of ventaDto.sucursal) {
@@ -190,7 +187,7 @@ export class VentaGestionService {
       }
     
     
-      public async indicadoresPorSucursal(ventaDto: VentaExcelDto) {
+      public async indicadoresPorSucursal(ventaDto: VentaDto) {
         const filtrador = filtradorDeGestion(ventaDto)
         const dataSucursal: any[] = [];
         
@@ -458,7 +455,7 @@ export class VentaGestionService {
       }
     
     
-      public async indicadoresPorFecha(ventaDto: VentaExcelDto){
+      public async indicadoresPorFecha(ventaDto: VentaDto){
         const filtrador = filtradorDeGestion(ventaDto)
         const data:any[]=[]
         for (let su of ventaDto.sucursal){

@@ -1,7 +1,7 @@
 import { IsDateString, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { VentaExcelDto } from "./venta.dto";
+import { VentaDto } from "./venta.dto";
 
-export class VentaMedicosDto extends VentaExcelDto{
+export class VentaMedicosDto extends VentaDto{
 
     @IsOptional()
     @IsString()

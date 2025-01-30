@@ -1,8 +1,8 @@
 import { Types } from "mongoose"
-import { VentaExcelDto } from "../../dto/venta.dto"
+import { VentaDto } from "../../dto/venta.dto"
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
 
-export function filtradorDeGestion( ventaDto: VentaExcelDto){
+export function filtradorDeGestion( ventaDto: VentaDto){
     const filtrador: FiltroVentaI={
         fecha:{
           $gte: new Date(ventaDto.fechaInicio),

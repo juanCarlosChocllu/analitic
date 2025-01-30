@@ -27,7 +27,7 @@ import { OftalmologoService } from 'src/oftalmologo/oftalmologo.service';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { Log } from 'src/log/schemas/log.schema';
 import { AsesorExcel } from 'src/asesores/schemas/asesore.schema';
-import { VentaExcel } from 'src/venta/schemas/venta.schema';
+import { Venta } from 'src/venta/schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
 import { AxiosError } from 'axios';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
@@ -44,8 +44,8 @@ export class ReporteService {
     private readonly sucursalExcelSchema: Model<SuscursalExcel>,
 
     
-    @InjectModel(VentaExcel.name, NombreBdConexion.oc)
-    private readonly VentaExcelSchema: Model<VentaExcel>,
+    @InjectModel(Venta.name, NombreBdConexion.oc)
+    private readonly VentaExcelSchema: Model<Venta>,
     
     private readonly httpAxiosVentaService: HttpAxiosVentaService,
       

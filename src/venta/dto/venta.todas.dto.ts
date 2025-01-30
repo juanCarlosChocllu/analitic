@@ -1,12 +1,12 @@
 import { IsBoolean, IsDateString, IsMongoId, IsOptional } from "class-validator";
 import { Types } from "mongoose";
 
-export class KpiEmpresaDto{
+export class VentaTodasDto{
     @IsMongoId({each: true })
     empresa: string;
 
     @IsMongoId({each: true })
-    sucursal: string[];
+    sucursal: Types.ObjectId[];
     
     @IsMongoId({ each: true })
     @IsOptional()

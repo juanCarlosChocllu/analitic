@@ -1,29 +1,30 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { VentaExcel } from '../../schemas/venta.schema';
+import { Venta } from '../../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
 import { filtradorKpiInformacion } from '../../core/util/filtrador.kpi.informacion.util';
 import { InformacionVentaDto } from '../../dto/informacion.venta.dto';
 import { productos } from '../../core/enums/productos.enum';
-import { filtradorKpi } from '../../core/util/filtrador.kpi.util';
-import { KpiDto } from '../../dto/kpi.venta.dto';
+import { filtradorVenta } from '../../core/util/filtrador.venta.util';
+
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { EmpresaService } from 'src/empresa/empresa.service';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+import { VentaDto} from 'src/venta/dto/venta.dto';
 
 @Injectable()
 export class VentaProductosService {
     constructor(     
-           @InjectModel(VentaExcel.name, NombreBdConexion.oc)
-    private readonly VentaExcelSchema: Model<VentaExcel>,
+           @InjectModel(Venta.name, NombreBdConexion.oc)
+    private readonly VentaExcelSchema: Model<Venta>,
     private readonly empresaService: EmpresaService,
     private readonly sucursalService: SucursalService,
 
 ){
     }
-    async kpiLentesDeContacto(kpiDto: KpiDto){
-        const filtrador = filtradorKpi(kpiDto)
+    async kpiLentesDeContacto(kpiDto: VentaDto){
+        const filtrador = filtradorVenta(kpiDto)
         const data : any[]=[]
         
           for (let su of kpiDto.sucursal){
@@ -45,7 +46,7 @@ export class VentaProductosService {
                 },
                 {
                   $lookup:{
-                    from:'suscursalexcels',
+                    from:'Sucursal',
                     foreignField:'_id',
                     localField:'sucursal',
                     as:'sucursal'
@@ -136,9 +137,9 @@ export class VentaProductosService {
        }
   
   
-      async kpiMonturas(kpiDto:KpiDto){
+      async kpiMonturas(kpiDto:VentaDto){
   
-        const filtrador = filtradorKpi(kpiDto)
+        const filtrador = filtradorVenta(kpiDto)
   
           const dataMonturas:any=[]
           for(let su of  kpiDto.sucursal){
@@ -162,7 +163,7 @@ export class VentaProductosService {
       
               {
                 $lookup:{
-                  from:'suscursalexcels',
+                  from:'Sucursal',
                   foreignField:'_id',
                   localField:'sucursal',
                   as:'sucursal'
@@ -258,8 +259,8 @@ export class VentaProductosService {
   
   
         
-      async kpiGafas(kpiDto:KpiDto){
-         const filtrador = filtradorKpi(kpiDto)
+      async kpiGafas(kpiDto:VentaDto){
+         const filtrador = filtradorVenta(kpiDto)
           const dataGafa:any=[]
           for(let su of  kpiDto.sucursal){
             filtrador.sucursal = new Types.ObjectId(su)  
@@ -282,7 +283,7 @@ export class VentaProductosService {
       
               {
                 $lookup:{
-                  from:'suscursalexcels',
+                  from:'Sucursal',
                   foreignField:'_id',
                   localField:'sucursal',
                   as:'sucursal'
@@ -378,7 +379,7 @@ export class VentaProductosService {
   
   
 
-        async kpiMonturasPorEmpresa(kpiDto:KpiDto){
+        async kpiMonturasPorEmpresa(kpiDto:VentaDto){
 
             const empresa = await this.empresaService.buscarEmpresa(kpiDto.empresa)
             if(empresa && empresa.nombre === 'OPTICENTRO'){
@@ -392,8 +393,8 @@ export class VentaProductosService {
         
         
         
-         private  async kpiMonturasVipOpticentro(kpiDto:KpiDto){
-          const filtrador = filtradorKpi(kpiDto)
+         private  async kpiMonturasVipOpticentro(kpiDto:VentaDto){
+          const filtrador = filtradorVenta(kpiDto)
             const dataMonturasVip:any=[]
             for(let su of  kpiDto.sucursal){
               filtrador.sucursal = new Types.ObjectId(su)  
@@ -417,7 +418,7 @@ export class VentaProductosService {
         
                 {
                   $lookup:{
-                    from:'suscursalexcels',
+                    from:'Sucursal',
                     foreignField:'_id',
                     localField:'sucursal',
                     as:'sucursal'

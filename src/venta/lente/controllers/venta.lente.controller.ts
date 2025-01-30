@@ -1,10 +1,11 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { VentaLenteService } from '../services/venta.lente.service';
-import { KpiDto } from '../../dto/kpi.venta.dto';
+
 import { InformacionVentaDto } from '../../dto/informacion.venta.dto';
-import { KpiEmpresaDto } from '../../dto/kpi.venta.empresas.dto';
+import { VentaTodasDto } from '../../dto/venta.todas.dto';
 import { InformacionEmpresasTodasVentaDto } from '../../dto/informacion.empresas.todas.dto';
 import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
+import { VentaDto } from 'src/venta/dto/venta.dto';
 
 @Controller('venta')
 export class VentaLenteController {
@@ -13,7 +14,7 @@ export class VentaLenteController {
 
 
  @Post('kpi/material')
-  kpiMaterial(@Body() kpiDto: KpiDto){
+  kpiMaterial(@Body() kpiDto: VentaDto){
   return this.ventaLenteService.kpiMaterial(kpiDto)
  }
 
@@ -41,7 +42,7 @@ informacionTodasEmpresas(
 
 
 @Post('kpi/empresas/lentes')
-kpiLentes(@Body() kpiEmpresaDto: KpiEmpresaDto){    
+kpiLentes(@Body() kpiEmpresaDto: VentaTodasDto){    
 return this.ventaLenteService.kpiEmpresas(kpiEmpresaDto)
 }
 

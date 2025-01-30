@@ -1,6 +1,6 @@
 import { Body, Controller ,Param,Post} from '@nestjs/common';
 import { VentaGestionService } from '../services/venta.gestion.service';
-import { VentaExcelDto } from '../dto/venta.dto';
+import { VentaDto } from '../dto/venta.dto';
 import { InformacionVentaDto } from '../dto/informacion.venta.dto';
 import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
 
@@ -10,13 +10,13 @@ export class VentaGestionController {
         private readonly ventaGestionService: VentaGestionService,
     ){}
     @Post('excel/indicadores/asesor')
-    async indicadoresPorAsesor(@Body() ventaDto: VentaExcelDto) {
+    async indicadoresPorAsesor(@Body() ventaDto: VentaDto) {
         
       return await this.ventaGestionService.indicadoresPorAsesor(ventaDto);
     }
   
     @Post('excel/indicadores/sucursal')
-    async indicadoresPorSucursal(@Body() ventaDto: VentaExcelDto) {   
+    async indicadoresPorSucursal(@Body() ventaDto: VentaDto) {   
       return await this.ventaGestionService.indicadoresPorSucursal(ventaDto);
     }
 
@@ -28,7 +28,7 @@ export class VentaGestionController {
           return this.ventaGestionService.sucursalVentaInformacion(id, informacionVentaDto);
     }
     @Post('indicadores/fecha')
-    indicadoresPorFecha(@Body() ventaDto: VentaExcelDto){
+    indicadoresPorFecha(@Body() ventaDto: VentaDto){
      return this.ventaGestionService.indicadoresPorFecha(ventaDto)
     }
   

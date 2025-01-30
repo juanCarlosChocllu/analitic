@@ -1,6 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { VentaMedicosService } from '../services/venta.medicos.service';
-import { VentaExcelDto } from '../../dto/venta.dto';
 import { VentaMedicosDto } from '../../dto/venta.medicos.dto';
 
 @Controller('venta')

@@ -1,9 +1,10 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { VentaProductosService } from '../services/venta.productos.service';
-import { KpiDto } from '../../dto/kpi.venta.dto';
+
 
 import { InformacionVentaDto } from '../../dto/informacion.venta.dto';
 import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
+import { VentaDto } from 'src/venta/dto/venta.dto';
 
 @Controller('venta')
 export class VentaProductosController {
@@ -11,14 +12,14 @@ export class VentaProductosController {
 
     
  @Post('kpi/monturasvip')
- kpiMonturasPorEmpresa(@Body() kpiDto: KpiDto){
+ kpiMonturasPorEmpresa(@Body() kpiDto: VentaDto){
 
 
   return this.ventaProductosService.kpiMonturasPorEmpresa(kpiDto)
  }
 
  @Post('kpi/monturas')
- kipMonturas(@Body() kpiDto: KpiDto){
+ kipMonturas(@Body() kpiDto: VentaDto){
 
 
   return this.ventaProductosService.kpiMonturas(kpiDto)
@@ -39,7 +40,7 @@ export class VentaProductosController {
  }
 
  @Post('kpi/lentes/contacto')
- kpiLentesDeContacto(@Body() kpiDto: KpiDto){
+ kpiLentesDeContacto(@Body() kpiDto: VentaDto){
  return this.ventaProductosService.kpiLentesDeContacto(kpiDto)
 }
 
@@ -49,7 +50,7 @@ return this.ventaProductosService.kpiIformacionLentesDeContacto(informacionVenta
 }
 
 @Post('kpi/gafas')
-kipiGafas(@Body() kpiDto: KpiDto){
+kipiGafas(@Body() kpiDto: VentaDto){
  return this.ventaProductosService.kpiGafas(kpiDto)
 }
 

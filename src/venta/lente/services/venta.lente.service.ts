@@ -1,29 +1,30 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { VentaExcel } from "../../schemas/venta.schema";
+import { Venta } from "../../schemas/venta.schema";
 
 import { Model, Types } from "mongoose";
 import { EmpresaService } from "src/empresa/empresa.service";
-import { KpiDto } from "../../dto/kpi.venta.dto";
+
 import { FiltroVentaI } from "../../core/interfaces/filtro.venta.interface";
 import { SucursalService } from "src/sucursal/sucursal.service";
 import { productos } from "../../core/enums/productos.enum";
 
 import { InformacionVentaDto } from "../../dto/informacion.venta.dto";
 
-import { filtradorKpi } from "../../core/util/filtrador.kpi.util";
+import { filtradorVenta } from "../../core/util/filtrador.venta.util";
 import { filtradorKpiInformacion } from "../../core/util/filtrador.kpi.informacion.util";
-import { KpiEmpresaDto } from "../../dto/kpi.venta.empresas.dto";
+import { VentaTodasDto } from "../../dto/venta.todas.dto";
 import { filtradorKpiInformacionEmpresa } from "../../core/util/filtrador.kpi.informacion.empresa.util";
 import { InformacionEmpresasTodasVentaDto } from "../../dto/informacion.empresas.todas.dto";
 import { filtradorKpiInformacionTodasEmpresas } from "../../core/util/filtrador.infomacion.todas.empresas.util";
 import { NombreBdConexion } from "src/core/enums/nombre.db.enum";
+import { VentaDto } from "src/venta/dto/venta.dto";
 
 @Injectable()
 export class VentaLenteService {
 
-    constructor( @InjectModel(VentaExcel.name, NombreBdConexion.oc)
-    private readonly VentaExcelSchema: Model<VentaExcel>,
+    constructor( @InjectModel(Venta.name, NombreBdConexion.oc)
+    private readonly VentaExcelSchema: Model<Venta>,
     private readonly empresaService: EmpresaService,
     private readonly sucursalService: SucursalService,
 ){
@@ -237,9 +238,9 @@ export class VentaLenteService {
     }
 
 
-     public async kpiMaterial(kpiDto:KpiDto){
+     public async kpiMaterial(kpiDto:VentaDto){
       const data:any[]=[]
-      const filtrador = filtradorKpi(kpiDto)
+      const filtrador = filtradorVenta(kpiDto)
       for(let su of kpiDto.sucursal){
 
         filtrador.sucursal = new Types.ObjectId(su)      
@@ -262,7 +263,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'suscursalexcels',
+              from:'Sucursal',
               foreignField:'_id',
               localField:'sucursal',
               as:'sucursal'
@@ -344,7 +345,7 @@ export class VentaLenteService {
   
       }
      
-      async kpiEmpresas(kpiEmpresaDto:KpiEmpresaDto){
+      async kpiEmpresas(kpiEmpresaDto:VentaTodasDto){
          const dataEmpresas:any=[]
          for(let e of kpiEmpresaDto.empresa){
           const sucursales:any[]=[]
@@ -395,9 +396,9 @@ export class VentaLenteService {
       }
 
         
-    private async kpiOpticentroEmpresa(kpiEmpresaDto:KpiEmpresaDto, sucursal:any[]){  
+    private async kpiOpticentroEmpresa(kpiEmpresaDto:VentaTodasDto, sucursal:any[]){  
            
-      const filtrador = filtradorKpi(kpiEmpresaDto)
+      const filtrador = filtradorVenta(kpiEmpresaDto)
       const data:any[]=[];
          for(let su of sucursal){
           const dataKpi = await this.VentaExcelSchema.aggregate([
@@ -636,8 +637,8 @@ export class VentaLenteService {
 
       return data
     } 
-    private async kpiEconovisionEmpresa(kpiEmpresaDto:KpiEmpresaDto, sucursales:any[]){
-      const filtrador = filtradorKpi(kpiEmpresaDto)
+    private async kpiEconovisionEmpresa(kpiEmpresaDto:VentaTodasDto, sucursales:any[]){
+      const filtrador = filtradorVenta(kpiEmpresaDto)
       const data:any[]=[]
 
      for(let su of sucursales){
@@ -906,8 +907,8 @@ export class VentaLenteService {
   
       
     }
-    private async kpiTuOpticaEmpresa(kpiEmpresaDto:KpiEmpresaDto, sucursales:any[]){
-      const filtrador = filtradorKpi(kpiEmpresaDto)
+    private async kpiTuOpticaEmpresa(kpiEmpresaDto:VentaTodasDto, sucursales:any[]){
+      const filtrador = filtradorVenta(kpiEmpresaDto)
       const data:any[]=[]
       for (let su of sucursales){
         const dataKpi = await this.VentaExcelSchema.aggregate([
@@ -1172,8 +1173,8 @@ export class VentaLenteService {
       return data
      }
   
-     private async kpiOptiserviceEmpresa(kpiEmpresaDto:KpiEmpresaDto, sucursales:any[]){
-      const filtrador = filtradorKpi(kpiEmpresaDto)
+     private async kpiOptiserviceEmpresa(kpiEmpresaDto:VentaTodasDto, sucursales:any[]){
+      const filtrador = filtradorVenta(kpiEmpresaDto)
       const data:any[]=[]
       for(let su of sucursales){
         const dataKpi = await this.VentaExcelSchema.aggregate([

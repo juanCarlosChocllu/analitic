@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
-@Schema()
+@Schema({collection:'Sucursal'})
 export class SuscursalExcel {
   @Prop()
   nombre: string;
