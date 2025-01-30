@@ -16,9 +16,7 @@ export class MetasSucursalController {
   }
 
   @Get()
-  findAll(@Query () buscadorMetasDto:BuscadorMetasDto) {
-    console.log(buscadorMetasDto);
-    
+  findAll(@Query () buscadorMetasDto:BuscadorMetasDto) {   
     return this.metasSucursalService.findAll(buscadorMetasDto);
   }
 

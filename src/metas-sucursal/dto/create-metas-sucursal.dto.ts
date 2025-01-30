@@ -1,4 +1,4 @@
-import { IsDateString, IsMongoId, IsNotEmpty, IsNumber } from "class-validator"
+import { IsArray, IsDateString, IsMongoId, IsNotEmpty, IsNumber } from "class-validator"
 import { Types } from "mongoose"
 
 export class CreateMetasSucursalDto {
@@ -10,9 +10,10 @@ export class CreateMetasSucursalDto {
     @IsNotEmpty({ message: 'El ticket es obligatorio' })
     ticket: number;
   
-    @IsMongoId({ message: 'El id de sucursal debe ser un ObjectId válido' })
-    @IsNotEmpty({ message: 'El id de la sucursal es obligatorio' })
-    sucursal: Types.ObjectId;
+    @IsMongoId({ message: 'El id de sucursal debe ser un ObjectId válido',  each:true})
+    @IsNotEmpty({ message: 'El id de la sucursal es obligatorio' , each:true}, )
+    @IsArray()
+    sucursal: Types.ObjectId []=[];
   
     @IsDateString({},{ message: 'La fecha de inicio debe ser una cadena de fecha válida (ISO 8601)' })
     @IsNotEmpty({ message: 'La fecha de inicio es obligatoria' })

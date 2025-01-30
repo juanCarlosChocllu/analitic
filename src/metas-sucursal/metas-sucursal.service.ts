@@ -14,8 +14,17 @@ export class MetasSucursalService {
     constructor(@InjectModel(MetasSucursal.name, NombreBdConexion.oc) private readonly metasSucursal:Model<MetasSucursal>){}
   
   async create(createMetasSucursalDto: CreateMetasSucursalDto) {
-    createMetasSucursalDto.sucursal = new Types.ObjectId(createMetasSucursalDto.sucursal)
-    await this.metasSucursal.create(createMetasSucursalDto)
+    for (const sucursal of createMetasSucursalDto.sucursal) {
+
+      await this.metasSucursal.create({
+        ticket:createMetasSucursalDto.ticket,
+        fechaFin:createMetasSucursalDto.fechaFin,
+        fechaInicio:createMetasSucursalDto.fechaInicio,
+        monto:createMetasSucursalDto.monto,
+        sucursal:new Types.ObjectId(sucursal),
+      })
+      
+    }
     return {status:HttpStatus.CREATED}
   }
 
@@ -79,6 +88,12 @@ export class MetasSucursalService {
             $dateToString: {
               format: '%Y-%m-%d', 
               date: '$fechaFin'
+            }
+          },
+          fecha: {
+            $dateToString: {
+              format: '%Y-%m-%d', 
+              date: '$fecha'
             }
           }
         }
