@@ -38,7 +38,7 @@ export class VentaProductosService {
                 },
                 {
                   $lookup:{
-                    from:'marcas',
+                    from:'Marca',
                     foreignField:'_id',
                     localField:'marca',
                     as:'marca'
@@ -93,7 +93,7 @@ export class VentaProductosService {
                 },
                 {
                   $lookup:{
-                    from:'marcas',
+                    from:'Marca',
                     foreignField:'_id',
                     localField:'marca',
                     as:'marca'
@@ -154,7 +154,7 @@ export class VentaProductosService {
               },
               {
                 $lookup:{
-                  from:'marcas',
+                  from:'Marca',
                   foreignField:'_id',
                   localField:'marca',
                   as:'marca'
@@ -217,7 +217,7 @@ export class VentaProductosService {
             },
             {
               $lookup:{
-                from:'marcas',
+                from:'Marca',
                 foreignField:'_id',
                 localField:'marca',
                 as:'marca'
@@ -274,7 +274,7 @@ export class VentaProductosService {
               },
               {
                 $lookup:{
-                  from:'marcas',
+                  from:'Marca',
                   foreignField:'_id',
                   localField:'marca',
                   as:'marca'
@@ -337,7 +337,7 @@ export class VentaProductosService {
             },
             {
               $lookup:{
-                from:'marcas',
+                from:'Marca',
                 foreignField:'_id',
                 localField:'marca',
                 as:'marca'
@@ -409,7 +409,7 @@ export class VentaProductosService {
                 },
                 {
                   $lookup:{
-                    from:'marcas',
+                    from:'Marca',
                     foreignField:'_id',
                     localField:'marca',
                     as:'marca'
@@ -475,7 +475,7 @@ export class VentaProductosService {
               },
               {
                 $lookup:{
-                  from:'marcas',
+                  from:'Marca',
                   foreignField:'_id',
                   localField:'marca',
                   as:'marca'

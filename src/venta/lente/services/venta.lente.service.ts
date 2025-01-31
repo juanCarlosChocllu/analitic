@@ -431,7 +431,7 @@ export class VentaLenteService {
     
               {
                 $lookup:{
-                  from:'tipoventas',
+                  from:'TipoVenta',
                   foreignField:'_id',
                   localField:'tipoVenta',
                   as:'tipoVenta'
@@ -1210,7 +1210,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'tipoventas',
+              from:'TipoVenta',
               foreignField:'_id',
               localField:'tipoVenta',
               as:'tipoVenta'

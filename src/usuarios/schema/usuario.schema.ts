@@ -3,7 +3,7 @@ import { Flag } from "src/core/enums/flag";
 
 
 
-@Schema()
+@Schema({collection:'Usuario'})
 export class Usuario {
 
     @Prop()
