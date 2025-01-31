@@ -74,7 +74,7 @@ export class VentaLenteService {
             },
             {
                 $lookup:{
-                  from:'tratamientos',
+                  from:'Tratamiento',
                   foreignField:'_id',
                   localField:'tratamiento',
                   as:'tratamiento',
@@ -156,7 +156,7 @@ export class VentaLenteService {
     
           {
             $lookup:{
-              from:'marcalentes',
+              from:'MarcaLente',
               foreignField:'_id',
               localField:'marcaLente',
               as:'marcaLente'
@@ -165,7 +165,7 @@ export class VentaLenteService {
 
           {
             $lookup:{
-              from:'tipolentes',
+              from:'TipoLente',
               foreignField:'_id',
               localField:'tipoLente',
               as:'tipoLente'
@@ -200,7 +200,7 @@ export class VentaLenteService {
     
           {
             $lookup:{
-              from:'marcalentes',
+              from:'MarcaLente',
               foreignField:'_id',
               localField:'marcaLente',
               as:'marcaLente'
@@ -209,7 +209,7 @@ export class VentaLenteService {
 
           {
             $lookup:{
-              from:'tipolentes',
+              from:'TipoLente',
               foreignField:'_id',
               localField:'tipoLente',
               as:'tipoLente'
@@ -254,7 +254,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'materials',
+              from:'Material',
               foreignField:'_id',
               localField:'material',
               as:'material'
@@ -412,7 +412,7 @@ export class VentaLenteService {
               },
                {
                 $lookup:{
-                  from:'tratamientos',
+                  from:'Tratamiento',
                   foreignField:'_id',
                   localField:'tratamiento',
                   as:'tratamiento',
@@ -421,7 +421,7 @@ export class VentaLenteService {
               },
               {
                 $lookup:{
-                  from:'marcalentes',
+                  from:'MarcaLente',
                   foreignField:'_id',
                   localField:'marcaLente',
                   as:'marcaLente'
@@ -441,7 +441,7 @@ export class VentaLenteService {
             
               {
                 $lookup:{
-                  from:'tipolentes',
+                  from:'TipoLente',
                   foreignField:'_id',
                   localField:'tipoLente',
                   as:'tipoLente'
@@ -652,7 +652,7 @@ export class VentaLenteService {
         },
         {
           $lookup:{
-            from:'tratamientos',
+            from:'Tratamiento',
             foreignField:'_id',
             localField:'tratamiento',
             as:'tratamiento',
@@ -662,7 +662,7 @@ export class VentaLenteService {
 
         {
           $lookup:{
-            from:'marcalentes',
+            from:'MarcaLente',
             foreignField:'_id',
             localField:'marcaLente',
             as:'marcaLente'
@@ -670,7 +670,7 @@ export class VentaLenteService {
         },
         {
           $lookup:{
-            from:'tipocolors',
+            from:'TipoColor',
             foreignField:'_id',
             localField:'tipoColor',
             as:'tipoColor'
@@ -679,7 +679,7 @@ export class VentaLenteService {
       
         {
           $lookup:{
-            from:'tipolentes',
+            from:'TipoLente',
             foreignField:'_id',
             localField:'tipoLente',
             as:'tipoLente'
@@ -695,9 +695,7 @@ export class VentaLenteService {
         {
           $unwind:{ path: '$tipoColor', preserveNullAndEmptyArrays: true }
         },
-        {
-          $unwind:{ path: '$material', preserveNullAndEmptyArrays: true }
-        },
+      
         {
           $unwind:{ path: '$tipoLente', preserveNullAndEmptyArrays: true }
         },
@@ -920,7 +918,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'tratamientos',
+              from:'Tratamiento',
               foreignField:'_id',
               localField:'tratamiento',
               as:'tratamiento',
@@ -930,7 +928,7 @@ export class VentaLenteService {
   
           {
             $lookup:{
-              from:'marcalentes',
+              from:'MarcaLente',
               foreignField:'_id',
               localField:'marcaLente',
               as:'marcaLente'
@@ -938,7 +936,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'tipocolors',
+              from:'TipoColor',
               foreignField:'_id',
               localField:'tipoColor',
               as:'tipoColor'
@@ -946,7 +944,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'tipolentes',
+              from:'TipoLente',
               foreignField:'_id',
               localField:'tipoLente',
               as:'tipoLente'
@@ -1173,7 +1171,7 @@ export class VentaLenteService {
       return data
      }
   
-     private async kpiOptiserviceEmpresa(kpiEmpresaDto:VentaTodasDto, sucursales:any[]){
+     private async kpiOptiserviceEmpresa(kpiEmpresaDto:VentaTodasDto, sucursales:any[]){      
       const filtrador = filtradorVenta(kpiEmpresaDto)
       const data:any[]=[]
       for(let su of sucursales){
@@ -1186,7 +1184,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'tratamientos',
+              from:'Tratamiento',
               foreignField:'_id',
               localField:'tratamiento',
               as:'tratamiento',
@@ -1196,7 +1194,7 @@ export class VentaLenteService {
   
           {
             $lookup:{
-              from:'marcalentes',
+              from:'MarcaLente',
               foreignField:'_id',
               localField:'marcaLente',
               as:'marcaLente'
@@ -1204,7 +1202,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'tipocolors',
+              from:'TipoColor',
               foreignField:'_id',
               localField:'tipoColor',
               as:'tipoColor'
@@ -1220,7 +1218,7 @@ export class VentaLenteService {
           },
           {
             $lookup:{
-              from:'tipolentes',
+              from:'TipoLente',
               foreignField:'_id',
               localField:'tipoLente',
               as:'tipoLente'

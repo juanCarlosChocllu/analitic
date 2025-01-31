@@ -1,6 +1,6 @@
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 
-@Schema()
+@Schema({collection:'MarcaLente'})
 export class MarcaLente {
     @Prop()
     nombre:string
