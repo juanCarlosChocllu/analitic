@@ -1,12 +1,12 @@
 import { HttpStatus, Injectable, Type } from '@nestjs/common';
 
 import { InjectModel } from '@nestjs/mongoose';
-import { SuscursalExcel } from './schema/sucursal.schema';
+import { Sucursal } from './schema/sucursal.schema';
 import { Model, Types } from 'mongoose';
 
 
 import {dataEmpresa} from './data.empresas'
-import { EmpresaExcel } from 'src/empresa/schemas/empresa.schema';
+import { Empresa } from 'src/empresa/schemas/empresa.schema';
 
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { SucursalI } from 'src/core/interfaces/sucursalInterface';
@@ -14,10 +14,10 @@ import { SucursalI } from 'src/core/interfaces/sucursalInterface';
 @Injectable()
 export class SucursalService {
   constructor(
-    @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
-    private readonly SucursalSchema: Model<SuscursalExcel>,
-    @InjectModel(EmpresaExcel.name, NombreBdConexion.oc)
-    private readonly EmpresaSchema: Model<EmpresaExcel>,
+    @InjectModel(Sucursal.name, NombreBdConexion.oc)
+    private readonly SucursalSchema: Model<Sucursal>,
+    @InjectModel(Empresa.name, NombreBdConexion.oc)
+    private readonly EmpresaSchema: Model<Empresa>,
   ) {}
 
    public async buscarSucursal(sucursal:string){

@@ -20,4 +20,13 @@ export class BuscadorMetasDto extends PaginadorCoreDto {
     @ValidateIf((i:BuscadorMetasDto) => !i.fechaInicio )
     fechaFin:string
 
+    @IsMongoId()
+    @IsOptional()
+    @ValidateIf((i:BuscadorMetasDto) => !i.fechaMetaFin )
+    fechaMetaInicio:string
+
+    @IsMongoId()
+    @IsOptional()
+    @ValidateIf((i:BuscadorMetasDto) => !i.fechaMetaInicio )
+    fechaMetaFin:string
 }

@@ -12,8 +12,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { TipoVentaModule } from 'src/tipo-venta/tipo-venta.module';
 
-import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucursal.schema';
-import { EmpresaExcel, EmpresaExcelSchema } from 'src/empresa/schemas/empresa.schema';
+import { Sucursal, SuscursalSchema } from 'src/sucursal/schema/sucursal.schema';
 import { AbonoModule } from 'src/abono/abono.module';
 import { EmpresaModule } from 'src/empresa/empresa.module';
 import { VentaLenteService } from './lente/services/venta.lente.service';
@@ -33,15 +32,14 @@ import { VentaMetasSucursalService } from './metasSucursal/services/VentaMetasSu
 import { MetasSucursalModule } from 'src/metas-sucursal/metas-sucursal.module';
 import { CoreService } from './core/service/core.service';
 
-
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     MongooseModule.forFeature(
       [
-        { name: SuscursalExcel.name, schema: SuscursalExcelSchema },
+        { name: Sucursal.name, schema: SuscursalSchema },
         { name: Venta.name, schema: VentaSchema },
-        { name: EmpresaExcel.name, schema: EmpresaExcelSchema },
+
 
       ],
       NombreBdConexion.oc,

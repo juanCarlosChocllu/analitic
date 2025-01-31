@@ -11,7 +11,7 @@ import { VentaExcelI } from 'src/venta/core/interfaces/ventaExcel.interface';
 
 import { parseNumber } from 'src/venta/core/util/validar.numero.util';
 
-import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
+import { Sucursal } from 'src/sucursal/schema/sucursal.schema';
 
 
 import { MaterialService } from 'src/material/material.service';
@@ -25,8 +25,7 @@ import { ventaInformacionRI } from './interface/ventaInformacion.interface';
 import { VentaService } from 'src/venta/services/venta.service';
 import { OftalmologoService } from 'src/oftalmologo/oftalmologo.service';
 import { SucursalService } from 'src/sucursal/sucursal.service';
-import { Log } from 'src/log/schemas/log.schema';
-import { AsesorExcel } from 'src/asesores/schemas/asesore.schema';
+
 import { Venta } from 'src/venta/schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
 import { AxiosError } from 'axios';
@@ -40,8 +39,8 @@ export class ReporteService {
 
   constructor(  
 
-    @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
-    private readonly sucursalExcelSchema: Model<SuscursalExcel>,
+    @InjectModel(Sucursal.name, NombreBdConexion.oc)
+    private readonly sucursalExcelSchema: Model<Sucursal>,
 
     
     @InjectModel(Venta.name, NombreBdConexion.oc)

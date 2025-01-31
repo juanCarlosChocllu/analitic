@@ -28,6 +28,10 @@ import { AsesoresModule } from './asesores/asesores.module';
 import { NombreBdConexion } from './core/enums/nombre.db.enum';
 
 import { MetasSucursalModule } from './metas-sucursal/metas-sucursal.module';
+import { CoreModule } from './core/core.module';
+
+
+
 
 @Module({
   imports: [
@@ -57,9 +61,12 @@ import { MetasSucursalModule } from './metas-sucursal/metas-sucursal.module';
     OftalmologoModule,
     AsesoresModule,
     MetasSucursalModule,
+    CoreModule
   ],
   controllers: [],
-  providers: [{
+  providers: [
+
+    {
     provide:APP_GUARD,
     useClass:TokenGuard
   }],

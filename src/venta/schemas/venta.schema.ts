@@ -13,7 +13,7 @@ export class Venta {
   @Prop({ type: Types.ObjectId, ref: 'SuscursalExcel' })
   sucursal: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'EmpresaExcel' })
+  @Prop({ type: Types.ObjectId, ref: 'Empresa' })
   empresa: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'AsesorExcel' })

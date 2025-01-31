@@ -10,7 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { Venta, VentaSchema   } from 'src/venta/schemas/venta.schema';
 import { Abono, AbonoSchema } from 'src/abono/schema/abono.abono';
-import { SuscursalExcel, SuscursalExcelSchema } from 'src/sucursal/schema/sucursal.schema';
+import { Sucursal, SuscursalSchema } from 'src/sucursal/schema/sucursal.schema';
 
 import { MaterialModule } from 'src/material/material.module';
 
@@ -29,7 +29,7 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
     ScheduleModule.forRoot(),
     MongooseModule.forFeature(
       [
-        { name: SuscursalExcel.name, schema: SuscursalExcelSchema },
+        { name: Sucursal.name, schema: SuscursalSchema },
         { name: Venta.name, schema: VentaSchema },
         { name: Abono.name, schema: AbonoSchema },
       ],

@@ -6,7 +6,7 @@ import { VentaDto } from '../dto/venta.dto';
 
 import { FiltroVentaI } from '../core/interfaces/filtro.venta.interface';
 
-import { SuscursalExcel } from 'src/sucursal/schema/sucursal.schema';
+import { Sucursal } from 'src/sucursal/schema/sucursal.schema';
 import { InformacionVentaDto } from '../dto/informacion.venta.dto';
 import { ticketPromedio } from '../core/util/tickectPromedio.util';
 import { diasHAbiles } from '../core/util/dias.habiles.util';
@@ -23,8 +23,8 @@ export class VentaGestionService {
     constructor(
         @InjectModel(Venta.name, NombreBdConexion.oc)
         private readonly VentaExcelSchema: Model<Venta>,
-        @InjectModel(SuscursalExcel.name, NombreBdConexion.oc)
-        private readonly sucursalExcelSchema: Model<SuscursalExcel>,
+        @InjectModel(Sucursal.name, NombreBdConexion.oc)
+        private readonly sucursalExcelSchema: Model<Sucursal>,
         private readonly sucursalService: SucursalService,
         private readonly asesoresService: AsesoresService,  
       ) {}

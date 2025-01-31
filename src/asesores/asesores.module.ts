@@ -3,14 +3,15 @@ import { AsesoresService } from './asesores.service';
 
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { AsesorExcel, AsesorExcelSchema } from './schemas/asesore.schema';
+
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+import { Asesor, AsesorSchema } from './schemas/asesore.schema';
 
 @Module({
   imports :[
     MongooseModule.forFeature([
       {
-      name:AsesorExcel.name ,schema:AsesorExcelSchema
+      name:Asesor.name ,schema:AsesorSchema
     }], NombreBdConexion.oc)
   ],
 

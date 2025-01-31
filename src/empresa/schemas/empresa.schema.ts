@@ -1,10 +1,10 @@
 import { Prop, SchemaFactory,Schema } from "@nestjs/mongoose";
 
 
-@Schema()
-export class EmpresaExcel {
+@Schema({collection:'Empresa'})
+export class Empresa {
   @Prop()
   nombre: string;
 }
 
-export const EmpresaExcelSchema = SchemaFactory.createForClass(EmpresaExcel);
+export const EmpresaSchema = SchemaFactory.createForClass(Empresa);
