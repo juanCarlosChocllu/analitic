@@ -21,8 +21,6 @@ export class AutenticacionService {
        const token = await this.jwtService.signAsync({
         sub: usuario.id, username: usuario.username,
         id: usuario.id
-       }, {
-         secret:jwtConstants.secret
        })
        return {
         status:HttpStatus.OK,
