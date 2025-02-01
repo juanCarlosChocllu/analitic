@@ -25,6 +25,8 @@ export class HttpAxiosVentaService {
   ): Promise<any> {
   const url = `https://comercial.opticentro.com.bo/cibeles${anio}${mes}${dia}.csv`;
  //   const url =`http://localhost/opticentro/web/cibeles${anio}${mes}${dia}.csv`
+ 
+    for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const response = await firstValueFrom(
           this.httpService.get(url, { timeout: 30000 }),
@@ -34,9 +36,8 @@ export class HttpAxiosVentaService {
         let venta = this.extracionDeInformacionValida(response.data);
         venta.shift();
         return venta;
-      } catch (error) {      
-        console.log(error);
-          
+      } catch (error) {  
+                      
         const e = error as AxiosError
         const mensage = e.message.split(' ');
         if (mensage[5] === '404') {
@@ -56,8 +57,20 @@ export class HttpAxiosVentaService {
             'Error: ocurrió un problema al procesar la solicitud.',
           );
         }
+        if (attempt === retries) {
+          throw new InternalServerErrorException(
+            'Error: se agotaron los reintentos para la solicitud.',
+          );
+        }
+        await this.delay(1000);
     }
   }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
 
 
   private extracionDeInformacionValida(data: any) {
