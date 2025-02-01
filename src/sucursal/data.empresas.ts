@@ -27,7 +27,7 @@ export function dataEmpresa() {
         'ECONOPTICA  CAMARGO CINTI',
         'ECONOPTICA TARIJA'
       ],
-      'TU OPTICA': ['TU OPTICA', 'TU OPTICA 2', 'CEMENTERIO TU OPTICA  2'],
+      'TU OPTICA': ['TU OPTICA', 'TU OPTICA 2'],
 
       //'ZONA OPTICA': ['ZONA OPTICA 1'],
       //'OPTILAB': ['OPTILAB', 'OPTILAB TARIJA'],
