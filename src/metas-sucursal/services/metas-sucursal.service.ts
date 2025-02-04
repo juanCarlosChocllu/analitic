@@ -1,38 +1,53 @@
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateMetasSucursalDto } from './dto/create-metas-sucursal.dto';
-import { UpdateMetasSucursalDto } from './dto/update-metas-sucursal.dto';
+import { CreateMetasSucursalDto } from '../dto/create-metas-sucursal.dto';
+import { UpdateMetasSucursalDto } from '../dto/update-metas-sucursal.dto';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
-import { MetasSucursal } from './schema/metas-sucursal.schema';
+
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Flag } from 'src/core/enums/flag';
 import { flagVenta } from 'src/venta/core/enums/flgaVenta.enum';
-import { BuscadorMetasDto } from './dto/BuscadorMetasDto';
+import { BuscadorMetasDto } from '../dto/BuscadorMetasDto';
 import { CoreService } from 'src/core/services/core.service';
-import { log } from 'node:console';
+import { eachDayOfInterval } from 'date-fns';
+import { MetasSucursal } from '../schema/metas-sucursal.schema';
+import { DiasMetaService } from './diaMeta.service';
+
 
 @Injectable()
 export class MetasSucursalService {
   constructor(
     @InjectModel(MetasSucursal.name, NombreBdConexion.oc)
     private readonly metasSucursal: Model<MetasSucursal>,
+
+    private readonly diaMetaService: DiasMetaService,
     private readonly coreService: CoreService,
   ) {}
 
   async create(createMetasSucursalDto: CreateMetasSucursalDto) {
-    for (const sucursal of createMetasSucursalDto.sucursal) {
-      await this.metasSucursal.create({
+    const dias = this.coreService.arrayDias(createMetasSucursalDto.fechaInicio, createMetasSucursalDto.fechaFin)
+    for (const sucursal of createMetasSucursalDto.sucursal) {  
+      const meta=  await this.metasSucursal.create({
         ticket: createMetasSucursalDto.ticket,
         fechaFin: createMetasSucursalDto.fechaFin,
         fechaInicio: createMetasSucursalDto.fechaInicio,
         monto: createMetasSucursalDto.monto,
         sucursal: new Types.ObjectId(sucursal),
-      });
+      })
+
+      for (const dia of dias) {
+        await  this.diaMetaService.create(dia, meta._id)
+        
+      }
     }
+
+
     return { status: HttpStatus.CREATED };
   }
-
-  async findAll(buscadorMetasDto: BuscadorMetasDto) {
+  
+ 
+  
+    async findAll(buscadorMetasDto: BuscadorMetasDto) {
     const [fechaInicio, fechaFin] = this.coreService.formateoFechasUTC(
       buscadorMetasDto.fechaInicio,
       buscadorMetasDto.fechaFin,
@@ -130,7 +145,7 @@ export class MetasSucursalService {
       )
       .limit(Number(buscadorMetasDto.limite))
       .sort({ fecha: -1 });
-    console.log(metas);
+
 
     return { paginas: paginas == 0 ? 1 : paginas, data: metas };
   }
@@ -159,18 +174,23 @@ export class MetasSucursalService {
     return { status: HttpStatus.OK };
   }
 
-  async listarMestasSucursal(
+  async listarMetasSucursal(
     sucursal: Types.ObjectId,
     fechaInicio: string,
     fechaFin: string,
   ): Promise<MetasSucursal> {
-    const metas = await this.metasSucursal.findOne({
+    
+    const [f1,f2] =this.coreService.formateoFechasUTC(fechaInicio, fechaFin)
+    const meta = await this.metasSucursal.findOne({
       sucursal: new Types.ObjectId(sucursal),
       flag: Flag.nuevo,
-      fechaInicio: new Date(fechaInicio),
-      fechaFin: new Date(fechaFin),
     });
-
-    return metas;
+    if(meta){
+      const dias = await this.diaMetaService.metasDias(f1, f2, meta._id)
+      if(dias.length > 0) {
+        return meta;
+      } 
+    }
+  
   }
 }

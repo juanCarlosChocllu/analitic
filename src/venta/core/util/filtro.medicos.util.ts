@@ -1,6 +1,7 @@
 import { Types } from "mongoose"
-import { VentaMedicosDto } from "../../dto/venta.medicos.dto"
+
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
+import { VentaMedicosDto } from "src/venta/medicos/dto/venta.medicos.dto"
 
 export function filtradorMedicos(kpiDto:VentaMedicosDto){
     let filtrador:FiltroVentaI={

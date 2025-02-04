@@ -39,6 +39,13 @@ export class SucursalService {
     return suscursales;
   }
 
+  async sucursalListaEmpresaOne(id: Types.ObjectId):Promise<SucursalI[]>{
+    const suscursales:SucursalI[] = await this.SucursalSchema.findOne({
+      empresa: new Types.ObjectId(id),
+    });
+    return suscursales;
+  }
+
 
   
   public async guardarEmpresaYsusSucursales() {

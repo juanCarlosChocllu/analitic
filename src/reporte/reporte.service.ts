@@ -270,6 +270,8 @@ export class ReporteService {
     try {
           const response:ventaInformacionRI[]= await this.httpAxiosVentaService.informacionRestanteVenta(fechaDto.fechaInicio, fechaDto.fechaFin )
           for(let ve of response){ 
+       
+            
               const venta = await this.ventaService.findOneNumeroTickectVenta(ve.id_venta)
               if(venta){
                
@@ -290,7 +292,11 @@ export class ReporteService {
                      
                    }
                  }
-              } 
+              } else{
+                console.log(ve);
+              }
+             
+              
           }
           return {status:HttpStatus.OK}
         

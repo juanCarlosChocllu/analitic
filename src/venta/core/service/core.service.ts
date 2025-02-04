@@ -10,10 +10,14 @@ export class CoreService{
     constructor (   private readonly sucursalServiece: SucursalService,){}
 
     async filtroSucursal(sucursal: Types.ObjectId[]) {
+      
+        
         const sucursales: SucursalI[] = [];
         if (sucursal.length > 1) {
-          for (const s of sucursal) {
+          for (const s of sucursal) {      
             const su:SucursalI = await this.sucursalServiece.listarSucursalId(s);
+     
+            
             if (su.nombre !== 'OPTICENTRO PARAGUAY') {
               sucursales.push(su);
             }
@@ -31,6 +35,8 @@ export class CoreService{
         return sucursales;
       }
 
+
+      
       
 
 }

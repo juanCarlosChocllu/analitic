@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Flag } from 'src/core/enums/flag';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
-import { MetasSucursalService } from 'src/metas-sucursal/metas-sucursal.service';
+import { MetasSucursalService } from 'src/metas-sucursal/services/metas-sucursal.service';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { calcularPorcentaje } from 'src/venta/core/util/calcularPorcentaje';
 
@@ -45,9 +45,9 @@ export class VentaMetasSucursalService {
       const su = await this.coreService.filtroSucursal(
         sucursales.map((item) => item._id),
       );
-
+      
       for (const sucursal of su) {
-        const meta = await this.metasSucursalService.listarMestasSucursal(
+        const meta = await this.metasSucursalService.listarMetasSucursal(
           sucursal._id,
           ventaDto.fechaInicio,
           ventaDto.FechaFin,

@@ -17,9 +17,9 @@ export class CreateMetasSucursalDto {
   
     @IsDateString({},{ message: 'La fecha de inicio debe ser una cadena de fecha válida (ISO 8601)' })
     @IsNotEmpty({ message: 'La fecha de inicio es obligatoria' })
-    fechaInicio: Date;
+    fechaInicio: string;
   
     @IsDateString({},{ message: 'La fecha de fin debe ser una cadena de fecha válida (ISO 8601)' })
     @IsNotEmpty({ message: 'La fecha de fin es obligatoria' })
-    fechaFin: Date;
+    fechaFin: string;
   }

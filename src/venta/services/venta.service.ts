@@ -79,7 +79,9 @@ export class VentaService {
     return { status: HttpStatus.OK };
   }
   async findOneNumeroTickectVenta(numeroTicket:string){    
-    const ticket = await this.VentaExcelSchema.findOne({numeroTicket:numeroTicket})
+   
+      
+    const ticket = await this.VentaExcelSchema.findOne({numeroTicket:numeroTicket.toUpperCase().trim()})
     return ticket
    }
 

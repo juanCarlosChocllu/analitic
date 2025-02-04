@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
-import { MetasSucursalService } from './metas-sucursal.service';
-import { CreateMetasSucursalDto } from './dto/create-metas-sucursal.dto';
-import { UpdateMetasSucursalDto } from './dto/update-metas-sucursal.dto';
+import { MetasSucursalService } from '../services/metas-sucursal.service';
+import { CreateMetasSucursalDto } from '../dto/create-metas-sucursal.dto';
+import { UpdateMetasSucursalDto } from '../dto/update-metas-sucursal.dto';
 import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
 import { Types } from 'mongoose';
-import { BuscadorMetasDto } from './dto/BuscadorMetasDto';
+import { BuscadorMetasDto } from '../dto/BuscadorMetasDto';
 
 @Controller('metas/sucursal')
 export class MetasSucursalController {
@@ -12,6 +12,7 @@ export class MetasSucursalController {
 
   @Post()
   create(@Body() createMetasSucursalDto: CreateMetasSucursalDto) {
+ 
     return this.metasSucursalService.create(createMetasSucursalDto);
   }
 

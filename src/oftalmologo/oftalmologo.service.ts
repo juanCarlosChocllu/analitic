@@ -8,6 +8,7 @@ import { Model, Types } from 'mongoose';
 import { BuscarOftalmologoDto } from './dto/buscador-oftalmologo.dto';
 import { especialidad } from 'src/venta/core/enums/especialidad.enum';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+import { log } from 'node:console';
 
 
 @Injectable()
@@ -24,12 +25,16 @@ export class OftalmologoService {
     return oftalmologo
   }
 
-  async buscarOftalmologo( buscarOftalmologoDto: BuscarOftalmologoDto){
-    const oftalmologo = await this.oftalmologoSchema.find({
-      nombreCompleto:{$regex:buscarOftalmologoDto.oftalmologo, $options:'i'},
-      especialidad:especialidad.OFTALMOLOGO
-    }).select('nombreCompleto especialidad')
-    return oftalmologo
+  async buscarOftalmologo( buscarOftalmologoDto: BuscarOftalmologoDto){;
+    console.log(buscarOftalmologoDto);
+    
+    if(buscarOftalmologoDto.oftalmologo){
+      const oftalmologo = await this.oftalmologoSchema.find({
+        nombreCompleto:{$regex:buscarOftalmologoDto.oftalmologo, $options:'i'},
+    
+      }).select('nombreCompleto especialidad')
+      return oftalmologo
+    }
 
   }
 

@@ -12,8 +12,11 @@ export class MetasSucursal {
          @Prop({type:Number, default:0})
      
          ticket:number
+
+         @Prop({type:Number, default:0})
+         dias:number
          @Prop({type:Types.ObjectId, ref :'Sucursal'})
-     
+
          sucursal:Types.ObjectId
          @Prop()
      
@@ -32,5 +35,4 @@ export class MetasSucursal {
 export const metasSucursalSchema = SchemaFactory.createForClass(MetasSucursal)
 
 
-      
 
