@@ -18,6 +18,7 @@ import { SucursalService } from 'src/sucursal/sucursal.service';
 import { SucursalI } from 'src/core/interfaces/sucursalInterface';
 import { BuscadorMetasDto } from 'src/metas-sucursal/dto/BuscadorMetasDto';
 import { log } from 'node:console';
+import { productos } from 'src/venta/core/enums/productos.enum';
 
 @Injectable()
 export class VentaMedicosService {
@@ -54,6 +55,7 @@ export class VentaMedicosService {
                   $match: {
                     sucursal: new Types.ObjectId(sucursal._id),
                     ...nuevoFiltro,
+                
                     ...(ventaMedicosDto.medico) ?{oftalmologo:new Types.ObjectId(ventaMedicosDto.medico)}:{}
                   },
                 },
@@ -98,7 +100,7 @@ export class VentaMedicosService {
                     importe: {
                       $sum: {
                         $cond: {
-                          if: { $eq: ['$aperturaTicket', '1'] },
+                          if: { $eq: ['$producto', 'LENTE'] },
                           then: '$importe',
                           else: 0,
                         },

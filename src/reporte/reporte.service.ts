@@ -249,7 +249,7 @@ export class ReporteService {
   }
 
 
-/*@Cron(CronExpression.EVERY_DAY_AT_4AM)
+@Cron(CronExpression.EVERY_DAY_AT_4AM)
  async  descargaAutomaticaventas(){
     const date = new Date()
     const[año, mes, dia]= [date.getFullYear(), (date.getMonth() + 1).toString().padStart(2, '0') , (date.getDate() - 2).toString().padStart(2, '0')  ]
@@ -260,11 +260,13 @@ export class ReporteService {
     this.logger.debug('Iniciando la descarga');
     const response = await this.allExcel(fecha)
     if(response.status == HttpStatus.CREATED){
+       await this.informacionRestanteVenta(fecha) 
       this.logger.debug('Descarga completada');
+      
     }else{
       this.logger.debug('Descarga fallida');
     }
-  }*/
+  }
 
   async informacionRestanteVenta(fechaDto:FechaDto){
     try {
