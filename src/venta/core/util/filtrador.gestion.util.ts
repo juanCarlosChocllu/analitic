@@ -1,5 +1,5 @@
 import { Types } from "mongoose"
-import { VentaDto } from "../../dto/venta.dto"
+import { VentaDto } from "../dto/venta.dto"
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
 
 export function filtradorDeGestion( ventaDto: VentaDto){
@@ -17,3 +17,4 @@ export function filtradorDeGestion( ventaDto: VentaDto){
    
       return filtrador
 }
+

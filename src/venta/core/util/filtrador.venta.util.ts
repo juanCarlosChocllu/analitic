@@ -1,8 +1,8 @@
 import { Types } from "mongoose";
 
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface";
-import { VentaTodasDto } from "../../dto/venta.todas.dto";
-import { VentaDto } from "src/venta/dto/venta.dto";
+import { VentaTodasDto } from "../dto/venta.todas.dto";
+import { VentaDto } from "src/venta/core/dto/venta.dto";
 
 export function filtradorVenta(kpiDto:VentaDto | VentaTodasDto){
     let filtrador:FiltroVentaI={

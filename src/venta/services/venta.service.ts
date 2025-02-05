@@ -9,7 +9,7 @@ import {
   Venta,
 } from '../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
-import {VentaDto } from '../dto/venta.dto';
+import {VentaDto } from '../core/dto/venta.dto';
 
 import { VentaExcelI } from '../core/interfaces/ventaExcel.interface';
 

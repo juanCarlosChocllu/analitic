@@ -11,7 +11,7 @@ import { Venta } from 'src/venta/schemas/venta.schema';
 import { DataMetaI } from '../interface/dataMeta';
 import { filtradorVenta } from 'src/venta/core/util/filtrador.venta.util';
 import { CoreService } from 'src/venta/core/service/core.service';
-import { VentaTodasDto } from 'src/venta/dto/venta.todas.dto';
+import { VentaTodasDto } from 'src/venta/core/dto/venta.todas.dto';
 import { SucursalI } from 'src/core/interfaces/sucursalInterface';
 import { constants } from 'buffer';
 
@@ -27,32 +27,18 @@ export class VentaMetasSucursalService {
   async metasDeVenta(ventaDto: VentaTodasDto) {
     const filtrador = filtradorVenta(ventaDto);
     const resultados: DataMetaI[] = [];
-
-    for (const empresa of ventaDto.empresa) {
-      let sucursales: SucursalI[] = [];
-      if (ventaDto.empresa.length > 1) {
-        sucursales = await this.sucursalService.sucursalListaEmpresas(
-          new Types.ObjectId(empresa),
-        );
-      } else {
-        for (const sucursal of ventaDto.sucursal) {
-          sucursales.push(
-            await this.sucursalService.listarSucursalId(sucursal),
-          );
-        }
-      }
-
-      const su = await this.coreService.filtroSucursal(
-        sucursales.map((item) => item._id),
-      );
+  
+      let sucursales: SucursalI[] = await this.coreService.filtroParaTodasEmpresas(ventaDto);
       
-      for (const sucursal of su) {
+      
+      
+      for (const sucursal of sucursales) {
         const meta = await this.metasSucursalService.listarMetasSucursal(
           sucursal._id,
           ventaDto.fechaInicio,
           ventaDto.FechaFin,
         );
-
+       
         const venta = await this.venta.aggregate([
           {
             $match: {
@@ -110,8 +96,12 @@ export class VentaMetasSucursalService {
 
         resultados.push(data);
       }
-    }
-
+          
     return resultados;
+
+ 
+      
   }
+
+  
 }

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from "@nestjs/common";
 import { VentaMetasSucursalService } from "../services/VentaMetasSucursal.service";
-import { VentaDto } from "src/venta/dto/venta.dto";
-import { VentaTodasDto } from "src/venta/dto/venta.todas.dto";
+import { VentaDto } from "src/venta/core/dto/venta.dto";
+import { VentaTodasDto } from "src/venta/core/dto/venta.todas.dto";
 
 
 @Controller('venta/meta/sucursal')

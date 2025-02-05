@@ -16,11 +16,11 @@ import { Sucursal, SuscursalSchema } from 'src/sucursal/schema/sucursal.schema';
 import { AbonoModule } from 'src/abono/abono.module';
 import { EmpresaModule } from 'src/empresa/empresa.module';
 import { VentaLenteService } from './lente/services/venta.lente.service';
-import { VentaGestionService } from './services/venta.gestion.service';
+
 
 import { AsesoresModule } from 'src/asesores/asesores.module';
 import { VentaMedicosService } from './medicos/services/venta.medicos.service';
-import { VentaGestionController } from './controllers/venta.gestion.controller';
+
 import { VentaMedicosController } from './medicos/controllers/venta.medicos.controller';
 import { VentaLenteController } from './lente/controllers/venta.lente.controller';
 import { VentaProductosService } from './productos/services/venta.productos.service';
@@ -31,6 +31,8 @@ import { VentaMestasSucursalController } from './metasSucursal/controllers/venta
 import { VentaMetasSucursalService } from './metasSucursal/services/VentaMetasSucursal.service';
 import { MetasSucursalModule } from 'src/metas-sucursal/metas-sucursal.module';
 import { CoreService } from './core/service/core.service';
+import { VentaAsesoresController } from './asesores/controllers/ventaAsesores.controller';
+import { VentaAsesoresService } from './asesores/service/ventaAsesores.service';
 
 @Module({
   imports: [
@@ -55,13 +57,13 @@ import { CoreService } from './core/service/core.service';
  
   ],
   controllers: [VentaController, 
-    VentaGestionController, 
+    VentaAsesoresController, 
     VentaMedicosController,
      VentaLenteController,
       VentaProductosController,
       VentaMestasSucursalController
     ],
-  providers: [VentaService, VentaLenteService, VentaGestionService,
+  providers: [VentaService, VentaLenteService, VentaAsesoresService,
      VentaMedicosService,
       VentaProductosService,
     VentaMetasSucursalService,

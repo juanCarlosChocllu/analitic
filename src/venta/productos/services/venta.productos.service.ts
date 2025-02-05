@@ -4,14 +4,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Venta } from '../../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
 import { filtradorKpiInformacion } from '../../core/util/filtrador.kpi.informacion.util';
-import { InformacionVentaDto } from '../../dto/informacion.venta.dto';
+import { InformacionVentaDto } from '../../core/dto/informacion.venta.dto';
 import { productos } from '../../core/enums/productos.enum';
 import { filtradorVenta } from '../../core/util/filtrador.venta.util';
 
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { EmpresaService } from 'src/empresa/empresa.service';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
-import { VentaDto} from 'src/venta/dto/venta.dto';
+import { VentaDto} from 'src/venta/core/dto/venta.dto';
 
 @Injectable()
 export class VentaProductosService {

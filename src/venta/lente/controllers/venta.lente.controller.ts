@@ -1,11 +1,11 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { VentaLenteService } from '../services/venta.lente.service';
 
-import { InformacionVentaDto } from '../../dto/informacion.venta.dto';
-import { VentaTodasDto } from '../../dto/venta.todas.dto';
-import { InformacionEmpresasTodasVentaDto } from '../../dto/informacion.empresas.todas.dto';
+import { InformacionVentaDto } from '../../core/dto/informacion.venta.dto';
+import { VentaTodasDto } from '../../core/dto/venta.todas.dto';
+import { InformacionEmpresasTodasVentaDto } from '../../core/dto/informacion.empresas.todas.dto';
 import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
-import { VentaDto } from 'src/venta/dto/venta.dto';
+import { VentaDto } from 'src/venta/core/dto/venta.dto';
 
 @Controller('venta')
 export class VentaLenteController {

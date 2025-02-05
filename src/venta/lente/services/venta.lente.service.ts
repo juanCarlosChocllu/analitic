@@ -9,16 +9,16 @@ import { FiltroVentaI } from "../../core/interfaces/filtro.venta.interface";
 import { SucursalService } from "src/sucursal/sucursal.service";
 import { productos } from "../../core/enums/productos.enum";
 
-import { InformacionVentaDto } from "../../dto/informacion.venta.dto";
+import { InformacionVentaDto } from "../../core/dto/informacion.venta.dto";
 
 import { filtradorVenta } from "../../core/util/filtrador.venta.util";
 import { filtradorKpiInformacion } from "../../core/util/filtrador.kpi.informacion.util";
-import { VentaTodasDto } from "../../dto/venta.todas.dto";
+import { VentaTodasDto } from "../../core/dto/venta.todas.dto";
 import { filtradorKpiInformacionEmpresa } from "../../core/util/filtrador.kpi.informacion.empresa.util";
-import { InformacionEmpresasTodasVentaDto } from "../../dto/informacion.empresas.todas.dto";
+import { InformacionEmpresasTodasVentaDto } from "../../core/dto/informacion.empresas.todas.dto";
 import { filtradorKpiInformacionTodasEmpresas } from "../../core/util/filtrador.infomacion.todas.empresas.util";
 import { NombreBdConexion } from "src/core/enums/nombre.db.enum";
-import { VentaDto } from "src/venta/dto/venta.dto";
+import { VentaDto } from "src/venta/core/dto/venta.dto";
 
 @Injectable()
 export class VentaLenteService {

@@ -5,7 +5,7 @@ import {
   Body,
 } from '@nestjs/common';
 import { VentaService } from '../services/venta.service';
-import { VentaDto } from '../dto/venta.dto';
+import { VentaDto } from '../core/dto/venta.dto';
 @Controller('venta')
 export class VentaController {
   constructor(

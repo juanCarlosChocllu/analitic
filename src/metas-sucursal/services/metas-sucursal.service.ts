@@ -25,7 +25,7 @@ export class MetasSucursalService {
   ) {}
 
   async create(createMetasSucursalDto: CreateMetasSucursalDto) {
-    const dias = this.coreService.arrayDias(createMetasSucursalDto.fechaInicio, createMetasSucursalDto.fechaFin)
+   // const dias = this.coreService.arrayDias(createMetasSucursalDto.fechaInicio, createMetasSucursalDto.fechaFin)
     for (const sucursal of createMetasSucursalDto.sucursal) {  
       const meta=  await this.metasSucursal.create({
         ticket: createMetasSucursalDto.ticket,
@@ -35,10 +35,10 @@ export class MetasSucursalService {
         sucursal: new Types.ObjectId(sucursal),
       })
 
-      for (const dia of dias) {
+      /*for (const dia of dias) {
         await  this.diaMetaService.create(dia, meta._id)
         
-      }
+      }*/
     }
 
 
@@ -179,18 +179,20 @@ export class MetasSucursalService {
     fechaInicio: string,
     fechaFin: string,
   ): Promise<MetasSucursal> {
-    
-    const [f1,f2] =this.coreService.formateoFechasUTC(fechaInicio, fechaFin)
+    const [f1,f2] =this.coreService.formateoFechasUTC(fechaInicio, fechaFin)    
     const meta = await this.metasSucursal.findOne({
       sucursal: new Types.ObjectId(sucursal),
       flag: Flag.nuevo,
+      fechaInicio:f1
     });
-    if(meta){
+
+    return meta;
+   /* if(meta){
       const dias = await this.diaMetaService.metasDias(f1, f2, meta._id)
       if(dias.length > 0) {
         return meta;
       } 
-    }
+    }*/
   
   }
 }
