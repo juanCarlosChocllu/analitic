@@ -1,8 +1,7 @@
-import { log } from 'console';
+
 import {
   eachDayOfInterval,
-  isSunday,
-  differenceInBusinessDays,
+  isSunday
 } from 'date-fns';
 
 export function diasHAbiles(fechaInicio: string, fechaFin: string) {

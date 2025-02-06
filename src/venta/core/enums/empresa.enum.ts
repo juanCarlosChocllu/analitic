@@ -1,0 +1,7 @@
+export enum EmpresaE {
+    OPTICENTRO='OPTICENTRO',
+    ECONOVISION='ECONOVISION',
+        TU_OPTICA='TU OPTICA',
+        OPTISERVICE='OPTISERVICE S.R.L',
+    }
+

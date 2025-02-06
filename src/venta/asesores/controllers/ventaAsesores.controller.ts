@@ -4,6 +4,8 @@ import { ValidacionIdPipe } from "src/core/util/validacion-id/validacion-id.pipe
 import { InformacionVentaDto } from "src/venta/core/dto/informacion.venta.dto";
 import { VentaDto } from "src/venta/core/dto/venta.dto";
 import { VentaTodasDto } from "src/venta/core/dto/venta.todas.dto";
+import { Types } from "mongoose";
+
 
 @Controller('gestion')
 export class VentaAsesoresController {
@@ -31,4 +33,7 @@ export class VentaAsesoresController {
             indicadoresPorFecha(@Body() ventaDto: VentaDto){
              return this.ventaAsesoresService.indicadoresPorFecha(ventaDto)
             }
+
+
+
 }

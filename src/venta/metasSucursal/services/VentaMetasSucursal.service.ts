@@ -36,7 +36,7 @@ export class VentaMetasSucursalService {
         const meta = await this.metasSucursalService.listarMetasSucursal(
           sucursal._id,
           ventaDto.fechaInicio,
-          ventaDto.FechaFin,
+          ventaDto.fechaFin,
         );
        
         const venta = await this.venta.aggregate([

@@ -21,6 +21,6 @@ export class VentaTodasDto{
   
    
     @IsDateString()
-    FechaFin: string;
+    fechaFin: string;
 
 }

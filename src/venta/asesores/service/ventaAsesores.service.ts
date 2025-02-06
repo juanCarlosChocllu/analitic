@@ -15,10 +15,11 @@ import { FiltroVentaI } from "src/venta/core/interfaces/filtro.venta.interface";
 import { CoreService } from "src/venta/core/service/core.service";
 import { diasHAbiles } from "src/venta/core/util/dias.habiles.util";
 import { filtradorDeGestion } from "src/venta/core/util/filtrador.gestion.util";
+import { filtradorKpiInformacion } from "src/venta/core/util/filtrador.kpi.informacion.util";
 import { filtradorVenta } from "src/venta/core/util/filtrador.venta.util";
 import { ticketPromedio } from "src/venta/core/util/tickectPromedio.util";
 import { Venta } from "src/venta/schemas/venta.schema";
-import { types } from "util";
+
 
 @Injectable()
 export class VentaAsesoresService {
@@ -198,7 +199,7 @@ export class VentaAsesoresService {
                   let sucursales:SucursalI[]= await this.coreService.filtroParaTodasEmpresas(VentaTodasDto)
                   console.log(sucursales);
                   
-                  const dias: number = diasHAbiles(VentaTodasDto.fechaInicio, VentaTodasDto.FechaFin);
+                  const dias: number = diasHAbiles(VentaTodasDto.fechaInicio, VentaTodasDto.fechaFin);
               
                   const data = {
                     sucursales: 0,
@@ -597,7 +598,7 @@ export class VentaAsesoresService {
 
 
 
-
+                
 
         
 }

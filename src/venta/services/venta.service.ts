@@ -119,7 +119,7 @@ export class VentaService {
     const resultado = {
       cantidadSucursal: ventaDto.sucursal.length,
       fechaInicio: ventaDto.fechaInicio,
-      fechaFin: ventaDto.FechaFin,
+      fechaFin: ventaDto.fechaFin,
       total,
       cantidad,
       ticketPromedio,
@@ -133,7 +133,7 @@ export class VentaService {
   private async ventaExcel(ventaDto: VentaDto) {    
     const filtrador:FiltroVentaI={ fecha: {
       $gte: new Date(ventaDto.fechaInicio),
-      $lte: new Date(ventaDto.FechaFin),
+      $lte: new Date(ventaDto.fechaFin),
     },
     empresa: new Types.ObjectId(ventaDto.empresa),
   }
@@ -191,7 +191,7 @@ export class VentaService {
     const ventaSucursal: any[] = [];
     const filtrador:FiltroVentaI={ fecha: {
       $gte: new Date(ventaDto.fechaInicio),
-      $lte: new Date(ventaDto.FechaFin),
+      $lte: new Date(ventaDto.fechaFin),
     },
    }
     ventaDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: ventaDto.tipoVenta.map((id)=> new Types.ObjectId(id) ) } :filtrador
@@ -278,7 +278,7 @@ export class VentaService {
   ) {
     
     
-    const dias = diasHAbiles(ventaDto.fechaInicio, ventaDto.FechaFin);
+    const dias = diasHAbiles(ventaDto.fechaInicio, ventaDto.fechaFin);
 
     const totalVenta: number[] = [];
     const cantidadTotal: number[] = [];

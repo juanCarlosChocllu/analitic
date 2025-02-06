@@ -7,7 +7,7 @@ export function filtradorMedicos(kpiDto:VentaMedicosDto){
     let filtrador:FiltroVentaI={
         fecha: {
           $gte: new Date(kpiDto.fechaInicio),
-          $lte: new Date(kpiDto.FechaFin),
+          $lte: new Date(kpiDto.fechaFin),
           
         },
       

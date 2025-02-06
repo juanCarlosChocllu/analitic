@@ -6,7 +6,11 @@ import { Asesor } from './schemas/asesore.schema';
 import { Model, Types } from 'mongoose';
 
 import { AsesorExcelI } from 'src/venta/core/interfaces/asesor.interface';
+
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+import { InformacionVentaDto } from 'src/venta/core/dto/informacion.venta.dto';
+import { filtradorKpiInformacion } from 'src/venta/core/util/filtrador.kpi.informacion.util';
+import { AsesorEmpresaSucursalI } from './interface/asesorEmpresaSucursal';
 
 @Injectable()
 export class AsesoresService {
@@ -44,4 +48,51 @@ export class AsesoresService {
     })
    
    } 
+
+   async asesorSucursalEmpresa(sucursal:Types.ObjectId):Promise<AsesorEmpresaSucursalI[]>{
+      const asesor:AsesorEmpresaSucursalI[] = await this.asesor.aggregate([
+        {
+          $match:{
+            sucursal:new Types.ObjectId(sucursal) 
+          }
+        },
+        {
+          $lookup:{
+            from:'Sucursal',
+            foreignField:'_id',
+            localField:'sucursal',
+            as:'sucursal'
+          }
+        },
+        {
+          $unwind:'$sucursal'
+        },
+        {
+          $lookup:{
+            from:'Empresa',
+            foreignField:'_id',
+            localField:'sucursal.empresa',
+            as:'empresa'
+          }
+        },
+        {
+          $unwind:'$empresa'
+        },
+        {
+          $project:{
+            sucursal:'$sucursal._id',
+            nombreSucursal:'$sucursal.nombre',
+            asesor:'$_id',
+            nombreAsesor:'$usuario',
+            nombreEmpresa:'$empresa.nombre'
+          }
+        }
+
+      ])
+    return asesor
+   }
+
+  
+   
+
 }

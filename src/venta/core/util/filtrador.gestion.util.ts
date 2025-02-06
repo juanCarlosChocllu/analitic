@@ -6,7 +6,7 @@ export function filtradorDeGestion( ventaDto: VentaDto){
     const filtrador: FiltroVentaI={
         fecha:{
           $gte: new Date(ventaDto.fechaInicio),
-          $lte: new Date(ventaDto.FechaFin),
+          $lte: new Date(ventaDto.fechaFin),
         }
       }
       if(ventaDto.comisiona != null){
