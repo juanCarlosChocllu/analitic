@@ -59,7 +59,7 @@ export class VentaLenteController {
     @Param('asesor', new ValidacionIdPipe()) asesor: string,
     @Body() informacionVentaDto: InformacionVentaDto,
   ) {
-    console.log(asesor);
+
     
     return this.ventaLenteService.InformacionLenteAsesor(
       asesor,

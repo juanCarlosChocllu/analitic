@@ -316,7 +316,7 @@ export class VentaLenteService {
                           100,
                         ],
                       },
-                      2,
+                      0,
                     ],
                   },
                 },
@@ -543,7 +543,7 @@ export class VentaLenteService {
                         100,
                       ],
                     },
-                    2,
+                    0,
                   ],
                 },
                 else: 0,
@@ -560,7 +560,7 @@ export class VentaLenteService {
                         100,
                       ],
                     },
-                    2,
+                    0,
                   ],
                 },
                 else: 0,
@@ -577,7 +577,7 @@ export class VentaLenteService {
                         100,
                       ],
                     },
-                    2,
+                    0,
                   ],
                 },
                 else: 0,
@@ -594,7 +594,7 @@ export class VentaLenteService {
                         100,
                       ],
                     },
-                    2,
+                    0,
                   ],
                 },
                 else: 0,
@@ -847,7 +847,7 @@ export class VentaLenteService {
                         100,
                       ],
                     },
-                    2,
+                    0,
                   ],
                 },
                 else: 0,
@@ -1277,7 +1277,7 @@ export class VentaLenteService {
                 {
                   $multiply: [{ $divide: ['$progresivos', '$lentes'] }, 100],
                 },
-                2,
+                0,
               ],
             },
             porcentajeAntireflejo: {
@@ -1321,14 +1321,15 @@ export class VentaLenteService {
     const filtrador = filtroInformacionAsesor(asesor, informacionVentaDto);
 
     
-    const [antireflejo, progresivos, ocupacional] = await Promise.all([
+    const [antireflejo, progresivos, ocupacional, a] = await Promise.all([
       this.kpiAntireflejo(filtrador),
       this.kpiProgresivos(filtrador),
       this.kpiOcupacional(filtrador),
+      this.asesorService.asesorFindOne(new Types.ObjectId(asesor))
      
     ]);
 
-    return { antireflejo, progresivos, ocupacional};
+    return { antireflejo, progresivos, ocupacional, asesor:a.usuario};
   }
 
 
