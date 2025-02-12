@@ -829,7 +829,7 @@ export class VentaLenteService {
                         100,
                       ],
                     },
-                    2,
+                    0,
                   ],
                 },
                 else: 0,
@@ -2083,7 +2083,7 @@ export class VentaLenteService {
                         100
                       ]
                     },
-                    2
+                    0
                   ]
                 },
                 else:0
@@ -2104,7 +2104,7 @@ export class VentaLenteService {
                           100
                         ]
                       },
-                      2
+                      0
                     ]
                   },
                   else:0
@@ -2121,7 +2121,7 @@ export class VentaLenteService {
                       100
                     ]
                   },
-                  2
+                  0
                 ]
               },
               else:0
@@ -2139,7 +2139,7 @@ export class VentaLenteService {
                       100
                     ]
                   },
-                  2
+                  0
                 ]
               },
               else:0
@@ -2159,7 +2159,7 @@ export class VentaLenteService {
   
                     ]
                   }
-                  ,2
+                  ,0
                 ]
               },
               else:0
@@ -2372,7 +2372,7 @@ export class VentaLenteService {
                             100
                           ]
                         },
-                        2
+                        0
                       ]
                     
                     },
@@ -2384,7 +2384,7 @@ export class VentaLenteService {
                             100
                           ]
                         },
-                        2
+                        0
                       ]
                     
                     },
@@ -2399,7 +2399,7 @@ export class VentaLenteService {
         
                           ]
                         }
-                        ,2
+                        ,0
                       ]
                     },
                 

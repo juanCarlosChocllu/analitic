@@ -50,7 +50,7 @@ export class DiasService {
     dia.setUTCHours(0,0,0,0)
   
       
-    const dias =await this.dia.findOne({dia:dia, sucursal:new Types.ObjectId(sucursal), flag:Flag.nuevo,estato:DiaEstadoE.habil})
+    const dias =await this.dia.findOne({dia:dia, sucursal:new Types.ObjectId(sucursal), flag:Flag.nuevo,estado:DiaEstadoE.habil})
 
     
     return dias
@@ -60,7 +60,7 @@ export class DiasService {
     dia.setUTCHours(0,0,0,0)
   
     
-    const dias =await this.dia.findOne({dia:dia, sucursal:new Types.ObjectId(sucursal), flag:Flag.nuevo, estato:DiaEstadoE.inhabil})
+    const dias =await this.dia.findOne({dia:dia, sucursal:new Types.ObjectId(sucursal), flag:Flag.nuevo, estado:DiaEstadoE.inhabil})
 
     
     return dias
@@ -84,8 +84,21 @@ export class DiasService {
         $unwind:'$sucursal'
       },
       {
+        $lookup:{
+          from:'NombreDia',
+          foreignField:'_id',
+          localField:'nombreDia',
+          as:'nombreDia'
+        }
+      },
+      {
+        $unwind:'$nombreDia'
+      },
+      {
         $project:{
           sucursal:'$sucursal.nombre',
+          tipo:'$nombreDia.tipo',
+          estado:1, 
           dia: {
             $dateToString: {
               format: "%Y-%m-%d",
@@ -96,6 +109,8 @@ export class DiasService {
       }
 
     ])
+    console.log(dias);
+    
     return dias 
     
   }

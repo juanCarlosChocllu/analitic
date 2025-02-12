@@ -116,8 +116,7 @@ export class VentaMetasSucursalService {
         resultados.push(data);
       }
 
-      console.log(resultados);
-      
+  
           
     return resultados;
 

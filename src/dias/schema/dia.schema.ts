@@ -14,7 +14,7 @@ export class Dia {
     nombreDia:Types.ObjectId
     @Prop({type:String, enum:DiaEstadoE , default:DiaEstadoE.habil})
     
-    estato:string
+    estado:string
     @Prop({type:String, enum:Flag , default:Flag.nuevo })
     flag:Flag
     @Prop({type:Date, default:Date.now()})
