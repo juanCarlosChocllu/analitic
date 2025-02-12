@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { port , interfaceRed} from './core/config/variables.entorno.config';
+import { Log } from './log/schemas/log.schema';
 
 async function bootstrap() {
 
@@ -13,7 +14,20 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist:true,
       exceptionFactory:(e)=>{
+     
+        
         const error= e.map((error)=>{
+
+          
+          if(Object.values(error.children).map((e)=> e.constraints).length > 0){
+            const data =Object.values(error.children).map((e)=>e.children)
+            return {
+              propiedad :data[0][0].property,
+              error :Object.values(data[0][0].constraints)
+            }
+          
+          }
+          
           return {
             propiedad :error.property,
             error :Object.values(error.constraints)

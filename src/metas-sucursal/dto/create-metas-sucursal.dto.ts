@@ -14,6 +14,10 @@ export class CreateMetasSucursalDto {
     @IsNotEmpty({ message: 'El id de la sucursal es obligatorio' , each:true}, )
     @IsArray()
     sucursal: Types.ObjectId []=[];
+
+    @IsNumber({},{ message: 'El dia debe ser un número válido' })
+    @IsNotEmpty({ message: 'El dia es obligatorio' })
+    dias: number;
   
     @IsDateString({},{ message: 'La fecha de inicio debe ser una cadena de fecha válida (ISO 8601)' })
     @IsNotEmpty({ message: 'La fecha de inicio es obligatoria' })

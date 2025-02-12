@@ -6,4 +6,5 @@ export interface DataMetaI {
   importVenta: number;
   cumplimientoTicket: number;
   cumplimientoImporte: number;
+  indeceAvance:number
 }

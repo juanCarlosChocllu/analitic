@@ -33,6 +33,8 @@ import { MetasSucursalModule } from 'src/metas-sucursal/metas-sucursal.module';
 import { CoreService } from './core/service/core.service';
 import { VentaAsesoresController } from './asesores/controllers/ventaAsesores.controller';
 import { VentaAsesoresService } from './asesores/service/ventaAsesores.service';
+import { DiasModule } from 'src/dias/dias.module';
+import { CoreModule } from 'src/core/core.module';
 
 @Module({
   imports: [
@@ -53,7 +55,9 @@ import { VentaAsesoresService } from './asesores/service/ventaAsesores.service';
     AsesoresModule,
     OftalmologoModule,
     MetasSucursalModule,
-    forwardRef(()=> AbonoModule)
+    forwardRef(()=> AbonoModule),
+    DiasModule,
+   
  
   ],
   controllers: [VentaController, 

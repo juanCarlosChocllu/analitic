@@ -8,10 +8,11 @@ import { Model, Types } from 'mongoose';
 import { Flag } from 'src/core/enums/flag';
 import { flagVenta } from 'src/venta/core/enums/flgaVenta.enum';
 import { BuscadorMetasDto } from '../dto/BuscadorMetasDto';
-import { CoreService } from 'src/core/services/core.service';
 import { eachDayOfInterval } from 'date-fns';
 import { MetasSucursal } from '../schema/metas-sucursal.schema';
 import { DiasMetaService } from './diaMeta.service';
+import { CoreAppService } from 'src/core/services/core.service';
+
 
 
 @Injectable()
@@ -21,27 +22,20 @@ export class MetasSucursalService {
     private readonly metasSucursal: Model<MetasSucursal>,
 
     private readonly diaMetaService: DiasMetaService,
-    private readonly coreService: CoreService,
+    private readonly coreService: CoreAppService,
   ) {}
 
   async create(createMetasSucursalDto: CreateMetasSucursalDto) {
-   // const dias = this.coreService.arrayDias(createMetasSucursalDto.fechaInicio, createMetasSucursalDto.fechaFin)
     for (const sucursal of createMetasSucursalDto.sucursal) {  
       const meta=  await this.metasSucursal.create({
         ticket: createMetasSucursalDto.ticket,
         fechaFin: createMetasSucursalDto.fechaFin,
         fechaInicio: createMetasSucursalDto.fechaInicio,
         monto: createMetasSucursalDto.monto,
+        dias:createMetasSucursalDto.dias,
         sucursal: new Types.ObjectId(sucursal),
       })
-
-      /*for (const dia of dias) {
-        await  this.diaMetaService.create(dia, meta._id)
-        
-      }*/
     }
-
-
     return { status: HttpStatus.CREATED };
   }
   
@@ -118,6 +112,7 @@ export class MetasSucursalService {
             _id: 1,
             monto: 1,
             ticket: 1,
+            dias:1,
             sucursal: '$sucursal.nombre',
             fechaInicio: {
               $dateToString: {
@@ -187,12 +182,7 @@ export class MetasSucursalService {
     });
 
     return meta;
-   /* if(meta){
-      const dias = await this.diaMetaService.metasDias(f1, f2, meta._id)
-      if(dias.length > 0) {
-        return meta;
-      } 
-    }*/
+   
   
   }
 }

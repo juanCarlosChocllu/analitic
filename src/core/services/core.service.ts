@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { eachDayOfInterval } from 'date-fns';
 
 @Injectable()
-export class CoreService {
+export class CoreAppService {
     
     formateoFechasUTC(fechaInicio:string, fechaFin:string ):Date[]{
         const  fechaI=new Date(fechaInicio)
@@ -22,5 +22,7 @@ export class CoreService {
               const dias = eachDayOfInterval({ start: fecha1, end: fecha2 });
               return dias;
           }
+
+    
         
 }

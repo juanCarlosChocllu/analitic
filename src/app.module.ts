@@ -29,6 +29,7 @@ import { NombreBdConexion } from './core/enums/nombre.db.enum';
 
 import { MetasSucursalModule } from './metas-sucursal/metas-sucursal.module';
 import { CoreModule } from './core/core.module';
+import { DiasModule } from './dias/dias.module';
 
 
 
@@ -61,7 +62,8 @@ import { CoreModule } from './core/core.module';
     OftalmologoModule,
     AsesoresModule,
     MetasSucursalModule,
-    CoreModule
+    CoreModule,
+    DiasModule
   ],
   controllers: [],
   providers: [

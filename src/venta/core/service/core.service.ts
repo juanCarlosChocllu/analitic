@@ -5,6 +5,7 @@ import { Types } from "mongoose";
 import { SucursalI } from "src/core/interfaces/sucursalInterface";
 import { VentaTodasDto } from "../dto/venta.todas.dto";
 import { sucursalesEnum } from "../enums/sucursales.enum";
+import { eachDayOfInterval, isSunday } from "date-fns";
 
 @Injectable()
 export class CoreService{
@@ -60,6 +61,37 @@ export class CoreService{
     }
 
 
+           cantidadDias (fechaInicio: string, fechaFin: string):Date[]{
+                    const fecha1 = new Date(fechaInicio); 
+                    fecha1.setUTCDate(fecha1.getUTCDate() + 1);
+                    const fecha2 = new     Date(fechaFin); 
+                    fecha2.setUTCDate(fecha2.getUTCDate() + 1);
+                    const dias = eachDayOfInterval({ start: fecha1, end: fecha2 });           
+                    return dias;
+                }
+
+
+          reglaDeTresSimple(diasComerciales:number, diasHabiles:number):number{
+          
+              
+            if(diasComerciales <= 0 || diasHabiles <= 0){
+                return 0
+            }
+           const indice = (diasHabiles * 100) / diasComerciales
+            return Math.round(indice)
+          }
+
+          cantidadDomingos(fechaInicio: string, fechaFin: string) {
+        
+           
+            const fecha1 = new Date(fechaInicio);
+            fecha1.setUTCDate(fecha1.getUTCDate() + 1);
+            const fecha2 = new Date(fechaFin);
+            fecha2.setUTCDate(fecha2.getUTCDate() + 1);
+            const dias = eachDayOfInterval({ start: fecha1, end: fecha2 });
+            const domingos = dias.filter((dia) => isSunday(dia));
+            return domingos.length;
+          }
       
       
 
