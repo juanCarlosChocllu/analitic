@@ -127,8 +127,6 @@ export class VentaMetasSucursalService {
   for (const dia of dias) {   
     const diasHAbiles = await this.diasService.listarDiasHabiles(dia, sucursal._id)
     const diasInHAbiles = await this.diasService.listarDiasInhabiles(dia, sucursal._id)
-  
-    
     if(diasHAbiles){     
       cantidadDiasHabiles +=1
     }
@@ -136,8 +134,6 @@ export class VentaMetasSucursalService {
       cantidadDiasInHabiles +=1
     }
   }  
-
-
  let  cantidadDias:number = dias.length - domingos 
  cantidadDias  += cantidadDiasHabiles
  cantidadDias -= cantidadDiasInHabiles

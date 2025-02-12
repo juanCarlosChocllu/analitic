@@ -93,6 +93,16 @@ export class VentaMedicosService {
                         },
                       },
                     },
+
+                    lenteDeContacto: {
+                      $sum: {
+                        $cond: {
+                          if: { $eq: ['$producto', 'LENTE DE CONTACTO'] },
+                          then: '$cantidad',
+                          else: 0,
+                        },
+                      },
+                    },
         
                     medico: { $first: '$oftalmologo._id' },
                     e: { $first: '$oftalmologo.especialidad' },
@@ -112,18 +122,21 @@ export class VentaMedicosService {
                   $project: {
                     _id: 0,
                     nombre: '$_id',
-                    cantidad: 1,
+                    cantidad: 1, //cantidad de ventas realizadas
                     medico: 1,
-                  
+                    ventasLenteLc: {$add:['$cantidad', '$lenteDeContacto']}, //cantidad de ventas realizadas  + lente de contacto
                     importe: 1,
                     e: 1, //especialidad
                   },
                 },
               ]);             
               const resultado:VentaMedicoI = {
+                ventaLenteLc: dataMedicos.reduce((acc, item) => acc + item.ventasLenteLc, 0),
                 sucursal: sucursal.nombre,
                 totalRecetas: dataMedicos.reduce((acc, item) => acc + item.cantidad, 0),
+                
                 importe: dataMedicos.reduce((acc, item) => acc + item.importe, 0),
+                
                 idScursal: sucursal._id,
                 data: dataMedicos,
               };
@@ -131,6 +144,7 @@ export class VentaMedicosService {
             }
         
           }
+    
           return data;
         } catch (error) {
             return new BadRequestException()

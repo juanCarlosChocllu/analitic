@@ -13,6 +13,7 @@ interface  DataMedicoI {
 export interface VentaMedicoI {
     sucursal: string,
     totalRecetas: number,
+    ventaLenteLc:number
     
     importe: number,
     idScursal: Types.ObjectId,
