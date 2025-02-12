@@ -52,7 +52,7 @@ export class VentaMetasSucursalService {
        if(meta){
         diasComerciales = meta.dias
        }
-        let indiceDeAvanceComercial =  await this.indiceDeAvanceComercial(dias, sucursal,diasComerciales, domingos)
+        let [indiceDeAvanceComercial, diasHAbiles] =  await this.indiceDeAvanceComercial(dias, sucursal,diasComerciales, domingos)
        
         
         const venta = await this.venta.aggregate([
@@ -108,12 +108,16 @@ export class VentaMetasSucursalService {
           importVenta: importVenta,
           cumplimientoTicket: calcularPorcentaje(ticketVenta, ticketMeta),
           cumplimientoImporte: calcularPorcentaje(importVenta, montoMeta),
-        indeceAvance:indiceDeAvanceComercial
+        indeceAvance:indiceDeAvanceComercial,
+        diasHAbiles:diasHAbiles
+        
         };
 
         resultados.push(data);
       }
 
+      console.log(resultados);
+      
           
     return resultados;
 
@@ -138,7 +142,7 @@ export class VentaMetasSucursalService {
  cantidadDias  += cantidadDiasHabiles
  cantidadDias -= cantidadDiasInHabiles
   const  avance = this.coreService.reglaDeTresSimple(diasComerciales, cantidadDias)
-  return avance
+  return [avance , cantidadDias]
  }
    
 

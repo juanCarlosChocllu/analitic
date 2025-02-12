@@ -38,7 +38,7 @@ export class VentaMedicosService {
     const { especialidad, ...nuevoFiltro } = filtradorMedicos(ventaMedicosDto);
     const data: VentaMedicoI[] = [];
       
-      
+  
         
         try { 
           for( const empresa of ventaMedicosDto.empresa){
