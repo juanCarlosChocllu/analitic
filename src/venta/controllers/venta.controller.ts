@@ -20,16 +20,6 @@ export class VentaController {
   async ventaExcelAnterior(@Body() ventaDto: VentaDto) {    
     return await this.ventaService.ventaExel(ventaDto);
   }
-  @Get('finalizar')
-  finalizarVenta() {
-    return this.ventaService.finalizarVentas();
-  }
-
-
-
-
-  
-
 
 
 

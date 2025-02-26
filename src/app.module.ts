@@ -23,13 +23,14 @@ import { TokenGuard } from './autenticacion/guard/token/token.guard';
 import { LogModule } from './log/log.module';
 import { ConfigModule } from '@nestjs/config';
 import { databaseConeccion } from './core/config/variables.entorno.config';
-import { OftalmologoModule } from './oftalmologo/oftalmologo.module';
 import { AsesoresModule } from './asesores/asesores.module';
 import { NombreBdConexion } from './core/enums/nombre.db.enum';
 
 import { MetasSucursalModule } from './metas-sucursal/metas-sucursal.module';
 import { CoreModule } from './core/core.module';
 import { DiasModule } from './dias/dias.module';
+import { ColorLenteModule } from './color-lente/color-lente.module';
+import { MedicoModule } from './medico/medico.module';
 
 
 
@@ -59,11 +60,12 @@ import { DiasModule } from './dias/dias.module';
     UsuariosModule,
     AutenticacionModule,
     LogModule,
-    OftalmologoModule,
     AsesoresModule,
     MetasSucursalModule,
     CoreModule,
-    DiasModule
+    DiasModule,
+    ColorLenteModule,
+    MedicoModule
   ],
   controllers: [],
   providers: [

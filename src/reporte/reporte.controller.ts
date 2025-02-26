@@ -1,19 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ReporteService } from './reporte.service';
-import { FechaDto } from './dto/fecha.dto';
+import { DescargarDto } from './dto/Descargar.dto';
 
 @Controller('reporte')
 export class ReporteController {
   constructor(private readonly reporteService: ReporteService) {}
 
   @Post()
-  async allExcel(@Body()fechaDto:FechaDto) {     
-    return  this.reporteService.allExcel(fechaDto);
-  }
-
-
-  @Post('verificacion')
-  async informacionRestanteVenta(@Body()fechaDto:FechaDto) {   
-    return  this.reporteService.informacionRestanteVenta(fechaDto);
+  async realizarDescarga(@Body()fechaDto:DescargarDto) {     
+    return  this.reporteService.realizarDescarga(fechaDto);
   }
 }

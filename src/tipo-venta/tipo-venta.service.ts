@@ -50,4 +50,15 @@ export class TipoVentaService {
      return abrev
 
   }
+
+  public async tipoVenta(tipo:string){
+    const abrev= await this.TipoVentaSchema.findOne({abreviatura:tipo})   
+     return abrev
+
+  }
+
+  public async registrarTipoVenta(tipo:string){
+    const abrev= await this.TipoVentaSchema.create({nombre:tipo})   
+     return abrev
+  }
 }

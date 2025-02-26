@@ -13,3 +13,6 @@ export const port:string=configService.get<string>('PORT')
 
 export const interfaceRed:string=configService.get<string>('INTERFACE')
 
+
+export const tokenDescargas:string=configService.get<string>('TOKEN_DESCARGAS')
+

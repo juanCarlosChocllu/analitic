@@ -62,14 +62,14 @@ export class VentaMedicosService {
         
                 {
                   $lookup: {
-                    from: 'Oftalmologo',
+                    from: 'Medico',
                     foreignField: '_id',
-                    localField: 'oftalmologo',
-                    as: 'oftalmologo',
+                    localField: 'medico',
+                    as: 'medico',
                   },
                 },
                 {
-                  $unwind: { path: '$oftalmologo', preserveNullAndEmptyArrays: false },
+                  $unwind: { path: '$medico', preserveNullAndEmptyArrays: false },
                 },
                 ...(especialidad
                   ? [
@@ -83,7 +83,7 @@ export class VentaMedicosService {
         
                 {
                   $group: {
-                    _id: '$oftalmologo.nombreCompleto',
+                    _id: '$medico.nombreCompleto',
                     cantidad: {
                       $sum: {
                         $cond: {
@@ -104,8 +104,8 @@ export class VentaMedicosService {
                       },
                     },
         
-                    medico: { $first: '$oftalmologo._id' },
-                    e: { $first: '$oftalmologo.especialidad' },
+                    medico: { $first: '$medico._id' },
+                    e: { $first: '$medico.especialidad' },
                    
                     importe: {
                       $sum: {

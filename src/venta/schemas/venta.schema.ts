@@ -28,6 +28,9 @@ export class Venta {
   @Prop({ type: Types.ObjectId, ref: 'TipoColor' })
   tipoColor: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'ColorLente' })
+  colorLente: Types.ObjectId;
+
   
   @Prop({ type: Types.ObjectId, ref: 'Rango' })
   rango: Types.ObjectId;
@@ -38,8 +41,8 @@ export class Venta {
   @Prop({ type: Types.ObjectId, ref: 'Marca' })//se aplica depente al rubro
   marca: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Oftalmologo' })
-  oftalmologo: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Medico' })
+  medico: Types.ObjectId;
 
   @Prop()
   comisiona: Boolean
@@ -65,10 +68,24 @@ export class Venta {
   @Prop({ type: String, enum: flagVenta, default: flagVenta.nuevo })
   flag: flagVenta;
 
+  @Prop({ type: String})
+  estadoTracking:string
 
+  @Prop({ type: String})
+  numeroCotizacion:string
+
+  @Prop({ type: Number})
+  descuentoFicha:number
+
+
+  @Prop({ type: Boolean})
+  cotizacion:boolean
 
   @Prop({ type: Date })
-  fecha: Date;
+  fecha: Date;///fecha finalizada
+
+  @Prop({ type: Date })
+  fechaVenta: Date;///fecha realizada
 
   @Prop()
   flagVenta: string;
