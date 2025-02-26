@@ -269,6 +269,7 @@ export class ReporteService {
   }
 
   async informacionRestanteVenta(fechaDto:FechaDto){
+    
     try {
           const response:ventaInformacionRI[]= await this.httpAxiosVentaService.informacionRestanteVenta(fechaDto.fechaInicio, fechaDto.fechaFin )
           for(let ve of response){ 
