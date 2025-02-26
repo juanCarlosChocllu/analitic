@@ -1,6 +1,6 @@
 import { IsDateString, IsNotEmpty, IsString } from "class-validator"
 
-export class finalizarVentaDto {
+export class FinalizarVentaDto {
     
     @IsString()
     @IsNotEmpty()
