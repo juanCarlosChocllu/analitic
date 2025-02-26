@@ -20,6 +20,7 @@ import { SucursalService } from 'src/sucursal/sucursal.service';
 
 import { sucursalesEnum } from '../core/enums/sucursales.enum';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+import { FinalizarVentaDto } from '../core/dto/FinalizarVenta.dto';
 
 @Injectable()
 export class VentaService {
@@ -276,4 +277,16 @@ export class VentaService {
   async crearVenta(data: any) {
     await this.venta.create(data);
   }
+
+  async finalizarVentas(finalizarVentaDto:FinalizarVentaDto) {
+    try {
+      const venta = await this.venta.find({numeroTicket:finalizarVentaDto.idVenta.toUpperCase().trim()})
+      console.log(venta);
+       
+    } catch (error) {
+       
+    }
+
+  }
+
 }

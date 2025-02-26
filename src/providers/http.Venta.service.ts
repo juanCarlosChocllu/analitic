@@ -39,7 +39,7 @@ export class HttpAxiosVentaService {
         return response.data
       } catch (error) {  
                   const descripcion:string = `Archivo no encontrado error 404 de la fecha  ${descargarDto.fechaInicio} a ${descargarDto.fechaFin}  `
-              this.logService.registroLogDescargaError(descripcion, 'Venta' , HttpStatus.BAD_REQUEST , 'BAD_REQUEST' )
+              await this.logService.registroLogDescargaError(descripcion, 'Venta' , HttpStatus.BAD_REQUEST , 'BAD_REQUEST' )
                       
         throw error
      

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { VentaService } from '../services/venta.service';
 import { VentaDto } from '../core/dto/venta.dto';
+import { FinalizarVentaDto } from '../core/dto/FinalizarVenta.dto';
 @Controller('venta')
 export class VentaController {
   constructor(
@@ -21,6 +22,10 @@ export class VentaController {
     return await this.ventaService.ventaExel(ventaDto);
   }
 
+  @Post('finalizar')
+   async finalizarVentas(@Body() finalizarVentaDto: FinalizarVentaDto){
+    return this.ventaService.finalizarVentas(finalizarVentaDto)
+   }
 
 
 }
