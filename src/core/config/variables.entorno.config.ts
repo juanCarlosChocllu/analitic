@@ -16,3 +16,7 @@ export const interfaceRed:string=configService.get<string>('INTERFACE')
 
 export const tokenDescargas:string=configService.get<string>('TOKEN_DESCARGAS')
 
+export const apiMia:string=configService.get<string>('API_MIA')
+
+
+
