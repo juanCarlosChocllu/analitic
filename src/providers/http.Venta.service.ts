@@ -34,11 +34,13 @@ export class HttpAxiosVentaService {
           token:tokenDescargas
         }
         const response = await firstValueFrom(
-          this.httpService.post(url, body,{ timeout: 30000 }),
+          this.httpService.post(url, body),
         );
+        console.log(response.data);
+        
         return response.data
       } catch (error) {  
-                  const descripcion:string = `Archivo no encontrado error 404 de la fecha  ${descargarDto.fechaInicio} a ${descargarDto.fechaFin}  `
+                  const descripcion:string = `Error de fecha: ${descargarDto.fechaInicio} a ${descargarDto.fechaFin}  `
               await this.logService.registroLogDescargaError(descripcion, 'Venta' , HttpStatus.BAD_REQUEST , 'BAD_REQUEST' )
                       
         throw error

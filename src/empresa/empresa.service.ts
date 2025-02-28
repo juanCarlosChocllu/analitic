@@ -14,7 +14,7 @@ export class EmpresaService {
   ) {}
 
 
-  async EmpresaExcel() {
+  async empresas() {
     const empresas = await this.EmpresaSchema.find();
     return empresas;
   }

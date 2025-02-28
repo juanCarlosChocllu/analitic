@@ -1,4 +1,4 @@
-import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Venta } from '../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
@@ -21,6 +21,8 @@ import { SucursalService } from 'src/sucursal/sucursal.service';
 import { sucursalesEnum } from '../core/enums/sucursales.enum';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { FinalizarVentaDto } from '../core/dto/FinalizarVenta.dto';
+import { VentaTodasDto } from '../core/dto/venta.todas.dto';
+import { Type } from 'class-transformer';
 
 @Injectable()
 export class VentaService {
@@ -32,18 +34,18 @@ export class VentaService {
     private readonly sucursalService: SucursalService,
   ) {}
 
-  async ventaExel(ventaDto: VentaDto) {
+  async ventas(ventaTodasDto: VentaTodasDto) {
     const [venta, ventaSucursal] = await Promise.all([
-      this.ventaExcel(ventaDto),
-      this.ventaExcelSucursal(ventaDto),
+      this.ventaEmpresa(ventaTodasDto),
+      this.ventaSucursal(ventaTodasDto),
     ]);
     const total = venta.reduce((total, ve) => total + ve.importe, 0);
     const cantidad = venta.reduce((total, ve) => total + ve.cantidad, 0);
     const ticketPromedio = this.ticketPromedio(total, cantidad);
     const resultado = {
-      cantidadSucursal: ventaDto.sucursal.length,
-      fechaInicio: ventaDto.fechaInicio,
-      fechaFin: ventaDto.fechaFin,
+      cantidadSucursal:ventaSucursal.cantidadSucursal,
+      fechaInicio: ventaTodasDto.fechaInicio,
+      fechaFin: ventaTodasDto.fechaFin,
       total,
       cantidad,
       ticketPromedio,
@@ -51,21 +53,23 @@ export class VentaService {
       ventaSucursal,
     };
 
+
     return resultado;
   }
 
-  private async ventaExcel(ventaDto: VentaDto) {
+  private async ventaEmpresa(ventaTodasDto: VentaTodasDto) {
+
     const filtrador: FiltroVentaI = {
       fecha: {
-        $gte: new Date(ventaDto.fechaInicio),
-        $lte: new Date(ventaDto.fechaFin),
+        $gte: new Date(ventaTodasDto.fechaInicio),
+        $lte: new Date(ventaTodasDto.fechaFin),
       },
-      empresa: new Types.ObjectId(ventaDto.empresa),
+      empresa:{$in: ventaTodasDto.empresa.map((item)=> new Types.ObjectId(item))},
     };
 
-    ventaDto.tipoVenta.length > 0
+    ventaTodasDto.tipoVenta.length > 0
       ? (filtrador.tipoVenta = {
-          $in: ventaDto.tipoVenta.map((id) => new Types.ObjectId(id)),
+          $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
         })
       : filtrador;
 
@@ -115,21 +119,37 @@ export class VentaService {
     return venta;
   }
 
-  private async ventaExcelSucursal(ventaDto: VentaDto) {
+  private async ventaSucursal(ventaTodasDto: VentaTodasDto) {
+    const sucursales:Types.ObjectId[]=[]
     const ventaSucursal: any[] = [];
     const filtrador: FiltroVentaI = {
       fecha: {
-        $gte: new Date(ventaDto.fechaInicio),
-        $lte: new Date(ventaDto.fechaFin),
+        $gte: new Date(ventaTodasDto.fechaInicio),
+        $lte: new Date(ventaTodasDto.fechaFin),
       },
     };
-    ventaDto.tipoVenta.length > 0
+    ventaTodasDto.tipoVenta.length > 0
       ? (filtrador.tipoVenta = {
-          $in: ventaDto.tipoVenta.map((id) => new Types.ObjectId(id)),
+          $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
         })
       : filtrador;
 
-    for (let sucursal of ventaDto.sucursal) {
+
+      
+    if(ventaTodasDto.sucursal.length == 0 ) { 
+          for (const e of ventaTodasDto.empresa) {
+              const sucursal = await this.sucursalService.sucursalListaEmpresas(new Types.ObjectId(e))
+          
+              
+              sucursales.push(...sucursal.map((item)=> item._id))
+          }
+
+    }else {
+      sucursales.push(...ventaTodasDto.sucursal)
+    }
+
+    
+    for (let sucursal of sucursales) {
       filtrador.sucursal = new Types.ObjectId(sucursal);
       const venta = await this.venta.aggregate([
         {
@@ -196,22 +216,27 @@ export class VentaService {
       ventaSucursal.push(resultado);
     }
 
-    const data = this.calcularDatosSucursal(ventaSucursal, ventaDto);
+    const data = this.calcularDatosSucursal(ventaSucursal, ventaTodasDto);
     const resultado = {
       data,
       ventaSucursal,
+      cantidadSucursal:sucursales.length
     };
     return resultado;
   }
 
-  private calcularDatosSucursal(ventaPorSucursal: any[], ventaDto: VentaDto) {
-    const dias = diasHAbiles(ventaDto.fechaInicio, ventaDto.fechaFin);
+  private calcularDatosSucursal(ventaPorSucursal: any[], ventaTodasDto: VentaTodasDto) {
+    console.log('suc',ventaPorSucursal);
+    
+    const dias = diasHAbiles(ventaTodasDto.fechaInicio, ventaTodasDto.fechaFin);
 
     const totalVenta: number[] = [];
     const cantidadTotal: number[] = [];
+
+
     for (let venta of ventaPorSucursal) {
       if (
-        ventaDto.sucursal.length > 0 &&
+        ventaPorSucursal.length > 0 &&
         venta.sucursal != sucursalesEnum.opticentroParaguay
       ) {
         const total = this.total(venta.data);
@@ -219,7 +244,7 @@ export class VentaService {
         totalVenta.push(total);
         cantidadTotal.push(cantidad);
       } else if (
-        ventaDto.sucursal.length == 1 &&
+        ventaTodasDto.sucursal.length == 1 &&
         venta.sucursal == sucursalesEnum.opticentroParaguay
       ) {
         const total = this.total(venta.data);
@@ -259,6 +284,8 @@ export class VentaService {
       (total: number, venta: VentaExcelI) => total + venta.montoTotal,
       0,
     );
+
+    
     return total;
   }
 
@@ -280,11 +307,14 @@ export class VentaService {
 
   async finalizarVentas(finalizarVentaDto:FinalizarVentaDto) {
     try {
-      const venta = await this.venta.find({numeroTicket:finalizarVentaDto.idVenta.toUpperCase().trim()})
-      console.log(venta);
-       
+      const venta = await this.venta.findOne({numeroTicket:finalizarVentaDto.idVenta.toUpperCase().trim()})
+      if(venta) {
+         await this.venta.updateMany({numeroTicket:finalizarVentaDto.idVenta.toUpperCase().trim()}, { fecha:new Date(finalizarVentaDto.fecha), estadoTracking:finalizarVentaDto.tracking,  flagVenta:finalizarVentaDto.flag})
+         return {status:HttpStatus.OK}
+      }
+      return {status:HttpStatus.NOT_FOUND}
     } catch (error) {
-       
+      throw new BadRequestException()
     }
 
   }

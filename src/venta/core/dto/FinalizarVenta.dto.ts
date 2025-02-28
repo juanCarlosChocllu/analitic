@@ -6,6 +6,16 @@ export class FinalizarVentaDto {
     @IsNotEmpty()
     idVenta:string
 
+
+    @IsString()
+    @IsNotEmpty()
+    tracking:string
+
+    @IsString()
+    @IsNotEmpty()
+    flag:string
+
+
     @IsDateString()
     @IsNotEmpty()
     fecha:string

@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 
 export class VentaTodasDto{
     @IsMongoId({each: true })
-    empresa: string;
+    empresa: string[];
 
     @IsMongoId({each: true })
     sucursal: Types.ObjectId[];
