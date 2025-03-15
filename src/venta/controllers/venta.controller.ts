@@ -6,31 +6,28 @@ import {
 } from '@nestjs/common';
 import { VentaService } from '../services/venta.service';
 import { VentaDto } from '../core/dto/venta.dto';
+import { FinalizarVentaDto } from '../core/dto/FinalizarVenta.dto';
+import { Public } from 'src/autenticacion/decorators/public.decorator';
+import { VentaTodasDto } from '../core/dto/venta.todas.dto';
 @Controller('venta')
 export class VentaController {
   constructor(
     private readonly ventaService: VentaService,
   ) {}
   @Post('excel/actual')
-  async ventaExcelActual(@Body() ventaDto: VentaDto) {
-    return await this.ventaService.ventaExel(ventaDto);
+  async ventaExcelActual(@Body() ventaTodasDto: VentaTodasDto) {
+    return await this.ventaService.ventas(ventaTodasDto);
   }
 
   @Post('excel/anterior')
-  async ventaExcelAnterior(@Body() ventaDto: VentaDto) {    
-    return await this.ventaService.ventaExel(ventaDto);
+  async ventaExcelAnterior(@Body() ventaTodasDto: VentaTodasDto) {    
+    return await this.ventaService.ventas(ventaTodasDto);
   }
-  @Get('finalizar')
-  finalizarVenta() {
-    return this.ventaService.finalizarVentas();
-  }
-
-
-
-
-  
-
-
+  @Public()
+  @Post('finalizar')
+   async finalizarVentas(@Body() finalizarVentaDto: FinalizarVentaDto){
+    return this.ventaService.finalizarVentas(finalizarVentaDto)
+   }
 
 
 }

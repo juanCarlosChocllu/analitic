@@ -32,8 +32,8 @@ export class LogService {
     return `This action removes a #${id} log`;
   }
 
-   public async  registroLogDescargaError(descripcion:string, schema:string,codigoError:HttpStatus, tipoError:string, fechaFallida:string){
-     return this.logSchema.create({ descripcion, schema,codigoError , tipoError , fechaFallida})
+   public async  registroLogDescargaError(descripcion:string, schema:string,codigoError:HttpStatus, tipoError:string){
+     return this.logSchema.create({ descripcion, schema,codigoError , tipoError })
   }
 
 

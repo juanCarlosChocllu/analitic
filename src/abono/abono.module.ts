@@ -10,9 +10,7 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 @Module({
   imports: [
-    ProvidersModule,
-    forwardRef(()=>VentaModule),
-    
+    ProvidersModule,    
     MongooseModule.forFeature(
       [{ name: Abono.name, schema: AbonoSchema }],
       NombreBdConexion.oc,

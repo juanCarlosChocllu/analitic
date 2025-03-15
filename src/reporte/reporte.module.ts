@@ -20,9 +20,12 @@ import { MarcaLenteModule } from 'src/marca-lente/marca-lente.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { VentaModule } from 'src/venta/venta.module';
-import { OftalmologoModule } from 'src/oftalmologo/oftalmologo.module';
+
 import { AsesoresModule } from 'src/asesores/asesores.module';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
+import { ColorLenteModule } from 'src/color-lente/color-lente.module';
+import { MedicoModule } from 'src/medico/medico.module';
+import { LogModule } from 'src/log/log.module';
 
 @Module({
   imports:[
@@ -45,9 +48,11 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
     MarcasModule,
     MarcaLenteModule,
     VentaModule,
-    OftalmologoModule,
+    MedicoModule,
     SucursalModule,
-    AsesoresModule
+    AsesoresModule,
+    ColorLenteModule,
+    LogModule,
   ],
   controllers: [ReporteController],
   providers: [ReporteService],

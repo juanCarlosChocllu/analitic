@@ -1,4 +1,11 @@
-import { BadRequestException, HttpStatus, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -7,52 +14,48 @@ import { TipoLenteService } from 'src/tipo-lente/tipo-lente.service';
 import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 import { TratamientoService } from 'src/tratamiento/tratamiento.service';
 import { productos } from 'src/venta/core/enums/productos.enum';
-import { VentaExcelI } from 'src/venta/core/interfaces/ventaExcel.interface';
-
-import { parseNumber } from 'src/venta/core/util/validar.numero.util';
 
 import { Sucursal } from 'src/sucursal/schema/sucursal.schema';
-
 
 import { MaterialService } from 'src/material/material.service';
 import { TipoColorService } from 'src/tipo-color/tipo-color.service';
 import { MarcasService } from 'src/marcas/marcas.service';
 import { MarcaLenteService } from 'src/marca-lente/marca-lente.service';
-import { FechaDto } from './dto/fecha.dto';
-import { fechasArray } from './util/fecha.array.util';
+import { DescargarDto } from './dto/Descargar.dto';
+
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ventaInformacionRI } from './interface/ventaInformacion.interface';
 import { VentaService } from 'src/venta/services/venta.service';
-import { OftalmologoService } from 'src/oftalmologo/oftalmologo.service';
+
 import { SucursalService } from 'src/sucursal/sucursal.service';
 
 import { Venta } from 'src/venta/schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
 import { AxiosError } from 'axios';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
-
+import { VentaI } from 'src/providers/interface/Venta';
+import { Log } from 'src/log/schemas/log.schema';
+import { ColorLenteService } from 'src/color-lente/color-lente.service';
+import { MedicoService } from 'src/medico/medico.service';
+import { LogService } from 'src/log/log.service';
 
 @Injectable()
 export class ReporteService {
+  private readonly logger = new Logger(ReporteService.name);
 
-    private readonly logger = new Logger(ReporteService.name)
-
-  constructor(  
-
+  constructor(
     @InjectModel(Sucursal.name, NombreBdConexion.oc)
     private readonly sucursalExcelSchema: Model<Sucursal>,
 
-    
     @InjectModel(Venta.name, NombreBdConexion.oc)
-    private readonly VentaExcelSchema: Model<Venta>,
-    
+    private readonly venta: Model<Venta>,
+
     private readonly httpAxiosVentaService: HttpAxiosVentaService,
-      
+
     private readonly tratamientoService: TratamientoService,
     private readonly tipoLenteService: TipoLenteService,
-    
+
     private readonly tipoVentaService: TipoVentaService,
-        
+
     private readonly materialService: MaterialService,
 
     private readonly tipoColorService: TipoColorService,
@@ -61,172 +64,203 @@ export class ReporteService {
 
     private readonly marcaLenteService: MarcaLenteService,
 
-    private readonly ventaService:VentaService,
+    private readonly medicoService: MedicoService,
 
-    private readonly oftalmologoService:OftalmologoService,
+    private readonly sucursalService: SucursalService,
 
-    private readonly sucursalService:SucursalService,
+    private readonly asesorService: AsesoresService,
+    private readonly ventaService: VentaService,
 
-    private readonly asesorService:AsesoresService,
-    
-  ){}
- 
-  async allExcel(fechaDto:FechaDto) { 
-    console.log(fechaDto);
-       
-    const diasFechasArray:Date[] | String[] = fechasArray(fechaDto.fechaInicio, fechaDto.fechaFin)    
-    for(let fecha of diasFechasArray){
-  
-      const[aqo, mes, dia]= [fecha.getFullYear(), (fecha.getMonth() + 1).toString().padStart(2, '0') ,  fecha.getDate().toString().padStart(2, '0') ]
-   
+    private readonly colorLenteService: ColorLenteService,
+        private readonly logService:LogService
+  ) {}
+
+  async realizarDescarga(DescargarDto: DescargarDto) {
     try {
-     const dataExcel = await this.httpAxiosVentaService.reporte(mes, dia, aqo);
-     
-      const ventaSinServicio = this.quitarServiciosVentas(dataExcel);
-     // const ventaSinParaguay = this.quitarSucursalParaguay(ventaSinServicio);
-      const ventaLimpia = this.quitarDescuento(ventaSinServicio);
-      console.log('descargando de :' , aqo, mes, dia);
-      await this.guardarAsesorExcel(ventaLimpia);
-      await this.guardarAtributosLente(ventaLimpia);
-      await this.guardarAtributosProductos(ventaLimpia)
-      await this.guardaVentaLimpiaEnLaBBDD(ventaLimpia);
+      const ventas = await this.httpAxiosVentaService.reporte(DescargarDto);
 
+      await this.guardarAsesor(ventas),
+        await this.guardarAtrubutosDeVenta(ventas),
+        await this.guardaVenta(ventas);
+        await this.logService.registroLogDescarga('Venta', DescargarDto.fechaFin)
+      return { status: HttpStatus.CREATED };
     } catch (error) {
-      console.log(error);
-      
-      if (error instanceof NotFoundException) {
-        console.log(
-          `Archivo no encontrado para la fecha ${dia}/${mes}/${aqo}. Continuando con el siguiente día.`,
-        );
-         continue;
-      } else {
-        throw error;
-      }
+      throw error;
     }
-   }
-
-    return { status: HttpStatus.CREATED };
   }
 
-  private quitarServiciosVentas(venta: VentaExcelI[]): VentaExcelI[] {
-    const nuevaVenta = venta.filter((ventas) => ventas.producto !== 'SERVICIO');
-    return nuevaVenta;
-  }
-  private quitarSucursalParaguay(venta: VentaExcelI[]): VentaExcelI[] {
-    const nuevaVenta = venta.filter(
-      (ventas) => ventas.sucursal !== 'OPTICENTRO PARAGUAY',
+  private async guardarMedico(nombre: string, especialidad: string) {
+    const medico = await this.medicoService.buscarMedico(
+      nombre.trim().toUpperCase(),
     );
-    return nuevaVenta;
-  }
-  private quitarDescuento(venta: VentaExcelI[]) {
-    const nuevaVenta = venta.filter((ventas) => ventas.cantidad !== -1);
-    return nuevaVenta;
-  }
-
-
-  private async guardarAtributosLente(venta: VentaExcelI[]) {
-    const lentes = venta.filter((item) => item.producto === 'LENTE');
-    for (let data of lentes) {
-      await this.tratamientoService.guardarTratamiento(data.atributo6.toUpperCase());
-      await this.materialService.guardarMaterIal(data.atributo3.toUpperCase());
-      await this.tipoLenteService.guardarTipoLente(data.atributo2.toUpperCase());
-      await  this.tipoColorService.guardarTipoColor(data.atributo4.toUpperCase())
-      await  this.marcaLenteService.guardarMarcaLente(data.atributo5.toUpperCase())
+    if (!medico) {
+      await this.medicoService.crearMedico(
+        nombre.toUpperCase().trim(),
+        especialidad.toUpperCase(),
+      );
     }
   }
 
-  protected async guardarAtributosProductos(venta: VentaExcelI[]){    
-    
-    const producto = venta.filter((item) => item.producto != productos.lente && item.producto != productos.descuento);
-    for (let data of producto) {
-        await this.marcaService.guardarMarcaProducto(data.atributo1.toUpperCase())
-         
+  private async guardarTipoVenta(tipo: string) {
+    const tipoVenta = await this.tipoVentaService.verificarTipoVenta(
+      tipo.trim().toUpperCase(),
+    );
+    if (!tipoVenta) {
+      await this.tipoVentaService.registrarTipoVenta(tipo.toUpperCase().trim());
     }
   }
 
-
-  private async guardaVentaLimpiaEnLaBBDD(Venta: VentaExcelI[]) {
-
+  private async guardarAtrubutosDeVenta(ventas: VentaI[]) {
     try {
-      for (let data of Venta) {        
-        const venta = await this.VentaExcelSchema.exists({
-          numeroTicket: data.numeroTicket.toUpperCase(),
-          producto: data.producto,     
-        });      
-      
-        if(!venta){
-        const textoTipo= data.numeroTicket.split('-')
- 
-        const  tipo = textoTipo[textoTipo.length - 2 ].toUpperCase()
-                 const sucursal = await this.sucursalExcelSchema.findOne({
-          nombre: data.sucursal,
-        });
-    
-        
-        if (sucursal) {
-          const asesor = await this.asesorService.buscarAsesorPorScursal(data.asesor, sucursal._id)
-          const tipoVenta = await this.tipoVentaService.tipoVentaAbreviatura(tipo);
-          const tratamiento = data.producto === productos.lente? await this.tratamientoService.listarTratamiento( data.atributo6,): null;
+      for (const venta of ventas) {
+        await this.guardarMedico(venta.medico, venta.especialidad);
+        await this.guardarTipoVenta(venta.tipoVenta);
+        if (venta.rubro === productos.lente) {
+          await this.guardarAtributosLente(
+            venta.atributo1,
+            venta.atributo2,
+            venta.atributo3,
+            venta.atributo4,
+            venta.atributo5,
+            venta.atributo6,
+          );
+        }
+        if (
+          venta.rubro != productos.lente &&
+          venta.rubro != productos.servicio
+        ) {
+          await this.marcaService.guardarMarcaProducto(
+            venta.atributo1.toUpperCase(),
+          );
+        }
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 
-          const tipoLente = data.producto === productos.lente  ? await this.tipoLenteService.listarTipoLente(data.atributo2):null          
-         const material= data.producto === productos.lente ?await this.materialService.listarMaterial(data.atributo3):null;
-         const tipoColor= data.producto === productos.lente ?await this.tipoColorService.listarTipoColor(data.atributo4):null;
-          
-         const marcaLente= data.producto === productos.lente ?await this.marcaLenteService.listarMarcaLente(data.atributo5):null;
-      
-         
-         const marca= (data.producto === productos.montura  || data.producto === productos.gafa || data.producto === productos.lenteDeContacto) ?await this.marcaService.listarMarcaProducto(data.atributo1):null;
-      
-          
-          try {
+  private async guardarAtributosLente(
+    atributo1: string,
+    atributo2: string,
+    atributo3: string,
+    atributo4: string,
+    atributo5: string,
+    atributo6: string,
+  ) {
+    await Promise.all([
+      this.colorLenteService.guardarColorLente(atributo1.toUpperCase()),
+      this.tipoLenteService.guardarTipoLente(atributo2.toUpperCase()),
+      this.materialService.guardarMaterIal(atributo3.toUpperCase()),
+      this.tipoColorService.guardarTipoColor(atributo4.toUpperCase()),
+      this.marcaLenteService.guardarMarcaLente(atributo5.toUpperCase()),
+      this.tratamientoService.guardarTratamiento(atributo6.toUpperCase()),
+    ]);
+  }
+
+  private async guardaVenta(ventas: VentaI[]) {
+    try {
+      for (let data of ventas) {
+        const venta = await this.venta.exists({
+          numeroTicket: data.idVenta.toUpperCase(),
+          producto: data.rubro,
+        });
+
+        if (!venta) {
+          const sucursal = await this.sucursalExcelSchema.findOne({
+            nombre: data.local,
+          });
+          const medico = await this.medicoService.buscarMedico(
+            data.medico.trim().toUpperCase(),
+          );
+          const tipoVenta = await this.tipoVentaService.verificarTipoVenta(
+            data.tipoVenta,
+          );
+          if (sucursal) {
+            const asesor = await this.asesorService.buscarAsesorPorScursal(
+              data.nombre_vendedor,
+              sucursal._id,
+            );
+
+            const tratamiento =
+              data.rubro === productos.lente
+                ? await this.tratamientoService.listarTratamiento(
+                    data.atributo6,
+                  )
+                : null;
+
+            const tipoLente =
+              data.rubro === productos.lente
+                ? await this.tipoLenteService.listarTipoLente(data.atributo2)
+                : null;
+            const material =
+              data.rubro === productos.lente
+                ? await this.materialService.listarMaterial(data.atributo3)
+                : null;
+            const tipoColor =
+              data.rubro === productos.lente
+                ? await this.tipoColorService.listarTipoColor(data.atributo4)
+                : null;
+
+            const marcaLente =
+              data.rubro === productos.lente
+                ? await this.marcaLenteService.listarMarcaLente(data.atributo5)
+                : null;
+            const colorLente =
+              data.rubro === productos.lente
+                ? await this.colorLenteService.listarColorLente(data.atributo1)
+                : null;
+            const marca =
+              data.rubro === productos.montura ||
+              data.rubro === productos.gafa ||
+              data.rubro === productos.lenteDeContacto
+                ? await this.marcaService.listarMarcaProducto(data.atributo1)
+                : null;
             const dataVenta = {
-              fecha: data.fecha,
+              ...(data.fecha_finalizacion && {
+                fecha: new Date(data.fecha_finalizacion),
+              }),
+              fechaVenta: new Date(data.fecha),
+              descuentoFicha: data.descuentoFicha,
+              comisiona: data.comisiona,
+              numeroCotizacion: data.numeroCotizacion,
+              cotizacion: data.cotizacion,
+              estadoTracking: data.estadoTracking,
               sucursal: sucursal._id,
               empresa: sucursal.empresa,
-              numeroTicket: data.numeroTicket.toUpperCase().trim(),
-              aperturaTicket: data.aperturaTicket,
-              producto: data.producto,
-              importe: parseNumber(data.importe),
+              numeroTicket: data.idVenta.toUpperCase().trim(),
+              aperturaTicket: data.apertura_tkt,
+              producto: data.rubro,
+              importe: data.importe,
               cantidad: data.cantidad,
-              montoTotal: data.montoTotal,
+              montoTotal: data.monto_total,
               asesor: asesor._id,
               tipoVenta: tipoVenta._id,
-              flagVenta: data.flagVenta,
-              ...(data.producto === productos.lente && { tratamiento }),
-              ...(data.producto === productos.lente && { tipoLente }),
-              ...(data.producto === productos.lente && { material }),
-              ...(data.producto === productos.lente && { tipoColor }),
-              ...(data.producto === productos.lente && { marcaLente }),
-              ...(data.producto === productos.montura && { marca }),
-              ...(data.producto === productos.gafa && { marca }),
-              ...(data.producto === productos.lenteDeContacto && { marca }),
+              medico: medico._id,
+              flagVenta: data.flag,
+
+              ...(data.rubro === productos.lente && { tratamiento }),
+              ...(data.rubro === productos.lente && { tipoLente }),
+              ...(data.rubro === productos.lente && { material }),
+              ...(data.rubro === productos.lente && { tipoColor }),
+              ...(data.rubro === productos.lente && { marcaLente }),
+              ...(data.rubro === productos.lente && { colorLente }),
+              ...(data.rubro === productos.montura && { marca }),
+              ...(data.rubro === productos.gafa && { marca }),
+              ...(data.rubro === productos.lenteDeContacto && { marca }),
             };
-    
-          
-            await this.VentaExcelSchema.create(dataVenta);
-          
-          } catch (error) {
-            throw error;
+            await this.ventaService.crearVenta(dataVenta);
           }
         }
       }
-      
-      }
     } catch (error) {
-
-
       throw new BadRequestException();
     }
   }
 
-
-
-
-
-  private async guardarAsesorExcel(venta: VentaExcelI[]) {
+  private async guardarAsesor(venta: VentaI[]) {
     const data = venta.map((item) => ({
-      asesor: item.asesor.toUpperCase(),
-      sucursal: item.sucursal,
+      asesor: item.nombre_vendedor.toUpperCase(),
+      sucursal: item.local,
     }));
 
     const uniqueData = Array.from(
@@ -239,80 +273,37 @@ export class ReporteService {
       });
 
       if (sucursal) {
-        const asesor = await this.asesorService.buscarAsesorPorScursal(data.asesor, sucursal._id)
+        const asesor = await this.asesorService.buscarAsesorPorScursal(
+          data.asesor,
+          sucursal._id,
+        );
 
         if (!asesor) {
-          await this.asesorService.crearAsesor(data.asesor, sucursal._id)
+          await this.asesorService.crearAsesor(data.asesor, sucursal._id);
         }
       }
     }
   }
 
-
-@Cron(CronExpression.EVERY_DAY_AT_4AM)
- async  descargaAutomaticaventas(){
-    const date = new Date()
-    const[año, mes, dia]= [date.getFullYear(), (date.getMonth() + 1).toString().padStart(2, '0') , (date.getDate() - 2).toString().padStart(2, '0')  ]
-    const fecha:FechaDto={
+ /* @Cron(CronExpression.EVERY_DAY_AT_4AM)
+  async descargaAutomaticaventas() {
+    const date = new Date();
+    const [año, mes, dia] = [
+      date.getFullYear(),
+      (date.getMonth() + 1).toString().padStart(2, '0'),
+      (date.getDate() - 2).toString().padStart(2, '0'),
+    ];
+    const fecha: DescargarDto = {
       fechaInicio: `${año}-${mes}-${dia}`,
-      fechaFin:`${año}-${mes}-${dia}`
-    }
+      fechaFin: `${año}-${mes}-${dia}`,
+    };
     this.logger.debug('Iniciando la descarga');
-    const response = await this.allExcel(fecha)
-    if(response.status == HttpStatus.CREATED){
-       await this.informacionRestanteVenta(fecha) 
-      this.logger.debug('Descarga completada');
-      
-    }else{
-      this.logger.debug('Descarga fallida');
-    }
-  }
+    const response = await this.realizarDescarga(fecha);
+  }*/
 
-  async informacionRestanteVenta(fechaDto:FechaDto){
+
+ 
     
-    try {
-          const response:ventaInformacionRI[]= await this.httpAxiosVentaService.informacionRestanteVenta(fechaDto.fechaInicio, fechaDto.fechaFin )
-          for(let ve of response){ 
-       
-            
-              const venta = await this.ventaService.findOneNumeroTickectVenta(ve.id_venta)
-              if(venta){
-               
-                if (ve.sucursal === 'SUCRE - CENTRAL'){
-                  ve.sucursal = 'SUCRE  CENTRAL'
-                }
-                const sucursal = await this.sucursalService.buscarSucursal(ve.sucursal.toUpperCase())
-                   
-                 if(sucursal){
-                  const oftalmologo= await this.oftalmologoService.findOneOftalmologo(ve.oftalmologo.toUpperCase().trim())   
-                  if(!oftalmologo ){
 
-                    const of =  await this.oftalmologoService.crearOftalmologo(ve.oftalmologo.toUpperCase().trim(), ve.especialidad.toUpperCase(),sucursal._id)
-                      await this.ventaService.guardarVentaInformacionRestante(venta.numeroTicket, ve.comisiona, of._id)
-             
-                   }else{
-                     await this.ventaService.guardarVentaInformacionRestante(venta.numeroTicket, ve.comisiona, oftalmologo._id)
-                     
-                   }
-                 }
-              } else{
-                console.log(ve);
-              }
-             
-              
-          }
-          return {status:HttpStatus.OK}
-        
-        } catch (error) {
-          const e = error as AxiosError
-          if(e.response.status == HttpStatus.UNAUTHORIZED){
-             throw new UnauthorizedException()
-          }
-          throw new BadRequestException(error)
-          
-    }
-
-  }
-    
 
 }

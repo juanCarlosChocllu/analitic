@@ -25,7 +25,7 @@ import { VentaMedicosController } from './medicos/controllers/venta.medicos.cont
 import { VentaLenteController } from './lente/controllers/venta.lente.controller';
 import { VentaProductosService } from './productos/services/venta.productos.service';
 import { VentaProductosController } from './productos/controllers/venta.productos.controller';
-import { OftalmologoModule } from 'src/oftalmologo/oftalmologo.module';
+
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { VentaMestasSucursalController } from './metasSucursal/controllers/ventaMetasSucursal.controller';
 import { VentaMetasSucursalService } from './metasSucursal/services/VentaMetasSucursal.service';
@@ -53,7 +53,7 @@ import { CoreModule } from 'src/core/core.module';
     SucursalModule,
     EmpresaModule,
     AsesoresModule,
-    OftalmologoModule,
+
     MetasSucursalModule,
     forwardRef(()=> AbonoModule),
     DiasModule,
