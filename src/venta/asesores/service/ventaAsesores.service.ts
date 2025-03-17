@@ -92,32 +92,10 @@ export class VentaAsesoresService {
                         },
                       },
                       cantidad: {
-                        $sum: {
-                          $cond: {
-                            if: { $ne: ['$producto', 'DESCUENTO'] },
-                            then: '$cantidad',
-                            else: 0,
-                          },
-                        },
+                        $sum:'$cantidad',  
                       },
-                      totalImporte: {
-                        $sum: {
-                          $cond: {
-                            if: { $ne: ['$producto', 'DESCUENTO'] },
-                            then: '$importe',
-                            else: 0,
-                          },
-                        },
-                      },
-                      totalDescuentos: {
-                        $sum: {
-                          $cond: {
-                            if: { $eq: ['$producto', 'DESCUENTO'] },
-                            then: '$importe',
-                            else: 0,
-                          },
-                        },
-                      },
+                      totalImporte: {$sum:'$importe' },
+                     
                     },
                   },
                   {
@@ -125,9 +103,7 @@ export class VentaAsesoresService {
                       ventaTotal: 1,
                       cantidad: 1,
                       totalTicket: 1,
-                      importeTotalSuma: {
-                        $subtract: ['$totalImporte', '$totalDescuentos'],
-                      },
+                      importeTotalSuma:'$totalImporte',
           
                       ticketPromedio: {
                         $cond: {
@@ -291,35 +267,9 @@ export class VentaAsesoresService {
                                 },
                               },
                             },
-                            totalImporte: {
-                              $sum: {
-                                $cond: {
-                                  if: { $ne: ['$producto', 'DESCUENTO'] },
-                                  then: '$importe',
-                                  else: 0,
-                                },
-                              },
-                            },
-                            totalDescuentos: {
-                              $sum: {
-                                $cond: {
-                                  if: { $eq: ['$producto', 'DESCUENTO'] },
-                                  then: '$importe',
-                                  else: 0,
-                                },
-                              },
-                            },
-                
-                            cantidad: {
-                              $sum: {
-                                $cond: {
-                                  if: { $ne: ['$producto', 'DESCUENTO'] },
-                                  then: '$cantidad',
-                                  else: 0,
-                                },
-                              },
-                            },
-                          },
+                            totalImporte: {$sum:'$importe'}, 
+                            cantidad: {  $sum:  '$cantidad'},
+                          }
                         },
                         {
                           $project: {
@@ -329,9 +279,7 @@ export class VentaAsesoresService {
                             traficoCliente: 1,
                             totalImporte:1,
                             cantidad: 1,
-                            importeTotalSuma: {
-                              $subtract: ['$totalImporte', '$totalDescuentos'],
-                            },
+                            
                             ticketPromedio: {
                               $cond: {
                                 if: { $ne: ['$totalTicket', 0] },
@@ -426,30 +374,17 @@ export class VentaAsesoresService {
                       $match: {
                         sucursal: new Types.ObjectId(id),
                         ...filtrador,
-                        producto: { $ne: 'DESCUENTO' },
+                    
                       },
                     },
                     {
                       $group: {
                         _id: '$producto',
                         cantidad: {
-                          $sum: {
-                            $cond: {
-                              if: { $ne: ['$producto', 'DESCUENTO'] },
-                              then: '$cantidad',
-                              else: 0,
-                            },
-                          },
+                          $sum:  '$cantidad'
                         },
                         totalImporte: {
-                          $sum: {
-                            $cond: {
-                              if: { $ne: ['$producto', 'DESCUENTO'] },
-                              then: '$importe',
-                              else: 0,
-                            },
-                          },
-                        },
+                          $sum: '$importe'},
                       },
                     },
                     {
@@ -494,22 +429,11 @@ export class VentaAsesoresService {
                                 }
                             },
                             cantidad :{
-                              $sum:{
-                                $cond:{
-                                  if :{ $ne :['$producto', 'DESCUENTO'] },
-                                  then:'$cantidad',
-                                  else:0
-                                }
-                              }
+                              $sum:'$cantidad'
+                           
                             },
                             importe:{
-                              $sum:{
-                                $cond:{
-                                  if :{ $ne :['$producto', 'DESCUENTO'] },
-                                  then:'$importe',
-                                  else:0
-                                }
-                              }
+                              $sum:'$importe'
                             },
                             ventaTotal:{
                               $sum:{
@@ -521,15 +445,7 @@ export class VentaAsesoresService {
                               },
                             },
               
-                            totalDescuentos:{
-                              $sum:{
-                                $cond:{
-                                  if :{ $eq :['$producto', 'DESCUENTO'] },
-                                  then:'$importe',
-                                  else:0
-                                }
-                              }
-                            }
+                           
               
               
                         },
@@ -543,12 +459,7 @@ export class VentaAsesoresService {
                           tickets:1,
                           ventaTotal:1,
                           cantidad:1,
-                          totalImporte:{
-                            $subtract: [
-                              "$importe",
-                              '$totalDescuentos'
-                          ]
-                          },
+                          totalImporte:'$importe',
                           ticketPromedio: {
                             $cond: {
                               if: { $ne: ['$tickets', 0] },

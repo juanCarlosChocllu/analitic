@@ -76,15 +76,7 @@ export class VentaMetasSucursalService {
                   },
                 },
               },
-              importe: {
-                $sum: {
-                  $cond: {
-                    if: { $ne: ['$producto', 'DESCUENTO'] },
-                    then: '$importe',
-                    else: 0,
-                  },
-                },
-              },
+              importe: {$sum:'$importe'},
             },
           },
           {

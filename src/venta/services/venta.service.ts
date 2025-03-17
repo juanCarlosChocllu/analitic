@@ -76,8 +76,7 @@ export class VentaService {
     const venta = await this.venta.aggregate([
       {
         $match: {
-          ...filtrador,
-          producto: { $ne: 'DESCUENTO' },
+          ...filtrador
         },
       },
       {
@@ -155,7 +154,7 @@ export class VentaService {
         {
           $match: {
             ...filtrador,
-            producto: { $ne: 'DESCUENTO' },
+         
           },
         },
         {
@@ -172,24 +171,9 @@ export class VentaService {
         {
           $group: {
             _id: '$producto',
-            cantidad: {
-              $sum: {
-                $cond: {
-                  if: { $ne: ['$producto', 'DESCUENTO'] },
-                  then: '$cantidad',
-                  else: 0,
-                },
-              },
-            },
+            cantidad: { $sum:  '$cantidad'},
             montoTotal: {
-              $sum: {
-                $cond: {
-                  if: { $ne: ['$producto', 'DESCUENTO'] },
-                  then: '$importe',
-                  else: 0,
-                },
-              },
-            },
+              $sum: '$importe' },
           },
         },
         {
@@ -225,9 +209,7 @@ export class VentaService {
     return resultado;
   }
 
-  private calcularDatosSucursal(ventaPorSucursal: any[], ventaTodasDto: VentaTodasDto) {
-    console.log('suc',ventaPorSucursal);
-    
+  private calcularDatosSucursal(ventaPorSucursal: any[], ventaTodasDto: VentaTodasDto) {  
     const dias = diasHAbiles(ventaTodasDto.fechaInicio, ventaTodasDto.fechaFin);
 
     const totalVenta: number[] = [];
