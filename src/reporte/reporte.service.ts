@@ -285,21 +285,27 @@ export class ReporteService {
     }
   }
 
- /* @Cron(CronExpression.EVERY_DAY_AT_4AM)
+  @Cron(CronExpression.EVERY_DAY_AT_4AM)
   async descargaAutomaticaventas() {
-    const date = new Date();
+    try {
+      const date = new Date();
     const [año, mes, dia] = [
       date.getFullYear(),
       (date.getMonth() + 1).toString().padStart(2, '0'),
-      (date.getDate() - 2).toString().padStart(2, '0'),
+      (date.getDate() - 1).toString().padStart(2, '0'),
     ];
     const fecha: DescargarDto = {
       fechaInicio: `${año}-${mes}-${dia}`,
       fechaFin: `${año}-${mes}-${dia}`,
-    };
+    };    
     this.logger.debug('Iniciando la descarga');
     const response = await this.realizarDescarga(fecha);
-  }*/
+    console.log(response);
+    
+    } catch (error) {
+        
+    }
+  }
 
 
  
