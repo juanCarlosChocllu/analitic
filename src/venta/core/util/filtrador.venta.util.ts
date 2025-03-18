@@ -7,8 +7,8 @@ import { VentaDto } from "src/venta/core/dto/venta.dto";
 export function filtradorVenta(kpiDto:VentaDto | VentaTodasDto){
     let filtrador:FiltroVentaI={
         fecha: {
-          $gte: new Date(kpiDto.fechaInicio),
-          $lte: new Date(kpiDto.fechaFin),
+          $gte: new Date(new Date(kpiDto.fechaInicio).setUTCHours(0,0,0,0)),
+          $lte: new Date(new Date(kpiDto.fechaFin).setUTCHours(23,59,59,999)),
           
         },
       

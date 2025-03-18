@@ -61,12 +61,13 @@ export class VentaService {
 
     const filtrador: FiltroVentaI = {
       fecha: {
-        $gte: new Date(ventaTodasDto.fechaInicio),
-        $lte: new Date(ventaTodasDto.fechaFin),
+        $gte: new Date(new Date(ventaTodasDto.fechaInicio).setUTCHours(0,0,0,0)),
+        $lte: new Date(new Date(ventaTodasDto.fechaFin).setUTCHours(23,59,59,999)),
       },
       empresa:{$in: ventaTodasDto.empresa.map((item)=> new Types.ObjectId(item))},
     };
 
+    
     ventaTodasDto.tipoVenta.length > 0
       ? (filtrador.tipoVenta = {
           $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
@@ -114,7 +115,8 @@ export class VentaService {
         },
       },
     ]);
-
+    console.log(venta);
+    
     return venta;
   }
 
@@ -123,8 +125,8 @@ export class VentaService {
     const ventaSucursal: any[] = [];
     const filtrador: FiltroVentaI = {
       fecha: {
-        $gte: new Date(ventaTodasDto.fechaInicio),
-        $lte: new Date(ventaTodasDto.fechaFin),
+        $gte: new Date(new Date(ventaTodasDto.fechaInicio).setUTCHours(0,0,0,0)),
+        $lte: new Date(new Date(ventaTodasDto.fechaFin).setUTCHours(23,59,59,999)),
       },
     };
     ventaTodasDto.tipoVenta.length > 0

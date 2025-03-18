@@ -5,8 +5,8 @@ import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
 export function filtradorDeGestion( ventaDto: VentaDto){
     const filtrador: FiltroVentaI={
         fecha:{
-          $gte: new Date(ventaDto.fechaInicio),
-          $lte: new Date(ventaDto.fechaFin),
+          $gte: new Date(new Date(ventaDto.fechaInicio).setUTCHours(0,0,0,0)),
+        $lte: new Date(new Date(ventaDto.fechaFin).setUTCHours(23,59,59,999)),
         }
       }
       if(ventaDto.comisiona != null){

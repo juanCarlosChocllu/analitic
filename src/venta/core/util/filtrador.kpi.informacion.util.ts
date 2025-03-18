@@ -5,8 +5,8 @@ import { InformacionVentaDto } from "../dto/informacion.venta.dto"
 export function filtradorKpiInformacion(sucursal:string,informacionVentaDto :InformacionVentaDto):FiltroVentaI{
     const filtrador:FiltroVentaI ={
         fecha:{
-          $gte:new Date(informacionVentaDto.fechaInicio),
-          $lte:new Date(informacionVentaDto.fechaFin)
+          $gte: new Date(new Date(informacionVentaDto.fechaInicio).setUTCHours(0,0,0,0)),
+          $lte: new Date(new Date(informacionVentaDto.fechaFin).setUTCHours(23,59,59,999)),
         },
         sucursal:new Types.ObjectId(sucursal)
       }
