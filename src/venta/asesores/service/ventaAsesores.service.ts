@@ -175,8 +175,9 @@ export class VentaAsesoresService {
                   let sucursales:SucursalI[]= await this.coreService.filtroParaTodasEmpresas(VentaTodasDto)
                   console.log(sucursales);
                   
-                  const dias: number = diasHAbiles(VentaTodasDto.fechaInicio, VentaTodasDto.fechaFin);
-              
+                  let dias: number = diasHAbiles(VentaTodasDto.fechaInicio, VentaTodasDto.fechaFin);
+                  dias <= 0 ? dias= 1 :dias 
+                  
                   const data = {
                     sucursales: 0,
                     totalVentas: 0,
