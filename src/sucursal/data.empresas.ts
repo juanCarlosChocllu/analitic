@@ -25,7 +25,8 @@ export function dataEmpresa() {
         'ECONOPTICA MONTEAGUDO',
         'ECONOPTICA MEDICINA',
         'ECONOPTICA  CAMARGO CINTI',
-        'ECONOPTICA TARIJA'
+        'ECONOPTICA TARIJA',
+        'ECONOPTICA SANTA CRUZ INDANA'
       ],
       'TU OPTICA': ['TU OPTICA', 'TU OPTICA 2'],
 
