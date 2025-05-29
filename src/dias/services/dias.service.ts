@@ -31,7 +31,7 @@ export class DiasService {
         sucursal:data.sucursal,
         dia:data.dia,
         nombreDia:new Types.ObjectId(nombreDia._id),
-       estato:data.estado
+        estado:data.estado
       
       })
 
