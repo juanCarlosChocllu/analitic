@@ -42,6 +42,8 @@ export class MetasSucursalService {
  
   
     async findAll(buscadorMetasDto: BuscadorMetasDto) {
+
+      
     const [fechaInicio, fechaFin] = this.coreService.formateoFechasUTC(
       buscadorMetasDto.fechaInicio,
       buscadorMetasDto.fechaFin,
@@ -52,13 +54,15 @@ export class MetasSucursalService {
       buscadorMetasDto.fechaMetaFin,
     );
 
-
+      console.log(fechaInicio, fechaFin);
     
     const countDocuments = await this.metasSucursal.countDocuments({
       flag: Flag.nuevo,
       ...(buscadorMetasDto.sucursal
         ? { sucursal: new Types.ObjectId(buscadorMetasDto.sucursal) }
         : {}),
+
+
       ...(buscadorMetasDto.fechaInicio && buscadorMetasDto.fechaFin
         ? {
             fecha: {
@@ -72,6 +76,9 @@ export class MetasSucursalService {
         ? { fechaInicio: fechaMetaInicio, fechaFin: fechaMetaFin }
         : {}),
     });
+
+ 
+    
     const paginas = Math.ceil(countDocuments / Number(buscadorMetasDto.limite));
 
     const metas = await this.metasSucursal
@@ -82,6 +89,7 @@ export class MetasSucursalService {
             ...(buscadorMetasDto.sucursal
               ? { sucursal: new Types.ObjectId(buscadorMetasDto.sucursal) }
               : {}),
+
             ...(buscadorMetasDto.fechaInicio && buscadorMetasDto.fechaFin
               ? {
                   fecha: {
@@ -90,6 +98,8 @@ export class MetasSucursalService {
                   },
                 }
               : {}),
+
+
             ...(buscadorMetasDto.fechaMetaInicio &&
             buscadorMetasDto.fechaMetaFin
               ? { fechaInicio:  {$gte:fechaMetaInicio}, fechaFin:{$lte: fechaMetaFin }}
@@ -141,7 +151,8 @@ export class MetasSucursalService {
       .limit(Number(buscadorMetasDto.limite))
       .sort({ fecha: -1 });
 
-
+      console.log(metas);
+      
     return { paginas: paginas == 0 ? 1 : paginas, data: metas };
   }
 
