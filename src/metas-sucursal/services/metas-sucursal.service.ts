@@ -118,6 +118,9 @@ export class MetasSucursalService {
           $unwind: { path: '$sucursal', preserveNullAndEmptyArrays: false },
         },
         {
+          $sort:{fecha:-1}
+        },
+        {
           $project: {
             _id: 1,
             monto: 1,
@@ -149,7 +152,7 @@ export class MetasSucursalService {
         (Number(buscadorMetasDto.pagina) - 1) * Number(buscadorMetasDto.limite),
       )
       .limit(Number(buscadorMetasDto.limite))
-      .sort({ fecha: -1 });
+      
 
       console.log(metas);
       
