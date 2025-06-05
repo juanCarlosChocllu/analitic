@@ -29,7 +29,7 @@ export class MetasSucursal {
          @Prop({type:String,default:Flag.nuevo})
          flag:Flag.nuevo
          
-         @Prop({default:Date.now()})
+         @Prop({default:()=> Date.now()})
          fecha:Date
      }
 
