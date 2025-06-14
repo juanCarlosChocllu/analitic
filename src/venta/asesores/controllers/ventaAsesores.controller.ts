@@ -11,13 +11,13 @@ import { Types } from "mongoose";
 export class VentaAsesoresController {
     constructor ( private readonly ventaAsesoresService:VentaAsesoresService){}
           @Post('excel/indicadores/asesor')
-            async indicadoresPorAsesor(@Body() ventaDto: VentaDto) {
+            async indicadoresPorAsesor(@Body() ventaTodasDto: VentaTodasDto) {
                 
-              return await this.ventaAsesoresService.indicadoresPorAsesor(ventaDto);
+              return await this.ventaAsesoresService.indicadoresPorAsesor(ventaTodasDto);
             }
           
             @Post('excel/indicadores/sucursal')
-            async indicadoresPorSucursal(@Body() ventaTodasDto: VentaTodasDto) {   
+            async indicadoresPorSucursal(@Body() ventaTodasDto: VentaTodasDto) { 
               return await this.ventaAsesoresService.indicadoresPorSucursal(ventaTodasDto);
             }
         

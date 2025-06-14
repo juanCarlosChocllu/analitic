@@ -1,11 +1,11 @@
-import { IsString, MaxLength, MinLength } from "class-validator"
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class AutenticacionDto {
-    @IsString()
- 
-    username:string
+  @IsString()
+  @IsNotEmpty()
+  username: string;
 
-    @IsString()
-  
-    password:string
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }

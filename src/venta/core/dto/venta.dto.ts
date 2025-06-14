@@ -3,6 +3,7 @@ import {
   IsDateString,
   IsEnum,
   IsMongoId,
+  IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -24,6 +25,11 @@ export class VentaDto {
   @IsMongoId({each:true})
   @IsOptional()
   tipoVenta: Types.ObjectId[];
+
+   
+       @IsEnum(EstadoEnum)
+       @IsNotEmpty()
+       flagVenta:string
 
   @IsEnum(EstadoEnum)
   @IsOptional()

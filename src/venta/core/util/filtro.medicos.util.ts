@@ -1,23 +1,38 @@
-import { Types } from "mongoose"
+import { Types } from 'mongoose';
 
-import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
-import { VentaMedicosDto } from "src/venta/medicos/dto/venta.medicos.dto"
+import { FiltroVentaI } from '../interfaces/filtro.venta.interface';
+import { VentaMedicosDto } from 'src/venta/medicos/dto/venta.medicos.dto';
+import { EstadoEnum } from '../enums/estado.enum';
 
-export function filtradorMedicos(kpiDto:VentaMedicosDto){
-    let filtrador:FiltroVentaI={
-        fecha: {
-          $gte: new Date(new Date(kpiDto.fechaInicio).setUTCHours(0,0,0,0)),
-          $lte: new Date(new Date(kpiDto.fechaFin).setUTCHours(23,59,59,999)),
-          
-        },
-      
-      }
-      if(kpiDto.comisiona != null){
-        filtrador.comisiona = kpiDto.comisiona
-      }
-      if(kpiDto.especialidad != null){
-        filtrador.especialidad = kpiDto.especialidad
-      }
-      kpiDto.tipoVenta.length > 0 ? filtrador.tipoVenta = {$in: kpiDto.tipoVenta.map((id)=>new Types.ObjectId( id))} : filtrador
-      return filtrador
+export function filtradorMedicos(filtro: VentaMedicosDto) {
+  let filtrador: FiltroVentaI = {};
+
+  if (filtro.flagVenta === EstadoEnum.finalizadas) {
+    filtrador.flagVenta = { $eq: EstadoEnum.finalizadas };
+    filtrador.fecha = {
+      $gte: new Date(new Date(filtro.fechaInicio).setUTCHours(0, 0, 0, 0)),
+      $lte: new Date(new Date(filtro.fechaFin).setUTCHours(23, 59, 59, 999)),
+    };
+  }
+
+  if (filtro.flagVenta === EstadoEnum.realizadas) {
+    filtrador.flagVenta = { $ne: EstadoEnum.finalizadas };
+    filtrador.fechaVenta = {
+      $gte: new Date(new Date(filtro.fechaInicio).setUTCHours(0, 0, 0, 0)),
+      $lte: new Date(new Date(filtro.fechaFin).setUTCHours(23, 59, 59, 999)),
+    };
+  }
+
+  if (filtro.comisiona != null) {
+    filtrador.comisiona = filtro.comisiona;
+  }
+  if (filtro.especialidad != null) {
+    filtrador.especialidad = filtro.especialidad;
+  }
+  filtro.tipoVenta.length > 0
+    ? (filtrador.tipoVenta = {
+        $in: filtro.tipoVenta.map((id) => new Types.ObjectId(id)),
+      })
+    : filtrador;
+  return filtrador;
 }

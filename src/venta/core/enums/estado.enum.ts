@@ -1,5 +1,5 @@
 export enum EstadoEnum {
   realizadas = 'REALIZADAS',
-  finalizado = 'FINALIZADO',
+  finalizadas = 'FINALIZADO',
   abonadas = 'ABONADAS',
 }

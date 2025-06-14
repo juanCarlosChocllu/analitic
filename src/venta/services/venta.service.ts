@@ -1,4 +1,10 @@
-import { BadRequestException, forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Venta } from '../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
@@ -23,6 +29,9 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { FinalizarVentaDto } from '../core/dto/FinalizarVenta.dto';
 import { VentaTodasDto } from '../core/dto/venta.todas.dto';
 import { Type } from 'class-transformer';
+import { EstadoEnum } from '../core/enums/estado.enum';
+import { estadoLogEnum } from 'src/log/enum/estadoLog.enum';
+import { flagVenta } from '../core/enums/flgaVenta.enum';
 
 @Injectable()
 export class VentaService {
@@ -43,7 +52,7 @@ export class VentaService {
     const cantidad = venta.reduce((total, ve) => total + ve.cantidad, 0);
     const ticketPromedio = this.ticketPromedio(total, cantidad);
     const resultado = {
-      cantidadSucursal:ventaSucursal.cantidadSucursal,
+      cantidadSucursal: ventaSucursal.cantidadSucursal,
       fechaInicio: ventaTodasDto.fechaInicio,
       fechaFin: ventaTodasDto.fechaFin,
       total,
@@ -53,21 +62,39 @@ export class VentaService {
       ventaSucursal,
     };
 
-
     return resultado;
   }
 
   private async ventaEmpresa(ventaTodasDto: VentaTodasDto) {
-
     const filtrador: FiltroVentaI = {
-      fecha: {
-        $gte: new Date(new Date(ventaTodasDto.fechaInicio).setUTCHours(0,0,0,0)),
-        $lte: new Date(new Date(ventaTodasDto.fechaFin).setUTCHours(23,59,59,999)),
+      empresa: {
+        $in: ventaTodasDto.empresa.map((item) => new Types.ObjectId(item)),
       },
-      empresa:{$in: ventaTodasDto.empresa.map((item)=> new Types.ObjectId(item))},
     };
 
-    
+    if (ventaTodasDto.flagVenta === EstadoEnum.finalizadas) {
+      filtrador.fecha = {
+        $gte: new Date(
+          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+        ),
+        $lte: new Date(
+          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
+        ),
+      };
+    }
+
+    if (ventaTodasDto.flagVenta === EstadoEnum.realizadas) {
+      filtrador.fechaVenta = {
+        $gte: new Date(
+          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+        ),
+        $lte: new Date(
+          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
+        ),
+      };
+    }
+
+
     ventaTodasDto.tipoVenta.length > 0
       ? (filtrador.tipoVenta = {
           $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
@@ -77,7 +104,7 @@ export class VentaService {
     const venta = await this.venta.aggregate([
       {
         $match: {
-          ...filtrador
+          ...filtrador,
         },
       },
       {
@@ -115,48 +142,62 @@ export class VentaService {
         },
       },
     ]);
-    console.log(venta);
-    
+
     return venta;
   }
 
   private async ventaSucursal(ventaTodasDto: VentaTodasDto) {
-    const sucursales:Types.ObjectId[]=[]
+    const sucursales: Types.ObjectId[] = [];
     const ventaSucursal: any[] = [];
-    const filtrador: FiltroVentaI = {
-      fecha: {
-        $gte: new Date(new Date(ventaTodasDto.fechaInicio).setUTCHours(0,0,0,0)),
-        $lte: new Date(new Date(ventaTodasDto.fechaFin).setUTCHours(23,59,59,999)),
-      },
-    };
+    const filtrador: FiltroVentaI = {};
+
+     if (ventaTodasDto.flagVenta === EstadoEnum.finalizadas) {
+      filtrador.flagVenta = {$eq:EstadoEnum.finalizadas}
+      filtrador.fecha = {
+        $gte: new Date(
+          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+        ),
+        $lte: new Date(
+          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
+        ),
+      };
+    }
+
+    if (ventaTodasDto.flagVenta === EstadoEnum.realizadas) {
+          filtrador.flagVenta = {$ne:EstadoEnum.finalizadas}
+      filtrador.fechaVenta = {
+        $gte: new Date(
+          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+        ),
+        $lte: new Date(
+          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
+        ),
+      };
+    }
     ventaTodasDto.tipoVenta.length > 0
       ? (filtrador.tipoVenta = {
           $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
         })
       : filtrador;
 
+    if (ventaTodasDto.sucursal.length == 0) {
+      for (const e of ventaTodasDto.empresa) {
+        const sucursal = await this.sucursalService.sucursalListaEmpresas(
+          new Types.ObjectId(e),
+        );
 
-      
-    if(ventaTodasDto.sucursal.length == 0 ) { 
-          for (const e of ventaTodasDto.empresa) {
-              const sucursal = await this.sucursalService.sucursalListaEmpresas(new Types.ObjectId(e))
-          
-              
-              sucursales.push(...sucursal.map((item)=> item._id))
-          }
-
-    }else {
-      sucursales.push(...ventaTodasDto.sucursal)
+        sucursales.push(...sucursal.map((item) => item._id));
+      }
+    } else {
+      sucursales.push(...ventaTodasDto.sucursal);
     }
 
-    
     for (let sucursal of sucursales) {
       filtrador.sucursal = new Types.ObjectId(sucursal);
       const venta = await this.venta.aggregate([
         {
           $match: {
             ...filtrador,
-         
           },
         },
         {
@@ -173,9 +214,10 @@ export class VentaService {
         {
           $group: {
             _id: '$producto',
-            cantidad: { $sum:  '$cantidad'},
+            cantidad: { $sum: '$cantidad' },
             montoTotal: {
-              $sum: '$importe' },
+              $sum: '$importe',
+            },
           },
         },
         {
@@ -186,9 +228,10 @@ export class VentaService {
             cantidad: 1,
             montoTotal: 1,
             totalImporte: 1,
+     
           },
         },
-      ]);
+      ]);   
       const resultado = {
         sucursal: await this.extraerSucursal(sucursal),
         data: venta.map((elemeto) => {
@@ -206,17 +249,19 @@ export class VentaService {
     const resultado = {
       data,
       ventaSucursal,
-      cantidadSucursal:sucursales.length
+      cantidadSucursal: sucursales.length,
     };
     return resultado;
   }
 
-  private calcularDatosSucursal(ventaPorSucursal: any[], ventaTodasDto: VentaTodasDto) {  
+  private calcularDatosSucursal(
+    ventaPorSucursal: any[],
+    ventaTodasDto: VentaTodasDto,
+  ) {
     const dias = diasHAbiles(ventaTodasDto.fechaInicio, ventaTodasDto.fechaFin);
 
     const totalVenta: number[] = [];
     const cantidadTotal: number[] = [];
-
 
     for (let venta of ventaPorSucursal) {
       if (
@@ -269,7 +314,6 @@ export class VentaService {
       0,
     );
 
-    
     return total;
   }
 
@@ -289,18 +333,25 @@ export class VentaService {
     await this.venta.create(data);
   }
 
-  async finalizarVentas(finalizarVentaDto:FinalizarVentaDto) {
+  async finalizarVentas(finalizarVentaDto: FinalizarVentaDto) {
     try {
-      const venta = await this.venta.findOne({numeroTicket:finalizarVentaDto.idVenta.toUpperCase().trim()})
-      if(venta) {
-         await this.venta.updateMany({numeroTicket:finalizarVentaDto.idVenta.toUpperCase().trim()}, { fecha:new Date(finalizarVentaDto.fecha), estadoTracking:finalizarVentaDto.tracking,  flagVenta:finalizarVentaDto.flag})
-         return {status:HttpStatus.OK}
+      const venta = await this.venta.findOne({
+        numeroTicket: finalizarVentaDto.idVenta.toUpperCase().trim(),
+      });
+      if (venta) {
+        await this.venta.updateMany(
+          { numeroTicket: finalizarVentaDto.idVenta.toUpperCase().trim() },
+          {
+            fecha: new Date(finalizarVentaDto.fecha),
+            estadoTracking: finalizarVentaDto.tracking,
+            flagVenta: finalizarVentaDto.flag,
+          },
+        );
+        return { status: HttpStatus.OK };
       }
-      return {status:HttpStatus.NOT_FOUND}
+      return { status: HttpStatus.NOT_FOUND };
     } catch (error) {
-      throw new BadRequestException()
+      throw new BadRequestException();
     }
-
   }
-
 }
