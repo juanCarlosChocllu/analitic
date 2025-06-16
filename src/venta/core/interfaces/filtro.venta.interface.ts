@@ -1,7 +1,11 @@
 import { Types } from 'mongoose';
 
 export interface FiltroVentaI {
-  fecha: {
+  fecha?: {
+    $gte: Date;
+    $lte: Date;
+  };
+  fechaVenta?: {
     $gte: Date;
     $lte: Date;
   };
@@ -9,9 +13,10 @@ export interface FiltroVentaI {
   sucursal?: Types.ObjectId;
   asesor?: Types.ObjectId;
   tipoVenta?: Types.ObjectId | {$in :Types.ObjectId[] } ;
-  flagVenta?: string | { $ne: string };
+  flagVenta?: string | { $ne: string } | {$eq :string };
   comisiona?:boolean | null
   especialidad?:string | null
+ 
 }
 
 
