@@ -43,10 +43,10 @@ export class VentaService {
     private readonly sucursalService: SucursalService,
   ) {}
 
-  async ventas(ventaTodasDto: VentaTodasDto) {
+  async ventas(ventaTodasDto: VentaTodasDto, estadoVenta: string) {
     const [venta, ventaSucursal] = await Promise.all([
-      this.ventaEmpresa(ventaTodasDto),
-      this.ventaSucursal(ventaTodasDto),
+      this.ventaEmpresa(ventaTodasDto, estadoVenta),
+      this.ventaSucursal(ventaTodasDto, estadoVenta),
     ]);
     const total = venta.reduce((total, ve) => total + ve.importe, 0);
     const cantidad = venta.reduce((total, ve) => total + ve.cantidad, 0);
@@ -65,41 +65,14 @@ export class VentaService {
     return resultado;
   }
 
-  private async ventaEmpresa(ventaTodasDto: VentaTodasDto) {
-    const filtrador: FiltroVentaI = {
-      empresa: {
-        $in: ventaTodasDto.empresa.map((item) => new Types.ObjectId(item)),
-      },
-    };
-
-    if (ventaTodasDto.flagVenta === EstadoEnum.finalizadas) {
-      filtrador.fecha = {
-        $gte: new Date(
-          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
-        ),
-        $lte: new Date(
-          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
-        ),
-      };
-    }
-
-    if (ventaTodasDto.flagVenta === EstadoEnum.realizadas) {
-      filtrador.fechaVenta = {
-        $gte: new Date(
-          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
-        ),
-        $lte: new Date(
-          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
-        ),
-      };
-    }
-
-
-    ventaTodasDto.tipoVenta.length > 0
-      ? (filtrador.tipoVenta = {
-          $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
-        })
-      : filtrador;
+  private async ventaEmpresa(
+    ventaTodasDto: VentaTodasDto,
+    estadoVenta: string,
+  ) {
+    const filtrador: FiltroVentaI = this.filterPorEmpresa(
+      ventaTodasDto,
+      estadoVenta,
+    );
 
     const venta = await this.venta.aggregate([
       {
@@ -146,39 +119,16 @@ export class VentaService {
     return venta;
   }
 
-  private async ventaSucursal(ventaTodasDto: VentaTodasDto) {
+  private async ventaSucursal(
+    ventaTodasDto: VentaTodasDto,
+    estadoVenta: string,
+  ) {
     const sucursales: Types.ObjectId[] = [];
     const ventaSucursal: any[] = [];
-    const filtrador: FiltroVentaI = {};
-
-     if (ventaTodasDto.flagVenta === EstadoEnum.finalizadas) {
-      filtrador.flagVenta = {$eq:EstadoEnum.finalizadas}
-      filtrador.fecha = {
-        $gte: new Date(
-          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
-        ),
-        $lte: new Date(
-          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
-        ),
-      };
-    }
-
-    if (ventaTodasDto.flagVenta === EstadoEnum.realizadas) {
-          filtrador.flagVenta = {$ne:EstadoEnum.finalizadas}
-      filtrador.fechaVenta = {
-        $gte: new Date(
-          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
-        ),
-        $lte: new Date(
-          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
-        ),
-      };
-    }
-    ventaTodasDto.tipoVenta.length > 0
-      ? (filtrador.tipoVenta = {
-          $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
-        })
-      : filtrador;
+    const filtrador: FiltroVentaI = this.filterPorSucursal(
+      ventaTodasDto,
+      estadoVenta,
+    );
 
     if (ventaTodasDto.sucursal.length == 0) {
       for (const e of ventaTodasDto.empresa) {
@@ -228,10 +178,9 @@ export class VentaService {
             cantidad: 1,
             montoTotal: 1,
             totalImporte: 1,
-     
           },
         },
-      ]);   
+      ]);
       const resultado = {
         sucursal: await this.extraerSucursal(sucursal),
         data: venta.map((elemeto) => {
@@ -353,5 +302,86 @@ export class VentaService {
     } catch (error) {
       throw new BadRequestException();
     }
+  }
+
+  private filterPorEmpresa(ventaTodasDto: VentaTodasDto, estado: string) {
+    const filtrador: FiltroVentaI = {
+      empresa: {
+        $in: ventaTodasDto.empresa.map((item) => new Types.ObjectId(item)),
+      },
+    };
+
+    if (ventaTodasDto.flagVenta === EstadoEnum.finalizadas) {
+      filtrador.flagVenta = { $eq: EstadoEnum.finalizadas };
+      filtrador.fecha = {
+        $gte: new Date(
+          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+        ),
+        $lte: new Date(
+          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
+        ),
+      };
+    }
+
+    if (ventaTodasDto.flagVenta === EstadoEnum.realizadas) {
+      if (estado == 'ACTUAL') {
+        filtrador.flagVenta = { $ne: EstadoEnum.finalizadas };
+      }
+
+      filtrador.fechaVenta = {
+        $gte: new Date(
+          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+        ),
+        $lte: new Date(
+          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
+        ),
+      };
+    }
+
+    ventaTodasDto.tipoVenta.length > 0
+      ? (filtrador.tipoVenta = {
+          $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
+        })
+      : filtrador;
+              console.log(estado, filtrador);
+    return filtrador;
+  }
+  private filterPorSucursal(ventaTodasDto: VentaTodasDto, estado: string) {
+    const filtrador: FiltroVentaI = {};
+
+    if (ventaTodasDto.flagVenta === EstadoEnum.finalizadas) {
+      filtrador.flagVenta = { $eq: EstadoEnum.finalizadas };
+      filtrador.fecha = {
+        $gte: new Date(
+          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+        ),
+        $lte: new Date(
+          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
+        ),
+      };
+    }
+
+    if (ventaTodasDto.flagVenta === EstadoEnum.realizadas) {
+      if (estado == 'ACTUAL') {
+        filtrador.flagVenta = { $ne: EstadoEnum.finalizadas };
+      }
+
+      filtrador.fechaVenta = {
+        $gte: new Date(
+          new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+        ),
+        $lte: new Date(
+          new Date(ventaTodasDto.fechaFin).setUTCHours(23, 59, 59, 999),
+        ),
+      };
+    }
+    ventaTodasDto.tipoVenta.length > 0
+      ? (filtrador.tipoVenta = {
+          $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
+        })
+      : filtrador;
+
+      
+    return filtrador;
   }
 }
