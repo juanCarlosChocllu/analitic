@@ -27,7 +27,8 @@ export function dataEmpresa() {
         'ECONOPTICA  CAMARGO CINTI',
         'ECONOPTICA TARIJA',
         'ECONOPTICA SANTA CRUZ INDANA',
-        'ECONOPTICA 2 SC KOLPING'
+        'ECONOPTICA 2 SC KOLPING',
+        'ECONOPTICA EL ALTO'
       ],
       'TU OPTICA': ['TU OPTICA', 'TU OPTICA 2'],
 
