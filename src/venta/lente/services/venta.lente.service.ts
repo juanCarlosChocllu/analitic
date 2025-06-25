@@ -40,6 +40,8 @@ export class VentaLenteService {
     const filtrador = filtradorKpiInformacionTodasEmpresas(
       informacionEmpresasTodasVentaDto,
     );
+    console.log(filtrador);
+    
     const [antireflejo, progresivos, ocupacional] = await Promise.all([
       this.kpiAntireflejo(filtrador),
       this.kpiProgresivos(filtrador),
@@ -1395,6 +1397,8 @@ export class VentaLenteService {
     sucursal: SucursalI[],
   ) {
     const filtrador = filtradorVenta(kpiEmpresaDto);
+   
+    
     const data: any[] = [];
     for (let su of sucursal) {
       const ventaAsesor: any[] = [];

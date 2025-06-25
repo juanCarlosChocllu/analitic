@@ -28,8 +28,8 @@ export class VentaMetasSucursalService {
     private readonly coreService: CoreService,
     private readonly diasService: DiasService,
   ) {}
-  async metasDeVenta(ventaDto: VentaTodasDto, estadoVenta:string) {
-    const filtrador = filtradorVenta(ventaDto,estadoVenta);
+  async metasDeVenta(ventaDto: VentaTodasDto) {
+    const filtrador = filtradorVenta(ventaDto);
     const resultados: DataMetaI[] = [];
 
     let sucursales: SucursalI[] =

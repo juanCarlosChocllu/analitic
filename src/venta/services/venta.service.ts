@@ -1,26 +1,22 @@
 import {
   BadRequestException,
-  forwardRef,
   HttpStatus,
-  Inject,
+
   Injectable,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Venta } from '../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
-import { VentaDto } from '../core/dto/venta.dto';
 
 import { VentaExcelI } from '../core/interfaces/ventaExcel.interface';
 
 import { diasHAbiles } from '../core/util/dias.habiles.util';
 
-import { flag } from '../core/enums/flag.enum';
 
 import { FiltroVentaI } from '../core/interfaces/filtro.venta.interface';
 
 import { Sucursal } from 'src/sucursal/schema/sucursal.schema';
 
-import { AbonoService } from 'src/abono/abono.service';
 
 import { SucursalService } from 'src/sucursal/sucursal.service';
 
@@ -28,10 +24,7 @@ import { sucursalesEnum } from '../core/enums/sucursales.enum';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { FinalizarVentaDto } from '../core/dto/FinalizarVenta.dto';
 import { VentaTodasDto } from '../core/dto/venta.todas.dto';
-import { Type } from 'class-transformer';
-import { EstadoEnum } from '../core/enums/estado.enum';
-import { estadoLogEnum } from 'src/log/enum/estadoLog.enum';
-import { flagVenta } from '../core/enums/flgaVenta.enum';
+import { FlagVentaE } from '../core/enums/estado.enum';
 
 @Injectable()
 export class VentaService {
@@ -43,10 +36,10 @@ export class VentaService {
     private readonly sucursalService: SucursalService,
   ) {}
 
-  async ventas(ventaTodasDto: VentaTodasDto, estadoVenta: string) {
+  async ventas(ventaTodasDto: VentaTodasDto) {
     const [venta, ventaSucursal] = await Promise.all([
-      this.ventaEmpresa(ventaTodasDto, estadoVenta),
-      this.ventaSucursal(ventaTodasDto, estadoVenta),
+      this.ventaEmpresa(ventaTodasDto),
+      this.ventaSucursal(ventaTodasDto),
     ]);
     const total = venta.reduce((total, ve) => total + ve.importe, 0);
     const cantidad = venta.reduce((total, ve) => total + ve.cantidad, 0);
@@ -65,14 +58,8 @@ export class VentaService {
     return resultado;
   }
 
-  private async ventaEmpresa(
-    ventaTodasDto: VentaTodasDto,
-    estadoVenta: string,
-  ) {
-    const filtrador: FiltroVentaI = this.filterPorEmpresa(
-      ventaTodasDto,
-      estadoVenta,
-    );
+  private async ventaEmpresa(ventaTodasDto: VentaTodasDto) {
+    const filtrador: FiltroVentaI = this.filterPorEmpresa(ventaTodasDto);
 
     const venta = await this.venta.aggregate([
       {
@@ -119,16 +106,10 @@ export class VentaService {
     return venta;
   }
 
-  private async ventaSucursal(
-    ventaTodasDto: VentaTodasDto,
-    estadoVenta: string,
-  ) {
+  private async ventaSucursal(ventaTodasDto: VentaTodasDto) {
     const sucursales: Types.ObjectId[] = [];
     const ventaSucursal: any[] = [];
-    const filtrador: FiltroVentaI = this.filterPorSucursal(
-      ventaTodasDto,
-      estadoVenta,
-    );
+    const filtrador: FiltroVentaI = this.filterPorSucursal(ventaTodasDto);
 
     if (ventaTodasDto.sucursal.length == 0) {
       for (const e of ventaTodasDto.empresa) {
@@ -304,15 +285,15 @@ export class VentaService {
     }
   }
 
-  private filterPorEmpresa(ventaTodasDto: VentaTodasDto, estado: string) {
+  private filterPorEmpresa(ventaTodasDto: VentaTodasDto) {
     const filtrador: FiltroVentaI = {
       empresa: {
         $in: ventaTodasDto.empresa.map((item) => new Types.ObjectId(item)),
       },
     };
 
-    if (ventaTodasDto.flagVenta === EstadoEnum.finalizadas) {
-      filtrador.flagVenta = { $eq: EstadoEnum.finalizadas };
+    if (ventaTodasDto.flagVenta === FlagVentaE.finalizadas) {
+      filtrador.flagVenta = { $eq: FlagVentaE.finalizadas };
       filtrador.fecha = {
         $gte: new Date(
           new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
@@ -323,11 +304,7 @@ export class VentaService {
       };
     }
 
-    if (ventaTodasDto.flagVenta === EstadoEnum.realizadas) {
-      if (estado == 'ACTUAL') {
-        filtrador.flagVenta = { $ne: EstadoEnum.finalizadas };
-      }
-
+    if (ventaTodasDto.flagVenta === FlagVentaE.realizadas) {
       filtrador.fechaVenta = {
         $gte: new Date(
           new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
@@ -343,14 +320,14 @@ export class VentaService {
           $in: ventaTodasDto.tipoVenta.map((id) => new Types.ObjectId(id)),
         })
       : filtrador;
-              console.log(estado, filtrador);
+
     return filtrador;
   }
-  private filterPorSucursal(ventaTodasDto: VentaTodasDto, estado: string) {
+  private filterPorSucursal(ventaTodasDto: VentaTodasDto) {
     const filtrador: FiltroVentaI = {};
 
-    if (ventaTodasDto.flagVenta === EstadoEnum.finalizadas) {
-      filtrador.flagVenta = { $eq: EstadoEnum.finalizadas };
+    if (ventaTodasDto.flagVenta === FlagVentaE.finalizadas) {
+      filtrador.flagVenta = { $eq: FlagVentaE.finalizadas };
       filtrador.fecha = {
         $gte: new Date(
           new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
@@ -361,11 +338,7 @@ export class VentaService {
       };
     }
 
-    if (ventaTodasDto.flagVenta === EstadoEnum.realizadas) {
-      if (estado == 'ACTUAL') {
-        filtrador.flagVenta = { $ne: EstadoEnum.finalizadas };
-      }
-
+    if (ventaTodasDto.flagVenta === FlagVentaE.realizadas) {
       filtrador.fechaVenta = {
         $gte: new Date(
           new Date(ventaTodasDto.fechaInicio).setUTCHours(0, 0, 0, 0),
@@ -381,7 +354,6 @@ export class VentaService {
         })
       : filtrador;
 
-      
     return filtrador;
   }
 }

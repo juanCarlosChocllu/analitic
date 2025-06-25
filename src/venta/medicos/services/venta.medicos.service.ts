@@ -28,8 +28,8 @@ export class VentaMedicosService {
     private readonly sucursalService: SucursalService,
   ) {}
 
-  public async kpiMedicos(ventaMedicosDto: VentaMedicosDto, estadoVenta:string) {
-    const { especialidad, ...nuevoFiltro } = filtradorMedicos(ventaMedicosDto, estadoVenta);
+  public async kpiMedicos(ventaMedicosDto: VentaMedicosDto) {
+    const { especialidad, ...nuevoFiltro } = filtradorMedicos(ventaMedicosDto);
     const data: VentaMedicoI[] = [];
 
     try {

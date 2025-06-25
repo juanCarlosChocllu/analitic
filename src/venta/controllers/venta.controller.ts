@@ -16,12 +16,12 @@ export class VentaController {
   ) {}
   @Post('excel/actual')
   async ventaExcelActual(@Body() ventaTodasDto: VentaTodasDto) {
-    return await this.ventaService.ventas(ventaTodasDto, 'ACTUAL');
+    return await this.ventaService.ventas(ventaTodasDto);
   }
 
   @Post('excel/anterior')
   async ventaExcelAnterior(@Body() ventaTodasDto: VentaTodasDto) {    
-    return await this.ventaService.ventas(ventaTodasDto, 'ANTERIOR');
+    return await this.ventaService.ventas(ventaTodasDto);
   }
   @Public()
   @Post('finalizar')

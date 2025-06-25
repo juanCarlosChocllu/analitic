@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Types } from "mongoose"
 import { Flag } from "src/core/enums/flag"
-import { flag } from "src/venta/core/enums/flag.enum"
-
 @Schema({collection:'MetasSucursal'})
 export class MetasSucursal {
          @Prop({type:Number, default:0})

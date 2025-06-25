@@ -3,15 +3,14 @@ import { BadRequestException, forwardRef, HttpStatus, Inject, Injectable, NotFou
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
-import { constants } from 'buffer';
 import { CreateDiaDto } from '../dto/create-dia.dto';
 import { Dia } from '../schema/dia.schema';
 import { UpdateDiaDto } from '../dto/update-dia.dto';
 import { NombreDiaService } from './nombreDia.service';
-import { flag } from 'src/venta/core/enums/flag.enum';
+
 import { Flag } from 'src/core/enums/flag';
-import { from } from 'rxjs';
-import { EstadoEnum } from 'src/venta/core/enums/estado.enum';
+
+
 import { DiaEstadoE } from '../enums/diaEstado';
 
 @Injectable()

@@ -1,15 +1,28 @@
 import { Types } from "mongoose"
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
 import { InformacionVentaDto } from "../dto/informacion.venta.dto"
+import { FlagVentaE } from "../enums/estado.enum"
 
 export function filtradorKpiInformacionEmpresa(empresa:string,informacionVentaDto :InformacionVentaDto):FiltroVentaI{
     const filtrador:FiltroVentaI ={
-        fecha:{
-          $gte: new Date(new Date(informacionVentaDto.fechaInicio).setUTCHours(0,0,0,0)),
-          $lte: new Date(new Date(informacionVentaDto.fechaFin).setUTCHours(23,59,59,999)),
-        },
+       
         empresa:new Types.ObjectId(empresa)
       }
+
+      if(informacionVentaDto.flagVenta == FlagVentaE.finalizadas) {
+         filtrador.fecha={
+          $gte: new Date(new Date(informacionVentaDto.fechaInicio).setUTCHours(0,0,0,0)),
+          $lte: new Date(new Date(informacionVentaDto.fechaFin).setUTCHours(23,59,59,999)),
+        }
+      }
+
+      if(informacionVentaDto.flagVenta == FlagVentaE.realizadas) {
+         filtrador.fechaVenta={
+          $gte: new Date(new Date(informacionVentaDto.fechaInicio).setUTCHours(0,0,0,0)),
+          $lte: new Date(new Date(informacionVentaDto.fechaFin).setUTCHours(23,59,59,999)),
+        }
+      }
+
       if(informacionVentaDto.comisiona != null){
         filtrador.comisiona = informacionVentaDto.comisiona
       }

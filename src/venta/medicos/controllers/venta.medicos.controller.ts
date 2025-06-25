@@ -14,11 +14,11 @@ export class VentaMedicosController {
   
    @Post('recetas/actual/medicos')
    kpiMedicosActual(@Body () ventaMedicosDto:VentaMedicosDto){      
-        return this.ventaKpiMedicos.kpiMedicos(ventaMedicosDto, EstadoVentaE.ACTUAL)
+        return this.ventaKpiMedicos.kpiMedicos(ventaMedicosDto)
    }
 
    @Post('recetas/anterior/medicos')
    kpiMedicosAterior(@Body () ventaMedicosDto:VentaMedicosDto){
-        return this.ventaKpiMedicos.kpiMedicos(ventaMedicosDto,EstadoVentaE.ANTERIOR)
+        return this.ventaKpiMedicos.kpiMedicos(ventaMedicosDto)
    }
 }
