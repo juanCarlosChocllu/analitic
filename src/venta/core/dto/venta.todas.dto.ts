@@ -1,6 +1,6 @@
 import { IsBoolean, IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsOptional } from "class-validator";
 import { Types } from "mongoose";
-import { EstadoEnum } from "../enums/estado.enum";
+import { FlagVentaE } from "../enums/estado.enum";
 
 export class VentaTodasDto{
     @IsMongoId({each: true })
@@ -13,7 +13,7 @@ export class VentaTodasDto{
     @IsOptional()
     tipoVenta: Types.ObjectId[];
 
-    @IsEnum(EstadoEnum)
+    @IsEnum(FlagVentaE)
     @IsNotEmpty()
     flagVenta:string
 

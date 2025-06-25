@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAsesoreDto } from './dto/create-asesore.dto';
-import { UpdateAsesoreDto } from './dto/update-asesore.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Asesor } from './schemas/asesore.schema';
 import { Model, Types } from 'mongoose';
@@ -8,8 +6,6 @@ import { Model, Types } from 'mongoose';
 import { AsesorExcelI } from 'src/venta/core/interfaces/asesor.interface';
 
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
-import { InformacionVentaDto } from 'src/venta/core/dto/informacion.venta.dto';
-import { filtradorKpiInformacion } from 'src/venta/core/util/filtrador.kpi.informacion.util';
 import { AsesorEmpresaSucursalI } from './interface/asesorEmpresaSucursal';
 
 @Injectable()

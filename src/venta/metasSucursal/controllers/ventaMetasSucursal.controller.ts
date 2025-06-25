@@ -10,12 +10,12 @@ export class VentaMestasSucursalController  {
     constructor(private readonly ventaMetasSucursalService:VentaMetasSucursalService){}
     @Post('actual')
     public metasDeVentaActual(@Body() ventaTodasDto:VentaTodasDto){
-        return  this.ventaMetasSucursalService.metasDeVenta(ventaTodasDto, EstadoVentaE.ACTUAL)
+        return  this.ventaMetasSucursalService.metasDeVenta(ventaTodasDto)
     }
 
     @Post('anterior')
     public metasDeVentaAnterior(@Body() ventaTodasDto:VentaTodasDto){
-        return  this.ventaMetasSucursalService.metasDeVenta(ventaTodasDto, EstadoVentaE.ANTERIOR)
+        return  this.ventaMetasSucursalService.metasDeVenta(ventaTodasDto)
     }
 
 }

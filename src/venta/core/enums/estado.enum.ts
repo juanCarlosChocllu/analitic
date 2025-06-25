@@ -1,6 +1,6 @@
 import { Expose } from "class-transformer";
 
-export enum EstadoEnum {
+export enum FlagVentaE {
   realizadas = 'REALIZADAS',
   finalizadas = 'FINALIZADO',
   abonadas = 'ABONADAS',

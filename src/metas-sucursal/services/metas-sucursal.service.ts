@@ -8,7 +8,6 @@ import { Model, Types } from 'mongoose';
 import { Flag } from 'src/core/enums/flag';
 import { flagVenta } from 'src/venta/core/enums/flgaVenta.enum';
 import { BuscadorMetasDto } from '../dto/BuscadorMetasDto';
-import { eachDayOfInterval } from 'date-fns';
 import { MetasSucursal } from '../schema/metas-sucursal.schema';
 import { DiasMetaService } from './diaMeta.service';
 import { CoreAppService } from 'src/core/services/core.service';

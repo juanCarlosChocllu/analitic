@@ -9,8 +9,7 @@ import {
 } from 'class-validator';
 
 import { Types } from 'mongoose';
-import { EstadoEnum } from '../enums/estado.enum';
-
+import { EstadoVentaE, FlagVentaE } from '../enums/estado.enum';
 
 export class VentaDto {
   @IsMongoId()
@@ -21,27 +20,20 @@ export class VentaDto {
   @IsOptional()
   sucursal: Types.ObjectId[];
 
-  
-  @IsMongoId({each:true})
+  @IsMongoId({ each: true })
   @IsOptional()
   tipoVenta: Types.ObjectId[];
 
-   
-       @IsEnum(EstadoEnum)
-       @IsNotEmpty()
-       flagVenta:string
-
-  @IsEnum(EstadoEnum)
-  @IsOptional()
-  estado: string;
+  @IsEnum(FlagVentaE)
+  @IsNotEmpty()
+  flagVenta: string;
 
   @IsOptional()
   @IsBoolean()
-   comisiona:boolean | null
+  comisiona: boolean | null;
 
   @IsDateString()
   fechaInicio: string;
-
 
   @IsDateString()
   fechaFin: string;

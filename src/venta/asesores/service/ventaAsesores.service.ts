@@ -9,13 +9,12 @@ import { SucursalService } from 'src/sucursal/sucursal.service';
 import { InformacionVentaDto } from 'src/venta/core/dto/informacion.venta.dto';
 import { VentaDto } from 'src/venta/core/dto/venta.dto';
 import { VentaTodasDto } from 'src/venta/core/dto/venta.todas.dto';
+import { FlagVentaE } from 'src/venta/core/enums/estado.enum';
 import { sucursalesEnum } from 'src/venta/core/enums/sucursales.enum';
 import { AsesorExcelI } from 'src/venta/core/interfaces/asesor.interface';
 import { FiltroVentaI } from 'src/venta/core/interfaces/filtro.venta.interface';
 import { CoreService } from 'src/venta/core/service/core.service';
 import { diasHAbiles } from 'src/venta/core/util/dias.habiles.util';
-import { filtradorDeGestion } from 'src/venta/core/util/filtrador.gestion.util';
-import { filtradorKpiInformacion } from 'src/venta/core/util/filtrador.kpi.informacion.util';
 import { filtradorVenta } from 'src/venta/core/util/filtrador.venta.util';
 import { ticketPromedio } from 'src/venta/core/util/tickectPromedio.util';
 import { Venta } from 'src/venta/schemas/venta.schema';
@@ -166,7 +165,8 @@ export class VentaAsesoresService {
 
   public async indicadoresPorSucursal(VentaTodasDto: VentaTodasDto) {
     const filtrador = filtradorVenta(VentaTodasDto);
-
+    console.log(filtrador);
+    
     const dataSucursal: any[] = [];
     let sucursales: SucursalI[] =
       await this.coreService.filtroParaTodasEmpresas(VentaTodasDto);
@@ -354,6 +354,8 @@ export class VentaAsesoresService {
       id: sucursal._id,
       ...resultadoFinal,
     };
+    console.log(data);
+    
     return data;
   }
 
@@ -370,6 +372,10 @@ export class VentaAsesoresService {
     if (informacionVentaDto.comisiona != null) {
       filtrador.comisiona = informacionVentaDto.comisiona;
     }
+    if(informacionVentaDto.flagVenta ===FlagVentaE.finalizadas) {
+      filtrador.flagVenta = {$eq: FlagVentaE.finalizadas}
+    }
+   
     const ventaSucursal = await this.VentaExcelSchema.aggregate([
       {
         $match: {
@@ -396,6 +402,8 @@ export class VentaAsesoresService {
         },
       },
     ]);
+
+    
     return ventaSucursal;
   }
 
