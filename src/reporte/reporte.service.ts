@@ -9,7 +9,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { HttpAxiosVentaService } from 'src/providers/http.Venta.service';
+import { HttpServiceAxios } from 'src/providers/httpService';
 import { TipoLenteService } from 'src/tipo-lente/tipo-lente.service';
 import { TipoVentaService } from 'src/tipo-venta/tipo-venta.service';
 import { TratamientoService } from 'src/tratamiento/tratamiento.service';
@@ -49,7 +49,7 @@ export class ReporteService {
     @InjectModel(Venta.name, NombreBdConexion.oc)
     private readonly venta: Model<Venta>,
 
-    private readonly httpAxiosVentaService: HttpAxiosVentaService,
+    private readonly httpServiceAxios: HttpServiceAxios,
 
     private readonly tratamientoService: TratamientoService,
     private readonly tipoLenteService: TipoLenteService,
@@ -77,7 +77,7 @@ export class ReporteService {
 
   async realizarDescarga(DescargarDto: DescargarDto) {
     try {
-      const ventas = await this.httpAxiosVentaService.reporte(DescargarDto);
+      const ventas = await this.httpServiceAxios.reporte(DescargarDto);
 
       await this.guardarAsesor(ventas),
         await this.guardarAtrubutosDeVenta(ventas),

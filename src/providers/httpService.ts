@@ -13,7 +13,7 @@ import { apiMia, tokenDescargas } from 'src/core/config/variables.entorno.config
 import { VentaI } from './interface/Venta';
 
 @Injectable()
-export class HttpAxiosVentaService {
+export class HttpServiceAxios {
   constructor(
     private readonly httpService: HttpService,
     private readonly logService:LogService
