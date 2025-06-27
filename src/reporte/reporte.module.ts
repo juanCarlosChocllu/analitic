@@ -26,6 +26,7 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { ColorLenteModule } from 'src/color-lente/color-lente.module';
 import { MedicoModule } from 'src/medico/medico.module';
 import { LogModule } from 'src/log/log.module';
+import { RecetaModule } from 'src/receta/receta.module';
 
 @Module({
   imports:[
@@ -53,6 +54,7 @@ import { LogModule } from 'src/log/log.module';
     AsesoresModule,
     ColorLenteModule,
     LogModule,
+    RecetaModule
   ],
   controllers: [ReporteController],
   providers: [ReporteService],

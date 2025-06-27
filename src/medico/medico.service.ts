@@ -21,6 +21,7 @@ export class MedicoService {
     return medico
   }
 
+  
   async buscarOftalmologo( buscarOftalmologoDto: BuscadorMedicoDto){;
 
     if(buscarOftalmologoDto.oftalmologo){
@@ -32,4 +33,15 @@ export class MedicoService {
     }
 
   }
+
+  async verificarMedico(nombreCompleto:string, especialidad:string){
+    const medico=  await this.medico.exists({nombreCompleto:nombreCompleto,especialidad})
+    if(!medico){
+      return await this.medico.create({nombreCompleto:nombreCompleto,especialidad:especialidad})
+    }
+    return medico
+  }
+
 }
+
+

@@ -1,5 +1,6 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
+import { flagVenta } from 'src/venta/core/enums/flgaVenta.enum';
 
 @Schema({ collection: 'Receta' })
 export class Receta {
@@ -53,7 +54,7 @@ export class Receta {
   @Prop()
   addCerca: string;
   @Prop()
-  fecha: string;
+  fecha: Date;
   @Prop()
   observacion: string;
   @Prop()
@@ -90,4 +91,11 @@ export class Receta {
   lcCurvaBaseOi: string;
   @Prop()
   lcDiametroOi: string;
+
+  @Prop({ type: String, enum: flagVenta, default: flagVenta.nuevo })
+flag: flagVenta;
+    
+  @Prop({ type: Date, default: Date.now() })
+  fechaCreacion: Date;
 }
+export const recetaSchema = SchemaFactory.createForClass(Receta)
