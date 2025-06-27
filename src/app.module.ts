@@ -31,6 +31,7 @@ import { CoreModule } from './core/core.module';
 import { DiasModule } from './dias/dias.module';
 import { ColorLenteModule } from './color-lente/color-lente.module';
 import { MedicoModule } from './medico/medico.module';
+import { RecetaModule } from './receta/receta.module';
 
 
 
@@ -65,7 +66,8 @@ import { MedicoModule } from './medico/medico.module';
     CoreModule,
     DiasModule,
     ColorLenteModule,
-    MedicoModule
+    MedicoModule,
+    RecetaModule
   ],
   controllers: [],
   providers: [
