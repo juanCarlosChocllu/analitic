@@ -1,14 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { VentaService } from './services/venta.service';
-import { VentaController  } from './controllers/venta.controller';
+import { VentaController } from './controllers/venta.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import {
-Venta,
-VentaSchema
-} from './schemas/venta.schema';
+import { Venta, VentaSchema } from './schemas/venta.schema';
 import { SucursalModule } from 'src/sucursal/sucursal.module';
 import { ScheduleModule } from '@nestjs/schedule';
-
 
 import { TipoVentaModule } from 'src/tipo-venta/tipo-venta.module';
 
@@ -16,7 +12,6 @@ import { Sucursal, SuscursalSchema } from 'src/sucursal/schema/sucursal.schema';
 import { AbonoModule } from 'src/abono/abono.module';
 import { EmpresaModule } from 'src/empresa/empresa.module';
 import { VentaLenteService } from './lente/services/venta.lente.service';
-
 
 import { AsesoresModule } from 'src/asesores/asesores.module';
 import { VentaMedicosService } from './medicos/services/venta.medicos.service';
@@ -35,6 +30,7 @@ import { VentaAsesoresController } from './asesores/controllers/ventaAsesores.co
 import { VentaAsesoresService } from './asesores/service/ventaAsesores.service';
 import { DiasModule } from 'src/dias/dias.module';
 import { CoreModule } from 'src/core/core.module';
+import { RecetaModule } from 'src/receta/receta.module';
 
 @Module({
   imports: [
@@ -43,8 +39,6 @@ import { CoreModule } from 'src/core/core.module';
       [
         { name: Sucursal.name, schema: SuscursalSchema },
         { name: Venta.name, schema: VentaSchema },
-
-
       ],
       NombreBdConexion.oc,
     ),
@@ -53,26 +47,28 @@ import { CoreModule } from 'src/core/core.module';
     SucursalModule,
     EmpresaModule,
     AsesoresModule,
-
+    RecetaModule,
     MetasSucursalModule,
-    forwardRef(()=> AbonoModule),
+    forwardRef(() => AbonoModule),
     DiasModule,
-   
- 
   ],
-  controllers: [VentaController, 
-    VentaAsesoresController, 
+  controllers: [
+    VentaController,
+    VentaAsesoresController,
     VentaMedicosController,
-     VentaLenteController,
-      VentaProductosController,
-      VentaMestasSucursalController
-    ],
-  providers: [VentaService, VentaLenteService, VentaAsesoresService,
-     VentaMedicosService,
-      VentaProductosService,
+    VentaLenteController,
+    VentaProductosController,
+    VentaMestasSucursalController,
+  ],
+  providers: [
+    VentaService,
+    VentaLenteService,
+    VentaAsesoresService,
+    VentaMedicosService,
+    VentaProductosService,
     VentaMetasSucursalService,
-    CoreService
-    ],
+    CoreService,
+  ],
 
   exports: [VentaService],
 })
