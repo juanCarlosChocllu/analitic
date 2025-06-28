@@ -31,7 +31,7 @@ export class SucursalService {
     return sucursal
 
    }
-
+   
    async sucursalListaEmpresas(id: Types.ObjectId):Promise<SucursalI[]>{
     const suscursales:SucursalI[] = await this.SucursalSchema.find({
       empresa: new Types.ObjectId(id),
@@ -97,7 +97,26 @@ export class SucursalService {
   
     return { status: HttpStatus.CREATED };
   }
+  public async guardarSucursal(empresa:string,sucursal:string){
+    const empresaEncontrada = await this.EmpresaSchema.findOne({
+      nombre: empresa,
+    });
+    if(!empresaEncontrada){
+      return { status: HttpStatus.BAD_REQUEST ,message:'Empresa no encontrada'};
+    }
+    const sucursalExiste = await this.SucursalSchema.findOne({
+      nombre: sucursal,
+    });
+    if(sucursalExiste){
+      return { status: HttpStatus.BAD_REQUEST ,message:'Sucursal ya existe'};
+    }
+    const sucursalData = {
+      nombre: sucursal,
+      empresa:empresaEncontrada._id
+    };
+    await this.SucursalSchema.create(sucursalData);
+    return { status: HttpStatus.CREATED };
+  }
   
-
  
 }
