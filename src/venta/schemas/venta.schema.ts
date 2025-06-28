@@ -97,7 +97,4 @@ export const VentaSchema = SchemaFactory.createForClass(Venta);
 VentaSchema.index({ sucursal: 1 });
 VentaSchema.index({ empresa: 1 });
 VentaSchema.index({ asesor: 1 });
-
-
-
-
+VentaSchema.index({numeroCotizacion:1,producto:1, cotizacion:1})

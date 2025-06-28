@@ -286,7 +286,7 @@ export class ReporteService {
     }
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_4AM)
+  @Cron(CronExpression.EVERY_DAY_AT_5AM)
   async descargaAutomaticaventas() {
     try {
       const date = new Date();
@@ -299,8 +299,31 @@ export class ReporteService {
       fechaInicio: `${año}-${mes}-${dia}`,
       fechaFin: `${año}-${mes}-${dia}`,
     };    
-    this.logger.debug('Iniciando la descarga');
+    this.logger.debug('Iniciando la descarga ventas');
     const response = await this.realizarDescarga(fecha);
+    console.log(response);
+    
+    } catch (error) {
+        
+    }
+  }
+
+
+   @Cron(CronExpression.EVERY_DAY_AT_5AM)
+  async descargaRecetas() {
+    try {
+      const date = new Date();
+    const [año, mes, dia] = [
+      date.getFullYear(),
+      (date.getMonth() + 1).toString().padStart(2, '0'),
+      (date.getDate() - 1).toString().padStart(2, '0'),
+    ];
+    const fecha: DescargarDto = {
+      fechaInicio: `${año}-${mes}-${dia}`,
+      fechaFin: `${año}-${mes}-${dia}`,
+    };    
+    this.logger.debug('Iniciando la descarga recetas');
+    const response = await this.descargarReceta(fecha);
     console.log(response);
     
     } catch (error) {

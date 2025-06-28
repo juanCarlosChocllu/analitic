@@ -15,9 +15,9 @@ import { CoreService } from 'src/venta/core/service/core.service';
 import { VentaMedicoI } from '../interface/ventaMedicos';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { SucursalI } from 'src/core/interfaces/sucursalInterface';
-import { BuscadorMetasDto } from 'src/metas-sucursal/dto/BuscadorMetasDto';
-import { log } from 'node:console';
+import { RecetaService } from 'src/receta/receta.service';
 import { productos } from 'src/venta/core/enums/productos.enum';
+import { Log } from 'src/log/schemas/log.schema';
 
 @Injectable()
 export class VentaMedicosService {
@@ -26,6 +26,7 @@ export class VentaMedicosService {
     private readonly VentaExcelSchema: Model<Venta>,
     private readonly coreService: CoreService,
     private readonly sucursalService: SucursalService,
+    private readonly recetasService: RecetaService,
   ) {}
 
   public async kpiMedicos(ventaMedicosDto: VentaMedicosDto) {
@@ -184,5 +185,24 @@ export class VentaMedicosService {
       }
     }
     return sucursales;
+  }
+
+  async listarRecetasMedico(){
+    const recetasMedico = await this.recetasService.listarRecetaMedicos()
+    const data = await Promise.all (recetasMedico.map( async(item)=>{
+        let recetasVendidas:number = 0
+         for (const codigo of item.codigosReceta) {
+            const ventas= await this.VentaExcelSchema.countDocuments({numeroCotizacion:codigo, cotizacion:false, producto:productos.lente})   
+            recetasVendidas += ventas
+        }
+        return {
+          id:item.idMedico,
+          medico:item.nombre,
+          especialidad:item.especialidad,
+          recetas:item.recetas,
+          recetasVendidas:recetasVendidas
+        }
+    }))
+    return   data
   }
 }

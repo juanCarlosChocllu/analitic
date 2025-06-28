@@ -5,7 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Receta } from './schema/receta.schema';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { Model } from 'mongoose';
-import { RecetaI } from './interface/receta';
+import { RecetaI, RecetaMedicoI } from './interface/receta';
+import { especialidad } from 'src/venta/core/enums/especialidad.enum';
 
 @Injectable()
 export class RecetaService {
@@ -21,4 +22,46 @@ export class RecetaService {
       await this.receta.create(data)
       return
      }
+
+     public async listarRecetaMedicos():Promise<RecetaMedicoI[]>{
+        const recetas = await this.receta.aggregate([
+          {
+            $lookup:{
+              from:'Medico',
+              foreignField:'_id',
+              localField:'medico',
+              as:'medico'
+            }
+          },
+          {
+            $unwind:{path:'$medico',preserveNullAndEmptyArrays:false}
+          },
+          {
+            $group:{
+              _id:{
+                nombre:'$medico.nombreCompleto',
+                especialidad:'$medico.especialidad'
+              },
+              codigosReceta:{$push: '$codigoReceta' },
+              recetas:{$sum:1},
+              idMedico:{$first:'$medico._id'}
+            }
+          },
+          {
+            $project:{
+              idMedico:1,
+              nombre:'$_id.nombre',
+              especialidad:'$_id.especialidad',
+              codigosReceta:1,
+              recetas:1
+
+            }
+          }
+         
+        ])  
+     
+        return recetas
+     }
 }
+
+

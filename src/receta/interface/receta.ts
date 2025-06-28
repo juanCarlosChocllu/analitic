@@ -4,7 +4,7 @@ export interface RecetaResponseI {
   codigoMia: string;
   medico: string;
   codigoReceta: string;
-  especialidad:string
+  especialidad: string;
   esfericoLejosD: string;
   esfericoLejosI: string;
   esfericoCercaD: string;
@@ -61,7 +61,7 @@ export interface RecetaResponseI {
 export interface RecetaI {
   _id?: Types.ObjectId;
   codigoMia: string;
-  medico: Types.ObjectId
+  medico: Types.ObjectId;
 
   esfericoLejosD: string;
   esfericoLejosI: string;
@@ -114,4 +114,12 @@ export interface RecetaI {
   lcEjeOi: string;
   lcCurvaBaseOi: string;
   lcDiametroOi: string;
+}
+
+export interface RecetaMedicoI {
+  codigosReceta:string[];
+  nombre: string;
+  especialidad: string;
+  recetas: number;
+  idMedico:string
 }
