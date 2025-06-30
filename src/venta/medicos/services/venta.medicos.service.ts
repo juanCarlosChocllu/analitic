@@ -12,12 +12,15 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 
 import { CoreService } from 'src/venta/core/service/core.service';
 
-import { VentaMedicoI } from '../interface/ventaMedicos';
+import { resultadoRecetaI, VentaMedicoI } from '../interface/ventaMedicos';
 import { SucursalService } from 'src/sucursal/sucursal.service';
 import { SucursalI } from 'src/core/interfaces/sucursalInterface';
 import { RecetaService } from 'src/receta/receta.service';
 import { productos } from 'src/venta/core/enums/productos.enum';
 import { Log } from 'src/log/schemas/log.schema';
+import { BuscadorRecetaDto } from '../dto/BuscadorReceta.dto';
+import { flagVenta } from 'src/venta/core/enums/flgaVenta.enum';
+import { EstadoVentaE } from 'src/venta/core/enums/estado.enum';
 
 @Injectable()
 export class VentaMedicosService {
@@ -187,22 +190,57 @@ export class VentaMedicosService {
     return sucursales;
   }
 
-  async listarRecetasMedico(){
-    const recetasMedico = await this.recetasService.listarRecetaMedicos()
-    const data = await Promise.all (recetasMedico.map( async(item)=>{
-        let recetasVendidas:number = 0
-         for (const codigo of item.codigosReceta) {
-            const ventas= await this.VentaExcelSchema.countDocuments({numeroCotizacion:codigo, cotizacion:false, producto:productos.lente})   
-            recetasVendidas += ventas
+  async listarRecetasMedico(buscadorRecetaDto: BuscadorRecetaDto) {
+    const recetasMedico =
+      await this.recetasService.listarRecetaMedicos(buscadorRecetaDto);
+    const data = await Promise.all(
+      recetasMedico.map(async (item) => {
+        const recetasMedico: resultadoRecetaI[] = [];
+        for (const codigo of item.codigosReceta) {
+          const ventas = await this.VentaExcelSchema.find(
+            {
+              numeroCotizacion: codigo,
+              cotizacion: false,
+              producto: productos.lente,
+            },
+            { numeroCotizacion: 1, numeroTicket: 1, producto: 1, flagVenta: 1 },
+          );
+
+          if (ventas.length > 0) {
+            for (const venta of ventas) {
+              const receta: resultadoRecetaI = {
+                idVenta: venta ? venta.numeroTicket : '',
+                codigoReceta: codigo,
+                flagVenta: venta ? venta.flagVenta : '',
+                cantidad: venta ? 1 : 0,
+              };
+              recetasMedico.push(receta);
+            }
+          } else {
+            const receta: resultadoRecetaI = {
+              idVenta: '',
+              codigoReceta: codigo,
+              flagVenta: '',
+              cantidad: 0,
+            };
+            recetasMedico.push(receta);
+          }
         }
+  
         return {
-          id:item.idMedico,
-          medico:item.nombre,
-          especialidad:item.especialidad,
-          recetas:item.recetas,
-          recetasVendidas:recetasVendidas
-        }
-    }))
-    return   data
+          recetasMedico: recetasMedico,
+          id: item.idMedico,
+          medico: item.nombre,
+          especialidad: item.especialidad,
+          recetasRegistradas: item.recetas,
+          ventasFinalizadas:  recetasMedico.filter((item)=> item.flagVenta ===  'FINALIZADO').length,
+          recetasRealizadas: recetasMedico.reduce(
+            (acc, item) => item.cantidad + acc,
+            0,
+          ),
+        };
+      }),
+    );
+    return data;
   }
 }

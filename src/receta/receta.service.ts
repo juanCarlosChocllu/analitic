@@ -7,61 +7,73 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { Model } from 'mongoose';
 import { RecetaI, RecetaMedicoI } from './interface/receta';
 import { especialidad } from 'src/venta/core/enums/especialidad.enum';
+import { BuscadorRecetaDto } from 'src/venta/medicos/dto/BuscadorReceta.dto';
 
 @Injectable()
 export class RecetaService {
-      @InjectModel(Receta.name, NombreBdConexion.oc)
-      private readonly receta: Model<Receta>
-  
-    public async buscarReceta(codigoMia:string){
-      const receta = await this.receta.exists({codigoMia:codigoMia})
-      return receta
-    }
+  @InjectModel(Receta.name, NombreBdConexion.oc)
+  private readonly receta: Model<Receta>;
 
-     public async registrarReceta(data:RecetaI){
-      await this.receta.create(data)
-      return
-     }
+  public async buscarReceta(codigoMia: string) {
+    const receta = await this.receta.exists({ codigoMia: codigoMia });
+    return receta;
+  }
 
-     public async listarRecetaMedicos():Promise<RecetaMedicoI[]>{
-        const recetas = await this.receta.aggregate([
-          {
-            $lookup:{
-              from:'Medico',
-              foreignField:'_id',
-              localField:'medico',
-              as:'medico'
-            }
-          },
-          {
-            $unwind:{path:'$medico',preserveNullAndEmptyArrays:false}
-          },
-          {
-            $group:{
-              _id:{
-                nombre:'$medico.nombreCompleto',
-                especialidad:'$medico.especialidad'
-              },
-              codigosReceta:{$push: '$codigoReceta' },
-              recetas:{$sum:1},
-              idMedico:{$first:'$medico._id'}
-            }
-          },
-          {
-            $project:{
-              idMedico:1,
-              nombre:'$_id.nombre',
-              especialidad:'$_id.especialidad',
-              codigosReceta:1,
-              recetas:1
+  public async registrarReceta(data: RecetaI) {
+    await this.receta.create(data);
+    return;
+  }
 
-            }
-          }
-         
-        ])  
-     
-        return recetas
-     }
+  public async listarRecetaMedicos(
+    buscadorRecetaDto: BuscadorRecetaDto,
+  ): Promise<RecetaMedicoI[]> {
+    const recetas = await this.receta.aggregate([
+      {
+        $match: {
+          fecha: {
+            $gte: new Date(
+              new Date(buscadorRecetaDto.fechaInicio).setUTCHours(0, 0, 0, 0),
+            ),
+            $lte: new Date(
+              new Date(buscadorRecetaDto.fechaFin).setUTCHours(23, 59, 59, 999),
+            ),
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Medico',
+          foreignField: '_id',
+          localField: 'medico',
+          as: 'medico',
+        },
+      },
+      {
+        $unwind: { path: '$medico', preserveNullAndEmptyArrays: false },
+      },
+      {
+        $group: {
+          _id: {
+            nombre: '$medico.nombreCompleto',
+            especialidad: '$medico.especialidad',
+          },
+          codigosReceta: { $push: '$codigoReceta' },
+          recetas: { $sum: 1 },
+          idMedico: { $first: '$medico._id' },
+        },
+      },
+      {
+        $project: {
+          idMedico: 1,
+          nombre: '$_id.nombre',
+          especialidad: '$_id.especialidad',
+          codigosReceta: 1,
+          recetas: 1,
+        },
+      },
+    ]);
+
+    
+    return recetas;
+  }
 }
-
-

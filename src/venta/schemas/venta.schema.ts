@@ -77,6 +77,8 @@ export class Venta {
   @Prop({ type: Number})
   descuentoFicha:number
 
+   @Prop({ type: String})
+  tipoConversion:string
 
   @Prop({ type: Boolean})
   cotizacion:boolean

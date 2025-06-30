@@ -8,6 +8,7 @@ export class ReporteController {
   constructor(private readonly reporteService: ReporteService) {}
 
   @Post()
+  @Public()
   async realizarDescarga(@Body()fechaDto:DescargarDto) {     
     return this.reporteService.realizarDescarga(fechaDto);
   }

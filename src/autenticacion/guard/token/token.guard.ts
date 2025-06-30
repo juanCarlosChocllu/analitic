@@ -43,8 +43,7 @@ export class TokenGuard implements CanActivate {
       request.user= usuario._id              
       return true
     } catch (error) {          
-      console.log(error);
-        
+     
        throw new UnauthorizedException()
       
     }

@@ -3,7 +3,6 @@ import {
   HttpStatus,
   Injectable,
   Logger,
- 
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -38,7 +37,6 @@ import { LogService } from 'src/log/log.service';
 import { RecetaService } from 'src/receta/receta.service';
 import { RecetaI } from 'src/receta/interface/receta';
 
-
 @Injectable()
 export class ReporteService {
   private readonly logger = new Logger(ReporteService.name);
@@ -67,23 +65,22 @@ export class ReporteService {
 
     private readonly medicoService: MedicoService,
 
-    
     private readonly asesorService: AsesoresService,
     private readonly ventaService: VentaService,
 
     private readonly colorLenteService: ColorLenteService,
-        private readonly logService:LogService,
-             private readonly recetaService:RecetaService
+    private readonly logService: LogService,
+    private readonly recetaService: RecetaService,
   ) {}
 
   async realizarDescarga(DescargarDto: DescargarDto) {
     try {
       const ventas = await this.httpServiceAxios.reporte(DescargarDto);
 
-      await this.guardarAsesor(ventas),
+      (await this.guardarAsesor(ventas),
         await this.guardarAtrubutosDeVenta(ventas),
-        await this.guardaVenta(ventas);
-        await this.logService.registroLogDescarga('Venta', DescargarDto.fechaFin)
+        await this.guardaVenta(ventas));
+      await this.logService.registroLogDescarga('Venta', DescargarDto.fechaFin);
       return { status: HttpStatus.CREATED };
     } catch (error) {
       throw error;
@@ -221,6 +218,7 @@ export class ReporteService {
                 fecha: new Date(data.fecha_finalizacion),
               }),
               fechaVenta: new Date(data.fecha),
+              tipoConversion:data.tipoConversion,
               descuentoFicha: data.descuentoFicha,
               comisiona: data.comisiona,
               numeroCotizacion: data.numeroCotizacion,
@@ -290,75 +288,61 @@ export class ReporteService {
   async descargaAutomaticaventas() {
     try {
       const date = new Date();
-    const [año, mes, dia] = [
-      date.getFullYear(),
-      (date.getMonth() + 1).toString().padStart(2, '0'),
-      (date.getDate() - 1).toString().padStart(2, '0'),
-    ];
-    const fecha: DescargarDto = {
-      fechaInicio: `${año}-${mes}-${dia}`,
-      fechaFin: `${año}-${mes}-${dia}`,
-    };    
-    this.logger.debug('Iniciando la descarga ventas');
-    const response = await this.realizarDescarga(fecha);
-    console.log(response);
-    
-    } catch (error) {
-        
-    }
+      const [año, mes, dia] = [
+        date.getFullYear(),
+        (date.getMonth() + 1).toString().padStart(2, '0'),
+        (date.getDate() - 1).toString().padStart(2, '0'),
+      ];
+      const fecha: DescargarDto = {
+        fechaInicio: `${año}-${mes}-${dia}`,
+        fechaFin: `${año}-${mes}-${dia}`,
+      };
+      this.logger.debug('Iniciando la descarga ventas');
+      const response = await this.realizarDescarga(fecha);
+      console.log(response);
+    } catch (error) {}
   }
 
-
-   @Cron(CronExpression.EVERY_DAY_AT_5AM)
+  @Cron(CronExpression.EVERY_DAY_AT_5AM)
   async descargaRecetas() {
     try {
       const date = new Date();
-    const [año, mes, dia] = [
-      date.getFullYear(),
-      (date.getMonth() + 1).toString().padStart(2, '0'),
-      (date.getDate() - 1).toString().padStart(2, '0'),
-    ];
-    const fecha: DescargarDto = {
-      fechaInicio: `${año}-${mes}-${dia}`,
-      fechaFin: `${año}-${mes}-${dia}`,
-    };    
-    this.logger.debug('Iniciando la descarga recetas');
-    const response = await this.descargarReceta(fecha);
-    console.log(response);
-    
+      const [año, mes, dia] = [
+        date.getFullYear(),
+        (date.getMonth() + 1).toString().padStart(2, '0'),
+        (date.getDate() - 1).toString().padStart(2, '0'),
+      ];
+      const fecha: DescargarDto = {
+        fechaInicio: `${año}-${mes}-${dia}`,
+        fechaFin: `${año}-${mes}-${dia}`,
+      };
+      this.logger.debug('Iniciando la descarga recetas');
+      const response = await this.descargarReceta(fecha);
+      console.log(response);
     } catch (error) {
-        
+      console.log(error);
+      
     }
   }
 
-   async descargarReceta(descargarDto: DescargarDto){
-      const receta=  await this.httpServiceAxios.descargarReceta(descargarDto)
-      for (const data of receta) {
-        console.log(data.especialidad);
-        
-        const [medico, receta ] =await   Promise.all([
-            this.medicoService.verificarMedico(data.medico, data.especialidad),
-            this.recetaService.buscarReceta(data.codigoMia)
-          ])
+  async descargarReceta(descargarDto: DescargarDto) {
+    const receta = await this.httpServiceAxios.descargarReceta(descargarDto);
+    for (const data of receta) {
+      console.log(data.especialidad);
 
-          if(!receta){
-            const nuevaReceta:RecetaI ={
-              ...data,
-              fecha:new Date(data.fecha),
-              medico:new Types.ObjectId(medico._id),
-           
-            }
-            await this.recetaService.registrarReceta(nuevaReceta)
-              
-          }
-          
+      const [medico, receta] = await Promise.all([
+        this.medicoService.verificarMedico(data.medico, data.especialidad),
+        this.recetaService.buscarReceta(data.codigoMia),
+      ]);
 
+      if (!receta) {
+        const nuevaReceta: RecetaI = {
+          ...data,
+          fecha: new Date(data.fecha),
+          medico: new Types.ObjectId(medico._id),
+        };
+        await this.recetaService.registrarReceta(nuevaReceta);
       }
-      
+    }
   }
-
- 
-    
-
-
 }
