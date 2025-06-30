@@ -27,4 +27,5 @@ export interface VentaI {
     tipoVenta: string;
     fecha_finalizacion: string;
     flag: string;
+    tipoConversion:string
 }

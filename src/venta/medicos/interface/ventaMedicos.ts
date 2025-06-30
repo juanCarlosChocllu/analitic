@@ -19,3 +19,10 @@ export interface VentaMedicoI {
     idScursal: Types.ObjectId,
     data: DataMedicoI[],
 }
+
+export interface resultadoRecetaI {
+          idVenta:string,
+            codigoReceta: string,
+            flagVenta: string,
+            cantidad:number
+}
