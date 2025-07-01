@@ -279,6 +279,7 @@ export class VentaService {
         );
         return { status: HttpStatus.OK };
       }
+
       return { status: HttpStatus.NOT_FOUND };
     } catch (error) {
       throw new BadRequestException();
