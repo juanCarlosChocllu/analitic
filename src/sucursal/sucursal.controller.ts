@@ -27,4 +27,4 @@ export class SucursalController {
   guardarEmpresaYsusSucursales (){
     return this.sucursalService.guardarEmpresaYsusSucursales()
   }
-}   
+}
