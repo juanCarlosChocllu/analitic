@@ -351,7 +351,7 @@ export class ReporteService {
      const ventas = await this.httpServiceAxios.reporte(fechaDto);
     for (const venta of ventas) {
       console.log(venta.idVenta.trim());
-      
+      console.log(venta.fecha)
         const ven = await this.venta.findOne({
         numeroTicket: venta.idVenta.trim(),
         flagVenta:{$ne:'FINALIZADO'}
