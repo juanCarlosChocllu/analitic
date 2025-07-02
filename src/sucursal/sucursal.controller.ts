@@ -27,4 +27,11 @@ export class SucursalController {
   guardarEmpresaYsusSucursales (){
     return this.sucursalService.guardarEmpresaYsusSucursales()
   }
+
+
+  @Public()
+  @Post('sucursal/guardarSucursal')
+  guardarSucursal (@Body() body: { empresa: string; sucursal: string }) {
+    return this.sucursalService.guardarSucursal(body.empresa, body.sucursal);
+  }
 }
