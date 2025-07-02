@@ -28,7 +28,6 @@ export class SucursalController {
     return this.sucursalService.guardarEmpresaYsusSucursales()
   }
 
-  
 
   @Public()
   @Post('sucursal/guardarSucursal')
@@ -36,4 +35,3 @@ export class SucursalController {
     return this.sucursalService.guardarSucursal(body.empresa, body.sucursal);
   }
 }
-
