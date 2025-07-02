@@ -345,4 +345,26 @@ export class ReporteService {
       }
     }
   }
+
+
+  async actualizarVentas(fechaDto:DescargarDto){
+     const ventas = await this.httpServiceAxios.reporte(fechaDto);
+    for (const venta of ventas) {
+        const ven = await this.venta.findOne({
+        numeroTicket: venta.idVenta.trim(),
+        flagVenta:{$ne:'FINALIZADO'}
+       });
+       if(ven){
+         await this.venta.updateMany({numeroTicket: venta.idVenta.trim()},{ 
+            ...(venta.fecha_finalizacion && {
+                fecha: new Date(venta.fecha_finalizacion),
+              }),
+            estadoTracking: venta.estadoTracking,
+            flagVenta: venta.flag,
+          })
+       }
+       
+
+    }
+  }
 }
