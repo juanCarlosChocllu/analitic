@@ -17,6 +17,7 @@ export class ReporteController {
   }
 
   @Post('actualizar')
+  @Public()
   async actualizarVentas(@Body()fechaDto:DescargarDto){
     return this.reporteService.actualizarVentas(fechaDto)
   }
