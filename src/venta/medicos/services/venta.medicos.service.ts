@@ -21,6 +21,7 @@ import { Log } from 'src/log/schemas/log.schema';
 import { BuscadorRecetaDto } from '../dto/BuscadorReceta.dto';
 import { flagVenta } from 'src/venta/core/enums/flgaVenta.enum';
 import { EstadoVentaE } from 'src/venta/core/enums/estado.enum';
+import { tasaConversion } from 'src/venta/core/util/tasaConversion';
 
 @Injectable()
 export class VentaMedicosService {
@@ -193,6 +194,7 @@ export class VentaMedicosService {
   async listarRecetasMedico(buscadorRecetaDto: BuscadorRecetaDto) {
     const recetasMedico =
       await this.recetasService.listarRecetaMedicos(buscadorRecetaDto);
+   
     const data = await Promise.all(
       recetasMedico.map(async (item) => {
         const recetasMedico: resultadoRecetaI[] = [];
@@ -226,7 +228,12 @@ export class VentaMedicosService {
             recetasMedico.push(receta);
           }
         }
-  
+        const ventasRealizadas:number =recetasMedico.reduce(
+            (acc, item) => item.cantidad + acc,
+            0,
+          )
+
+         
         return {
           recetasMedico: recetasMedico,
           id: item.idMedico,
@@ -234,10 +241,8 @@ export class VentaMedicosService {
           especialidad: item.especialidad,
           recetasRegistradas: item.recetas,
           ventasFinalizadas:  recetasMedico.filter((item)=> item.flagVenta ===  'FINALIZADO').length,
-          recetasRealizadas: recetasMedico.reduce(
-            (acc, item) => item.cantidad + acc,
-            0,
-          ),
+          ventasRealizadas: ventasRealizadas,
+          tasaConversion:tasaConversion(ventasRealizadas, item.recetas)
         };
       }),
     );

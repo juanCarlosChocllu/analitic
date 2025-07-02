@@ -64,6 +64,7 @@ export class RecetaService {
       },
       {
         $project: {
+          _id:0,
           idMedico: 1,
           nombre: '$_id.nombre',
           especialidad: '$_id.especialidad',
