@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types,PipelineStage } from 'mongoose';
 import { AsesoresService } from 'src/asesores/asesores.service';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { SucursalI } from 'src/core/interfaces/sucursalInterface';
@@ -9,7 +9,8 @@ import { SucursalService } from 'src/sucursal/sucursal.service';
 import { InformacionVentaDto } from 'src/venta/core/dto/informacion.venta.dto';
 import { VentaDto } from 'src/venta/core/dto/venta.dto';
 import { VentaTodasDto } from 'src/venta/core/dto/venta.todas.dto';
-import { FlagVentaE } from 'src/venta/core/enums/estado.enum';
+import { EstadoVentaE, FlagVentaE } from 'src/venta/core/enums/estado.enum';
+import { flagVenta } from 'src/venta/core/enums/flgaVenta.enum';
 import { sucursalesEnum } from 'src/venta/core/enums/sucursales.enum';
 import { AsesorExcelI } from 'src/venta/core/interfaces/asesor.interface';
 import { FiltroVentaI } from 'src/venta/core/interfaces/filtro.venta.interface';
@@ -163,200 +164,118 @@ export class VentaAsesoresService {
     return venPorAsesor;
   }
 
-  public async indicadoresPorSucursal(VentaTodasDto: VentaTodasDto) {
-    const filtrador = filtradorVenta(VentaTodasDto);
-    console.log(filtrador);
-    
-    const dataSucursal: any[] = [];
-    let sucursales: SucursalI[] =
-      await this.coreService.filtroParaTodasEmpresas(VentaTodasDto);
+  public async indicadoresPorSucursal(ventaTodasDto: VentaTodasDto) {
+    const filtrador = filtradorVenta(ventaTodasDto);
+    const agrupacion= ventaTodasDto.flagVenta === FlagVentaE.realizadas ?   {
+              aqo: { $year: '$fechaVenta' },
+              mes: { $month: '$fechaVenta' },
+              dia: { $dayOfMonth: '$fechaVenta' },
+            } : {
+              aqo: { $year: '$fecha' },
+              mes: { $month: '$fecha' },
+              dia: { $dayOfMonth: '$fecha' },
+            }
+        
+            
+    const ventas:any[]=[];
+    for (const su of ventaTodasDto.sucursal) {
+      const pipeline:PipelineStage[] = [
+        {
+          $match: {
+            sucursal: new Types.ObjectId(su),
+            ...filtrador,
+          },
+        },
+        {
+          $lookup: {
+            from: 'Sucursal',
+            foreignField: '_id',
+            localField: 'sucursal',
+            as: 'sucursal',
+          },
+        },
+        {
+          $group: {
+            _id: {
+              ...agrupacion
+            },
+            ventaTotal: {
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$aperturaTicket', '1'] },
+                  then: '$montoTotal',
+                  else: 0,
+                },
+              },
+            },
+            importeTotal: { $sum: '$importe' },
+            tickets: {
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$aperturaTicket', '1'] },
+                  then: 1,
+                  else: 0,
+                },
+              },
+            },
+            cantidad: { $sum: '$cantidad' },
+          },
+        },
+        {
+          $project: {
+            _id:0,
+            fecha: {
+              $concat: [
+                { $toString: '$_id.aqo' },
+                '-',
+                { $toString: '$_id.mes' },
+                '-',
+                { $toString: '$_id.dia' },
+              ],
+            },
+            ventaTotal: 1,
+            importeTotal: 1,
+            tickets: 1,
+            cantidad: 1,
+            ticketPromedio: {
+              $cond: {
+                if: { $ne: ['$tickets', 0] },
+                then: {
+                  $round: [{ $divide: ['$ventaTotal', '$tickets'] }, 2],
+                },
+                else: 0,
+              },
+            },
+            precioPromedio: {
+              $cond: {
+                if: { $ne: ['$ventaTotal', 0] },
+                then: {
+                  $round: [{ $divide: ['$ventaTotal', '$cantidad'] }, 2],
+                },
+                else: 0,
+              },
+            },
 
-    let dias: number = diasHAbiles(
-      VentaTodasDto.fechaInicio,
-      VentaTodasDto.fechaFin,
-    );
-    dias <= 0 ? (dias = 1) : dias;
-
-    const data = {
-      sucursales: 0,
-      totalVentas: 0,
-      tcPromedio: 0,
-      ventaDiariaPorLocal: 0,
-      unidadPorTickect: 0,
-      ticketPromedio: 0,
-      tasaConversion: 0,
-    };
-
-    for (let sucursal of sucursales) {
-      const indicadorData = await this.idicadorSucursal(
-        sucursal._id,
-        filtrador,
-      );
-      dataSucursal.push(indicadorData);
+            unidadPorTicket: {
+              $cond: {
+                if: { $ne: ['$cantidad', 0] },
+                then: {
+                  $round: [{ $divide: ['$cantidad', '$tickets'] }, 2],
+                },
+                else: 0,
+              },
+            },
+          },
+        },
+      ]
+      const [sucursal,venta]=await Promise.all([
+        this.sucursalService.listarSucursalId(new Types.ObjectId(su)),
+        this.VentaExcelSchema.aggregate(pipeline)
+      ])
+      ventas.push({sucursal:sucursal.nombre, data:venta})
     }
 
-    const traficoCliente = dataSucursal.reduce(
-      (total, item) => total + item.traficoCliente,
-      0,
-    );
-    const cantidad = dataSucursal.reduce(
-      (total, item) => total + item.cantidad,
-      0,
-    );
-    const ticket = dataSucursal.reduce(
-      (total, item) => total + item.totalTicket,
-      0,
-    );
-    const totalVenta = dataSucursal.reduce(
-      (total, item) => total + item.ventaTotal,
-      0,
-    );
-    data.sucursales = sucursales.length;
-    data.totalVentas = totalVenta;
-
-    data.unidadPorTickect = parseFloat((cantidad / ticket).toFixed(2))
-      ? parseFloat((cantidad / ticket).toFixed(2))
-      : 0;
-    data.ventaDiariaPorLocal = parseFloat((totalVenta / dias).toFixed(2));
-
-    data.ticketPromedio = ticketPromedio(totalVenta, cantidad);
-
-    data.tcPromedio =
-      (traficoCliente / ticket) * 100 ? (traficoCliente / ticket) * 100 : 0;
-    const resultado = {
-      ...data,
-      dataSucursal,
-    };
-    return resultado;
-  }
-
-  private async idicadorSucursal(
-    idsucursal: Types.ObjectId,
-    filtrador: FiltroVentaI,
-  ) {
-    const sucursal = await this.sucursalService.listarSucursalId(idsucursal);
-    const sucusarsalData = await this.VentaExcelSchema.aggregate([
-      {
-        $match: {
-          sucursal: new Types.ObjectId(idsucursal),
-          ...filtrador,
-        },
-      },
-      {
-        $group: {
-          _id: '$sucursal',
-          ventaTotal: {
-            $sum: {
-              $cond: {
-                if: { $eq: ['$aperturaTicket', '1'] },
-                then: '$montoTotal',
-                else: 0,
-              },
-            },
-          },
-          totalTicket: {
-            $sum: {
-              $cond: {
-                if: { $eq: ['$aperturaTicket', '1'] },
-                then: 1,
-                else: 0,
-              },
-            },
-          },
-          traficoCliente: {
-            $sum: {
-              $cond: {
-                if: { $eq: ['$aperturaTicket', '1'] },
-                then: 1,
-                else: 0,
-              },
-            },
-          },
-          totalImporte: { $sum: '$importe' },
-          cantidad: { $sum: '$cantidad' },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          ventaTotal: 1,
-          totalTicket: 1,
-          traficoCliente: 1,
-          totalImporte: 1,
-          cantidad: 1,
-
-          ticketPromedio: {
-            $cond: {
-              if: { $ne: ['$totalTicket', 0] },
-              then: {
-                $round: [{ $divide: ['$ventaTotal', '$totalTicket'] }, 2],
-              },
-              else: 0,
-            },
-          },
-          unidadPorTicket: {
-            $cond: {
-              if: { $ne: ['$cantidad', 0] },
-              then: {
-                $round: [{ $divide: ['$cantidad', '$totalTicket'] }, 2],
-              },
-              else: 0,
-            },
-          },
-
-          precioPromedio: {
-            $cond: {
-              if: { $ne: ['$ventaTotal', 0] },
-              then: {
-                $round: [{ $divide: ['$ventaTotal', '$cantidad'] }, 2],
-              },
-              else: 0,
-            },
-          },
-
-          tasaConversion: {
-            $cond: {
-              if: { $ne: ['$traficoCliente', 0] },
-              then: {
-                $round: [
-                  {
-                    $multiply: [
-                      { $divide: ['$totalTicket', '$traficoCliente'] },
-                      100,
-                    ],
-                  },
-                  2,
-                ],
-              },
-              else: 0,
-            },
-          },
-        },
-      },
-    ]);
-    const resultadoFinal =
-      sucusarsalData.length > 0
-        ? sucusarsalData[0]
-        : {
-            _id: null,
-            traficoCliente: 0,
-            ventaTotal: 0,
-            totalTicket: 0,
-            cantidad: 0,
-            ticketPromedio: 0,
-            unidadPorTicket: 0,
-            precioPromedio: 0,
-            totalImporte: 0,
-          };
-
-    const data = {
-      sucursal: sucursal.nombre,
-      id: sucursal._id,
-      ...resultadoFinal,
-    };
-    console.log(data);
-    
-    return data;
+    return ventas;
   }
 
   public async sucursalVentaInformacion(
@@ -372,10 +291,10 @@ export class VentaAsesoresService {
     if (informacionVentaDto.comisiona != null) {
       filtrador.comisiona = informacionVentaDto.comisiona;
     }
-    if(informacionVentaDto.flagVenta ===FlagVentaE.finalizadas) {
-      filtrador.flagVenta = {$eq: FlagVentaE.finalizadas}
+    if (informacionVentaDto.flagVenta === FlagVentaE.finalizadas) {
+      filtrador.flagVenta = { $eq: FlagVentaE.finalizadas };
     }
-   
+
     const ventaSucursal = await this.VentaExcelSchema.aggregate([
       {
         $match: {
@@ -403,7 +322,6 @@ export class VentaAsesoresService {
       },
     ]);
 
-    
     return ventaSucursal;
   }
 

@@ -5,6 +5,7 @@ import { InformacionVentaDto } from 'src/venta/core/dto/informacion.venta.dto';
 import { VentaDto } from 'src/venta/core/dto/venta.dto';
 import { VentaTodasDto } from 'src/venta/core/dto/venta.todas.dto';
 import { Types } from 'mongoose';
+import { Public } from 'src/autenticacion/decorators/public.decorator';
 
 @Controller('gestion')
 export class VentaAsesoresController {
@@ -14,6 +15,7 @@ export class VentaAsesoresController {
     return await this.ventaAsesoresService.indicadoresPorAsesor(ventaTodasDto);
   }
 
+  @Public()
   @Post('excel/indicadores/sucursal')
   async indicadoresPorSucursal(@Body() ventaTodasDto: VentaTodasDto) {
     return await this.ventaAsesoresService.indicadoresPorSucursal(
