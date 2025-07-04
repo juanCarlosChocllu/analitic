@@ -169,10 +169,9 @@ export class VentaAsesoresService {
   public async indicadoresPorSucursal(VentaTodasDto: VentaTodasDto) {
     const filtrador = filtradorVenta(VentaTodasDto);
 
-    const [sucursales, dataDiaria] = await Promise.all([
-      this.coreService.filtroParaTodasEmpresas(VentaTodasDto),
-      this.ventasSucursalDiaria(VentaTodasDto),
-    ]);
+    const sucursales = await  this.coreService.filtroParaTodasEmpresas(VentaTodasDto)
+    const  dataDiaria = await this.ventasSucursalDiaria(sucursales,filtrador, VentaTodasDto.flagVenta)
+
 
     let dias: number = diasHAbiles(
       VentaTodasDto.fechaInicio,
@@ -361,10 +360,10 @@ export class VentaAsesoresService {
     return data;
   }
 
-  private async ventasSucursalDiaria(ventaTodasDto: VentaTodasDto) {
-    const filtrador = filtradorVenta(ventaTodasDto);
+  private async ventasSucursalDiaria(sucursales:SucursalI[],filtrador:FiltroVentaI,flagVenta:string) {
+
     const agrupacion =
-      ventaTodasDto.flagVenta === FlagVentaE.finalizadas
+      flagVenta === FlagVentaE.finalizadas
         ? {
             aqo: { $year: '$fecha' },
             mes: { $month: '$fecha' },
@@ -380,7 +379,7 @@ export class VentaAsesoresService {
       {
         $match: {
           sucursal: {
-            $in: ventaTodasDto.sucursal.map((item) => new Types.ObjectId(item)),
+            $in: sucursales.map((item) => new Types.ObjectId(item._id)),
           },
           ...filtrador,
         },
