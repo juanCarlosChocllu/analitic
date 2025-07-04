@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Types, PipelineStage } from 'mongoose';
 import { AsesoresService } from 'src/asesores/asesores.service';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { SucursalI } from 'src/core/interfaces/sucursalInterface';
@@ -32,24 +32,25 @@ export class VentaAsesoresService {
   ) {}
 
   public async indicadoresPorAsesor(VentaTodasDto: VentaTodasDto) {
-    const listaAsesor: AsesorExcelI[] = [];
     const filtrador = filtradorVenta(VentaTodasDto);
     let sucursales: SucursalI[] =
       await this.coreService.filtroParaTodasEmpresas(VentaTodasDto);
+    const data = await Promise.all(
+      sucursales.map(async (sucursal) => {
+        const sucur = await this.sucursalService.listarSucursalId(sucursal._id);
+        if (sucur.nombre != sucursalesEnum.opticentroParaguay) {
+          const asesores: AsesorExcelI[] =
+            await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
+          return asesores;
+        } else if (sucur.nombre == sucursalesEnum.opticentroParaguay) {
+          const asesores: AsesorExcelI[] =
+            await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
+          return asesores;
+        }
+      }),
+    );
 
-    for (let sucursal of sucursales) {
-      const sucur = await this.sucursalService.listarSucursalId(sucursal._id);
-      if (sucur.nombre != sucursalesEnum.opticentroParaguay) {
-        const asesores: AsesorExcelI[] =
-          await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
-        listaAsesor.push(...asesores);
-      } else if (sucur.nombre == sucursalesEnum.opticentroParaguay) {
-        const asesores: AsesorExcelI[] =
-          await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
-        listaAsesor.push(...asesores);
-      }
-    }
-    const ventaPorAsesor = await this.ventaPorAsesores(listaAsesor, filtrador);
+    const ventaPorAsesor = await this.ventaPorAsesores(data.flat(), filtrador);
     return ventaPorAsesor;
   }
 
@@ -59,12 +60,7 @@ export class VentaAsesoresService {
   ) {
     const venPorAsesor: any[] = [];
     for (let asesor of asesores) {
-      const sucursal = await this.sucursalExcelSchema
-        .findOne({ _id: asesor.sucursal })
-        .select('nombre');
-
-      const asesorNombre = await this.asesoresService.asesorFindOne(asesor.id);
-      const resultado = await this.VentaExcelSchema.aggregate([
+      const pipline: PipelineStage[] = [
         {
           $match: {
             asesor: new Types.ObjectId(asesor.id),
@@ -135,6 +131,13 @@ export class VentaAsesoresService {
             },
           },
         },
+      ];
+
+      const [sucursal, resultado] = await Promise.all([
+        this.sucursalExcelSchema
+          .findOne({ _id: asesor.sucursal })
+          .select('nombre'),
+        this.VentaExcelSchema.aggregate(pipline),
       ]);
 
       const resultadoFinal =
@@ -153,7 +156,7 @@ export class VentaAsesoresService {
 
       const data = {
         sucursal: sucursal.nombre,
-        asesor: asesorNombre.usuario,
+        asesor: asesor.usuario,
         ...resultadoFinal,
       };
 
@@ -165,11 +168,11 @@ export class VentaAsesoresService {
 
   public async indicadoresPorSucursal(VentaTodasDto: VentaTodasDto) {
     const filtrador = filtradorVenta(VentaTodasDto);
-    console.log(filtrador);
-    
-    const dataSucursal: any[] = [];
-    let sucursales: SucursalI[] =
-      await this.coreService.filtroParaTodasEmpresas(VentaTodasDto);
+
+    const [sucursales, dataDiaria] = await Promise.all([
+      this.coreService.filtroParaTodasEmpresas(VentaTodasDto),
+      this.ventasSucursalDiaria(VentaTodasDto),
+    ]);
 
     let dias: number = diasHAbiles(
       VentaTodasDto.fechaInicio,
@@ -186,14 +189,9 @@ export class VentaAsesoresService {
       ticketPromedio: 0,
       tasaConversion: 0,
     };
-
-    for (let sucursal of sucursales) {
-      const indicadorData = await this.idicadorSucursal(
-        sucursal._id,
-        filtrador,
-      );
-      dataSucursal.push(indicadorData);
-    }
+    const dataSucursal = await Promise.all(
+      sucursales.map((item) => this.idicadorSucursal(item._id, filtrador)),
+    );
 
     const traficoCliente = dataSucursal.reduce(
       (total, item) => total + item.traficoCliente,
@@ -226,6 +224,7 @@ export class VentaAsesoresService {
     const resultado = {
       ...data,
       dataSucursal,
+      dataDiaria,
     };
     return resultado;
   }
@@ -234,8 +233,7 @@ export class VentaAsesoresService {
     idsucursal: Types.ObjectId,
     filtrador: FiltroVentaI,
   ) {
-    const sucursal = await this.sucursalService.listarSucursalId(idsucursal);
-    const sucusarsalData = await this.VentaExcelSchema.aggregate([
+    const pipline: PipelineStage[] = [
       {
         $match: {
           sucursal: new Types.ObjectId(idsucursal),
@@ -333,7 +331,12 @@ export class VentaAsesoresService {
           },
         },
       },
+    ];
+    const [sucursal, sucusarsalData] = await Promise.all([
+      this.sucursalService.listarSucursalId(idsucursal),
+      this.VentaExcelSchema.aggregate(pipline),
     ]);
+
     const resultadoFinal =
       sucusarsalData.length > 0
         ? sucusarsalData[0]
@@ -354,28 +357,139 @@ export class VentaAsesoresService {
       id: sucursal._id,
       ...resultadoFinal,
     };
-    console.log(data);
-    
+
     return data;
+  }
+
+  private async ventasSucursalDiaria(ventaTodasDto: VentaTodasDto) {
+    const filtrador = filtradorVenta(ventaTodasDto);
+    const agrupacion =
+      ventaTodasDto.flagVenta === FlagVentaE.finalizadas
+        ? {
+            aqo: { $year: '$fecha' },
+            mes: { $month: '$fecha' },
+            dia: { $dayOfMonth: '$fecha' },
+          }
+        : {
+            aqo: { $year: '$fechaVenta' },
+            mes: { $month: '$fechaVenta' },
+            dia: { $dayOfMonth: '$fechaVenta' },
+          };
+
+    const ventas = await this.VentaExcelSchema.aggregate([
+      {
+        $match: {
+          sucursal: {
+            $in: ventaTodasDto.sucursal.map((item) => new Types.ObjectId(item)),
+          },
+          ...filtrador,
+        },
+      },
+
+      {
+        $group: {
+          _id: {
+            ...agrupacion,
+          },
+          cantidad: { $sum: '$cantidad' },
+          tickets: {
+            $sum: {
+              $cond: {
+                if: { $eq: ['$aperturaTicket', '1'] },
+                then: 1,
+                else: 0,
+              },
+            },
+          },
+
+          ventaTotal: {
+            $sum: {
+              $cond: {
+                if: { $eq: ['$aperturaTicket', '1'] },
+                then: '$montoTotal',
+                else: 0,
+              },
+            },
+          },
+
+          importe: {
+            $sum: '$importe',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          fecha: {
+            $concat: [
+              { $toString: '$_id.aqo' },
+              '-',
+              { $toString: '$_id.mes' },
+              '-',
+              { $toString: '$_id.dia' },
+            ],
+          },
+          cantidad: 1,
+          tickets: 1,
+          ventaTotal: 1,
+          importe: 1,
+          ticketPromedio: {
+            $cond: {
+              if: { $ne: ['$tickets', 0] },
+              then: {
+                $round: [{ $divide: ['$ventaTotal', '$tickets'] }, 2],
+              },
+              else: 0,
+            },
+          },
+
+          unidadPorTicket: {
+            $cond: {
+              if: { $ne: ['$cantidad', 0] },
+              then: {
+                $round: [{ $divide: ['$cantidad', '$tickets'] }, 2],
+              },
+              else: 0,
+            },
+          },
+          precioPromedio: {
+            $cond: {
+              if: { $ne: ['$ventaTotal', 0] },
+              then: {
+                $round: [{ $divide: ['$ventaTotal', '$cantidad'] }, 2],
+              },
+              else: 0,
+            },
+          },
+        },
+      },
+    ]);
+
+    return ventas;
   }
 
   public async sucursalVentaInformacion(
     id: string,
     informacionVentaDto: InformacionVentaDto,
   ) {
-    let filtrador: FiltroVentaI = {
-      fecha: {
-        $gte: new Date(informacionVentaDto.fechaInicio),
-        $lte: new Date(informacionVentaDto.fechaFin),
-      },
-    };
+    let filtrador: FiltroVentaI = {};
     if (informacionVentaDto.comisiona != null) {
       filtrador.comisiona = informacionVentaDto.comisiona;
     }
-    if(informacionVentaDto.flagVenta ===FlagVentaE.finalizadas) {
-      filtrador.flagVenta = {$eq: FlagVentaE.finalizadas}
+    if (informacionVentaDto.flagVenta === FlagVentaE.finalizadas) {
+      filtrador.fecha = {
+        $gte: new Date(informacionVentaDto.fechaInicio),
+        $lte: new Date(informacionVentaDto.fechaFin),
+      };
     }
-   
+
+    if (informacionVentaDto.flagVenta === FlagVentaE.realizadas) {
+      filtrador.fechaVenta = {
+        $gte: new Date(informacionVentaDto.fechaInicio),
+        $lte: new Date(informacionVentaDto.fechaFin),
+      };
+    }
+
     const ventaSucursal = await this.VentaExcelSchema.aggregate([
       {
         $match: {
@@ -403,7 +517,6 @@ export class VentaAsesoresService {
       },
     ]);
 
-    
     return ventaSucursal;
   }
 
