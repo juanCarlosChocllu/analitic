@@ -32,24 +32,25 @@ export class VentaAsesoresService {
   ) {}
 
   public async indicadoresPorAsesor(VentaTodasDto: VentaTodasDto) {
-    const listaAsesor: AsesorExcelI[] = [];
     const filtrador = filtradorVenta(VentaTodasDto);
     let sucursales: SucursalI[] =
       await this.coreService.filtroParaTodasEmpresas(VentaTodasDto);
+    const data = await Promise.all(
+      sucursales.map(async (sucursal) => {
+        const sucur = await this.sucursalService.listarSucursalId(sucursal._id);
+        if (sucur.nombre != sucursalesEnum.opticentroParaguay) {
+          const asesores: AsesorExcelI[] =
+            await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
+          return asesores;
+        } else if (sucur.nombre == sucursalesEnum.opticentroParaguay) {
+          const asesores: AsesorExcelI[] =
+            await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
+          return asesores;
+        }
+      }),
+    );
 
-    for (let sucursal of sucursales) {
-      const sucur = await this.sucursalService.listarSucursalId(sucursal._id);
-      if (sucur.nombre != sucursalesEnum.opticentroParaguay) {
-        const asesores: AsesorExcelI[] =
-          await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
-        listaAsesor.push(...asesores);
-      } else if (sucur.nombre == sucursalesEnum.opticentroParaguay) {
-        const asesores: AsesorExcelI[] =
-          await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
-        listaAsesor.push(...asesores);
-      }
-    }
-    const ventaPorAsesor = await this.ventaPorAsesores(listaAsesor, filtrador);
+    const ventaPorAsesor = await this.ventaPorAsesores(data.flat(), filtrador);
     return ventaPorAsesor;
   }
 
@@ -59,12 +60,7 @@ export class VentaAsesoresService {
   ) {
     const venPorAsesor: any[] = [];
     for (let asesor of asesores) {
-      const sucursal = await this.sucursalExcelSchema
-        .findOne({ _id: asesor.sucursal })
-        .select('nombre');
-
-      const asesorNombre = await this.asesoresService.asesorFindOne(asesor.id);
-      const resultado = await this.VentaExcelSchema.aggregate([
+      const pipline: PipelineStage[] = [
         {
           $match: {
             asesor: new Types.ObjectId(asesor.id),
@@ -135,6 +131,13 @@ export class VentaAsesoresService {
             },
           },
         },
+      ];
+
+      const [sucursal, resultado] = await Promise.all([
+        this.sucursalExcelSchema
+          .findOne({ _id: asesor.sucursal })
+          .select('nombre'),
+        this.VentaExcelSchema.aggregate(pipline),
       ]);
 
       const resultadoFinal =
@@ -153,7 +156,7 @@ export class VentaAsesoresService {
 
       const data = {
         sucursal: sucursal.nombre,
-        asesor: asesorNombre.usuario,
+        asesor: asesor.usuario,
         ...resultadoFinal,
       };
 
@@ -169,7 +172,7 @@ export class VentaAsesoresService {
     const [sucursales, dataDiaria] = await Promise.all([
       this.coreService.filtroParaTodasEmpresas(VentaTodasDto),
       this.ventasSucursalDiaria(VentaTodasDto),
-      ]);
+    ]);
 
     let dias: number = diasHAbiles(
       VentaTodasDto.fechaInicio,
@@ -186,8 +189,10 @@ export class VentaAsesoresService {
       ticketPromedio: 0,
       tasaConversion: 0,
     };
-    const dataSucursal = await Promise.all(sucursales.map((item)=>this.idicadorSucursal(item._id, filtrador)))
-    
+    const dataSucursal = await Promise.all(
+      sucursales.map((item) => this.idicadorSucursal(item._id, filtrador)),
+    );
+
     const traficoCliente = dataSucursal.reduce(
       (total, item) => total + item.traficoCliente,
       0,
@@ -358,8 +363,6 @@ export class VentaAsesoresService {
 
   private async ventasSucursalDiaria(ventaTodasDto: VentaTodasDto) {
     const filtrador = filtradorVenta(ventaTodasDto);
-    console.log(filtrador);
-
     const agrupacion =
       ventaTodasDto.flagVenta === FlagVentaE.finalizadas
         ? {
@@ -469,17 +472,22 @@ export class VentaAsesoresService {
     id: string,
     informacionVentaDto: InformacionVentaDto,
   ) {
-    let filtrador: FiltroVentaI = {
-      fecha: {
-        $gte: new Date(informacionVentaDto.fechaInicio),
-        $lte: new Date(informacionVentaDto.fechaFin),
-      },
-    };
+    let filtrador: FiltroVentaI = {};
     if (informacionVentaDto.comisiona != null) {
       filtrador.comisiona = informacionVentaDto.comisiona;
     }
     if (informacionVentaDto.flagVenta === FlagVentaE.finalizadas) {
-      filtrador.flagVenta = { $eq: FlagVentaE.finalizadas };
+      filtrador.fecha = {
+        $gte: new Date(informacionVentaDto.fechaInicio),
+        $lte: new Date(informacionVentaDto.fechaFin),
+      };
+    }
+
+    if (informacionVentaDto.flagVenta === FlagVentaE.realizadas) {
+      filtrador.fechaVenta = {
+        $gte: new Date(informacionVentaDto.fechaInicio),
+        $lte: new Date(informacionVentaDto.fechaFin),
+      };
     }
 
     const ventaSucursal = await this.VentaExcelSchema.aggregate([
