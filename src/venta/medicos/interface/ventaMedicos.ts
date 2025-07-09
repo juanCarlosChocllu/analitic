@@ -22,7 +22,9 @@ export interface VentaMedicoI {
 
 export interface resultadoRecetaI {
           idVenta:string,
-            codigoReceta: string,
             flagVenta: string,
             cantidad:number
+            fechaVenta:Date | string
+            fechaReceta:string
+            codigoReceta:string
 }

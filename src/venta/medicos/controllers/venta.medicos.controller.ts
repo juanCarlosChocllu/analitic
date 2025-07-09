@@ -17,7 +17,7 @@ export class VentaMedicosController {
   kpiMedicosAterior(@Body() ventaMedicosDto: VentaMedicosDto) {
     return this.ventaKpiMedicos.kpiMedicos(ventaMedicosDto);
   }
-
+  @Public()
   @Post('recetas/medicos')
   listarRecetasMedico(@Body() buscadorRecetaDto: BuscadorRecetaDto) {
     return this.ventaKpiMedicos.listarRecetasMedico(buscadorRecetaDto);
