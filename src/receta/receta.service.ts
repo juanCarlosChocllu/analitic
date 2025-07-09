@@ -57,7 +57,7 @@ export class RecetaService {
             nombre: '$medico.nombreCompleto',
             especialidad: '$medico.especialidad',
           },
-          codigosReceta: { $push: '$codigoReceta' },
+          data: { $push: {codigo:'$codigoReceta' , fecha:'$fecha'} },
           recetas: { $sum: 1 },
           idMedico: { $first: '$medico._id' },
         },
@@ -68,13 +68,15 @@ export class RecetaService {
           idMedico: 1,
           nombre: '$_id.nombre',
           especialidad: '$_id.especialidad',
-          codigosReceta: 1,
+          data: 1,
           recetas: 1,
+          fecha:1,
         },
       },
     ]);
 
-    
+
+      
     return recetas;
   }
 }

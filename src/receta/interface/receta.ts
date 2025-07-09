@@ -117,9 +117,14 @@ export interface RecetaI {
 }
 
 export interface RecetaMedicoI {
-  codigosReceta:string[];
+  data:dataRecetaI[];
   nombre: string;
   especialidad: string;
   recetas: number;
   idMedico:string
+}
+
+interface dataRecetaI {
+    fecha:string,
+    codigo:string
 }

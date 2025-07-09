@@ -198,32 +198,39 @@ export class VentaMedicosService {
     const data = await Promise.all(
       recetasMedico.map(async (item) => {
         const recetasMedico: resultadoRecetaI[] = [];
-        for (const codigo of item.codigosReceta) {
+        for (const data of item.data) {
+          console.log(data);
+          
           const ventas = await this.VentaExcelSchema.find(
             {
-              numeroCotizacion: codigo,
+              numeroCotizacion: data.codigo,
               cotizacion: false,
               producto: productos.lente,
             },
-            { numeroCotizacion: 1, numeroTicket: 1, producto: 1, flagVenta: 1 },
+            { numeroCotizacion: 1, numeroTicket: 1, producto: 1, flagVenta: 1 , fechaVenta:1},
           );
 
           if (ventas.length > 0) {
             for (const venta of ventas) {
               const receta: resultadoRecetaI = {
                 idVenta: venta ? venta.numeroTicket : '',
-                codigoReceta: codigo,
+                codigoReceta: data.codigo,
                 flagVenta: venta ? venta.flagVenta : '',
                 cantidad: venta ? 1 : 0,
+                fechaVenta:venta.fechaVenta,
+                fechaReceta:data.fecha
+
               };
               recetasMedico.push(receta);
             }
           } else {
             const receta: resultadoRecetaI = {
               idVenta: '',
-              codigoReceta: codigo,
+              codigoReceta: data.codigo,
               flagVenta: '',
               cantidad: 0,
+              fechaVenta:'',
+              fechaReceta:data.fecha
             };
             recetasMedico.push(receta);
           }
