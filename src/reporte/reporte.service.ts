@@ -379,7 +379,7 @@ export class ReporteService {
         
         await this.venta.updateOne(
           { numeroTicket: venta.idVenta.trim(), producto: venta.rubro },
-          { $set: { fechaVenta: fecha , ...(venta.fecha_finalizacion) && {fecha:horaUtc(venta.fecha_finalizacion)} } },
+          { $set: { fechaVenta: fecha , ...(venta.fecha_finalizacion) && {fecha:horaUtc(venta.fecha_finalizacion), flagVenta:venta.flag} } },
        
         );
   
