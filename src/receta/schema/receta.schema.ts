@@ -95,7 +95,7 @@ export class Receta {
   @Prop({ type: String, enum: flagVenta, default: flagVenta.nuevo })
 flag: flagVenta;
     
-  @Prop({ type: Date, default: Date.now() })
+@Prop({ type: Date, default: () => Date.now() })
   fechaCreacion: Date;
 }
 export const recetaSchema = SchemaFactory.createForClass(Receta)

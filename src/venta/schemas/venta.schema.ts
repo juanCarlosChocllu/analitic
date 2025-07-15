@@ -92,7 +92,7 @@ export class Venta {
   @Prop()
   flagVenta: string;
 
-  @Prop({ type: Date, default: Date.now() })
+@Prop({ type: Date, default: () => Date.now() })
   fechaCreacion: Date;
 }
 export const VentaSchema = SchemaFactory.createForClass(Venta);
