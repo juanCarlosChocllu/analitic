@@ -25,6 +25,7 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { FinalizarVentaDto } from '../core/dto/FinalizarVenta.dto';
 import { VentaTodasDto } from '../core/dto/venta.todas.dto';
 import { FlagVentaE } from '../core/enums/estado.enum';
+import { horaUtc } from 'src/core/util/fechas/horaUtc';
 
 @Injectable()
 export class VentaService {
@@ -272,7 +273,7 @@ export class VentaService {
         await this.venta.updateMany(
           { numeroTicket: finalizarVentaDto.idVenta.toUpperCase().trim() },
           {
-            fecha: new Date(finalizarVentaDto.fecha),
+            fecha: horaUtc(finalizarVentaDto.fecha),
             estadoTracking: finalizarVentaDto.tracking,
             flagVenta: finalizarVentaDto.flag,
           },

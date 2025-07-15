@@ -36,6 +36,7 @@ import { MedicoService } from 'src/medico/medico.service';
 import { LogService } from 'src/log/log.service';
 import { RecetaService } from 'src/receta/receta.service';
 import { RecetaI } from 'src/receta/interface/receta';
+import { horaUtc } from 'src/core/util/fechas/horaUtc';
 
 @Injectable()
 export class ReporteService {
@@ -215,10 +216,10 @@ export class ReporteService {
                 : null;
             const dataVenta = {
               ...(data.fecha_finalizacion && {
-                fecha: new Date(data.fecha_finalizacion),
+                fecha: horaUtc(data.fecha_finalizacion),
               }),
-              fechaVenta: new Date(data.fecha),
-              tipoConversion:data.tipoConversion,
+              fechaVenta: horaUtc(data.fecha),
+              tipoConversion: data.tipoConversion,
               descuentoFicha: data.descuentoFicha,
               comisiona: data.comisiona,
               numeroCotizacion: data.numeroCotizacion,
@@ -321,7 +322,6 @@ export class ReporteService {
       console.log(response);
     } catch (error) {
       console.log(error);
-      
     }
   }
 
@@ -338,7 +338,7 @@ export class ReporteService {
       if (!receta) {
         const nuevaReceta: RecetaI = {
           ...data,
-          fecha: new Date(data.fecha),
+          fecha: horaUtc(data.fecha),
           medico: new Types.ObjectId(medico._id),
         };
         await this.recetaService.registrarReceta(nuevaReceta);
@@ -346,27 +346,47 @@ export class ReporteService {
     }
   }
 
-
-  async actualizarVentas(fechaDto:DescargarDto){
-     const ventas = await this.httpServiceAxios.reporte(fechaDto);
+  async actualizarVentas(fechaDto: DescargarDto) {
+    const ventas = await this.httpServiceAxios.reporte(fechaDto);
     for (const venta of ventas) {
-      console.log(venta.idVenta.trim());
-      console.log(venta.fecha)
-        const ven = await this.venta.findOne({
+      const ven = await this.venta.findOne({
         numeroTicket: venta.idVenta.trim(),
-        flagVenta:{$ne:'FINALIZADO'}
-       });
-       if(ven){
-         await this.venta.updateMany({numeroTicket: venta.idVenta.trim()},{ 
+        flagVenta: { $ne: 'FINALIZADO' },
+      });
+      if (ven) {
+        await this.venta.updateMany(
+          { numeroTicket: venta.idVenta.trim() },
+          {
             ...(venta.fecha_finalizacion && {
-                fecha: new Date(venta.fecha_finalizacion),
-              }),
+              fecha: horaUtc(venta.fecha_finalizacion),
+            }),
             estadoTracking: venta.estadoTracking,
             flagVenta: venta.flag,
-          })
-       }
-       
-
+          },
+        );
+      }
     }
   }
+
+  async actulizarFechas(fechaDto: DescargarDto) {
+    const ventas = await this.httpServiceAxios.reporte(fechaDto);
+    for (const venta of ventas) {
+      const ventaEncotrada = await this.venta
+        .findOne({ numeroTicket: venta.idVenta.trim(), producto: venta.rubro })
+        .lean();
+      if (ventaEncotrada) {
+        const fecha = horaUtc(venta.fecha);
+        
+        await this.venta.updateOne(
+          { numeroTicket: venta.idVenta.trim(), producto: venta.rubro },
+          { $set: { fechaVenta: fecha , ...(venta.fecha_finalizacion) && {fecha:horaUtc(venta.fecha_finalizacion)} } },
+       
+        );
+  
+      } else {
+        console.log(venta);
+      }
+    }
+  }
+ 
 }
