@@ -2,14 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
-import { port , interfaceRed} from './core/config/variables.entorno.config';
+import { port , interfaceRed, frontend1, frontend2} from './core/config/variables.entorno.config';
 import { Log } from './log/schemas/log.schema';
 
 async function bootstrap() {
 
   
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({
+  origin: [frontend1, frontend2], 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist:true,
