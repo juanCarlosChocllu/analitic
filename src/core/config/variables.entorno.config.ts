@@ -19,4 +19,4 @@ export const tokenDescargas:string=configService.get<string>('TOKEN_DESCARGAS')
 export const apiMia:string=configService.get<string>('API_MIA')
 
 
-
+export const api_key:string=configService.get<string>('API_KEY')

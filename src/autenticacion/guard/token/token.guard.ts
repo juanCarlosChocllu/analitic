@@ -7,6 +7,7 @@ import { jwtConstants } from 'src/autenticacion/constants/constants';
 import { PUBLIC_KEY } from 'src/autenticacion/constants/decorator.constants';
 import { Request } from 'express';
 import { UsuariosService } from 'src/usuarios/usuarios.service';
+import { api_key } from 'src/core/config/variables.entorno.config';
 @Injectable()
 export class TokenGuard implements CanActivate {
   constructor(
@@ -30,7 +31,7 @@ export class TokenGuard implements CanActivate {
     try {
       const token = header.split(' ')[1];  
 
-      if(token === 'michi'){
+      if(token ===api_key ){
         return true
       }
           
