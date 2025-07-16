@@ -92,6 +92,12 @@ export class Venta {
   @Prop()
   flagVenta: string;
 
+  @Prop()
+  estado: string;
+  
+  @Prop({ type: Date })
+  fechaAnulacion: Date;
+
 @Prop({ type: Date, default: () => Date.now() })
   fechaCreacion: Date;
 }

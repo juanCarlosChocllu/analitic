@@ -22,3 +22,4 @@ export const apiMia:string=configService.get<string>('API_MIA')
 export const api_key:string=configService.get<string>('API_KEY')
 export const frontend1:string=configService.get<string>('RUTA_FRONTEND1')
 export const frontend2:string=configService.get<string>('RUTA_FRONTEND2')
+console.log(frontend1);

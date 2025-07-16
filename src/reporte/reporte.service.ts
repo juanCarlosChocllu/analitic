@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -37,6 +38,7 @@ import { LogService } from 'src/log/log.service';
 import { RecetaService } from 'src/receta/receta.service';
 import { RecetaI } from 'src/receta/interface/receta';
 import { horaUtc } from 'src/core/util/fechas/horaUtc';
+import { AnularVentaDto } from './dto/AnularVenta.dto';
 
 @Injectable()
 export class ReporteService {
@@ -158,6 +160,8 @@ export class ReporteService {
 
   private async guardaVenta(ventas: VentaI[]) {
     try {
+      console.log(ventas);
+      
       for (let data of ventas) {
         const venta = await this.venta.exists({
           numeroTicket: data.idVenta.toUpperCase(),
@@ -387,6 +391,27 @@ export class ReporteService {
         console.log(venta);
       }
     }
+
+  
   }
+
+    async anularVenta(anularVentaDto:AnularVentaDto){
+      console.log(anularVentaDto);
+      
+      const venta = await this.venta.find({numeroTicket:anularVentaDto.idVenta})
+      console.log(venta);
+      
+      if(venta.length > 0) {
+        await this.venta.updateMany({numeroTicket:anularVentaDto.idVenta}, {
+          estado:anularVentaDto.estado,
+          estadoTracking:anularVentaDto.estadoTracking,
+          fechaAnulacion:horaUtc(anularVentaDto.fechaAnulacion)
+        })
+        return {status:HttpStatus.OK}
+      }
+       throw new NotFoundException()
+      
+    }
+
  
 }
