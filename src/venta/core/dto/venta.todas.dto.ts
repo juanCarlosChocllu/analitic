@@ -4,6 +4,7 @@ import { FlagVentaE } from "../enums/estado.enum";
 
 export class VentaTodasDto{
     @IsMongoId({each: true })
+    @IsOptional()
     empresa: string[];
 
     @IsMongoId({each: true })

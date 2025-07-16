@@ -28,7 +28,10 @@ export class SucursalController {
     return this.sucursalService.guardarEmpresaYsusSucursales()
   }
 
-
+  @Get('sucursales')
+   listarTodasLasSucursales(){
+        return this.sucursalService.listarTodasLasSucursales()
+   }
   @Public()
   @Post('sucursal/guardarSucursal')
   guardarSucursal (@Body() body: { empresa: string; sucursal: string }) {

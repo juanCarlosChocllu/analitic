@@ -26,6 +26,10 @@ export class SucursalService {
 
    }
 
+   public async listarTodasLasSucursales (){
+    const sucursales = await this.SucursalSchema.find()
+    return sucursales
+   }
    public async  listarSucursalId(id:Types.ObjectId):Promise<SucursalI>{
     const sucursal:SucursalI = await this.SucursalSchema.findById(id)
     return sucursal
