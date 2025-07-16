@@ -206,6 +206,7 @@ export class VentaMedicosService {
               numeroCotizacion: data.codigo,
               cotizacion: false,
               producto: productos.lente,
+              estadoTracking:{$ne:'ANULADO'}
             },
             { numeroCotizacion: 1, numeroTicket: 1, producto: 1, flagVenta: 1 , fechaVenta:1},
           );

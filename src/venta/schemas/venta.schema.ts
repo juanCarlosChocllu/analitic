@@ -107,4 +107,4 @@ VentaSchema.index({ numeroTicket: 1 ,producto:1 });
 VentaSchema.index({ sucursal: 1 });
 VentaSchema.index({ empresa: 1 });
 VentaSchema.index({ asesor: 1 });
-VentaSchema.index({numeroCotizacion:1,producto:1, cotizacion:1})
+VentaSchema.index({estadoTracking:1, numeroCotizacion:1,producto:1, cotizacion:1})
