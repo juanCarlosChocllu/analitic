@@ -471,24 +471,27 @@ export class VentaAsesoresService {
     id: string,
     informacionVentaDto: InformacionVentaDto,
   ) {
-    let filtrador: FiltroVentaI = {};
+    
+    
+    let filtrador: FiltroVentaI = {
+      estadoTracking:{$ne:'ANULADO'}
+    };
     if (informacionVentaDto.comisiona != null) {
       filtrador.comisiona = informacionVentaDto.comisiona;
     }
     if (informacionVentaDto.flagVenta === FlagVentaE.finalizadas) {
       filtrador.fecha = {
-        $gte: new Date(informacionVentaDto.fechaInicio),
-        $lte: new Date(informacionVentaDto.fechaFin),
+         $gte: new Date(new Date(informacionVentaDto.fechaInicio).setUTCHours(0,0,0)),
+        $lte: new Date(new Date(informacionVentaDto.fechaFin).setUTCHours(23,59,59)),
       };
     }
 
     if (informacionVentaDto.flagVenta === FlagVentaE.realizadas) {
       filtrador.fechaVenta = {
-        $gte: new Date(informacionVentaDto.fechaInicio),
-        $lte: new Date(informacionVentaDto.fechaFin),
+        $gte: new Date(new Date(informacionVentaDto.fechaInicio).setUTCHours(0,0,0)),
+        $lte: new Date(new Date(informacionVentaDto.fechaFin).setUTCHours(23,59,59)),
       };
     }
-
     const ventaSucursal = await this.VentaExcelSchema.aggregate([
       {
         $match: {
@@ -516,6 +519,7 @@ export class VentaAsesoresService {
       },
     ]);
 
+    
     return ventaSucursal;
   }
 

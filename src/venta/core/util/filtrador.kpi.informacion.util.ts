@@ -9,6 +9,7 @@ export function filtradorKpiInformacion(
 ): FiltroVentaI {
   const filtrador: FiltroVentaI = {
     sucursal: new Types.ObjectId(sucursal),
+      estadoTracking:{$ne:'ANULADO'}
   };
 
   if (informacionVentaDto.flagVenta === FlagVentaE.finalizadas) {
@@ -42,5 +43,7 @@ export function filtradorKpiInformacion(
         $in: informacionVentaDto.tipoVenta.map((id) => new Types.ObjectId(id)),
       })
     : filtrador;
+
+    
   return filtrador;
 }

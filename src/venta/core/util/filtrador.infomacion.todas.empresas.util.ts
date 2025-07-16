@@ -8,7 +8,9 @@ export function filtradorKpiInformacionTodasEmpresas(informacionEmpresasTodasVen
       
   const filtrador:FiltroVentaI ={
         
-        empresa: {$in: informacionEmpresasTodasVentaDto.empresa.map((id)=> new Types.ObjectId(id))}
+        empresa: {$in: informacionEmpresasTodasVentaDto.empresa.map((id)=> new Types.ObjectId(id))},
+           estadoTracking:{$ne:'ANULADO'}
+      
       }
 
       if(informacionEmpresasTodasVentaDto.flagVenta === FlagVentaE.finalizadas) {

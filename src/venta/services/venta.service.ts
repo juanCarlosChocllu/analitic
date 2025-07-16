@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  HttpStatus,
-
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Venta } from '../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
@@ -12,11 +7,9 @@ import { VentaExcelI } from '../core/interfaces/ventaExcel.interface';
 
 import { diasHAbiles } from '../core/util/dias.habiles.util';
 
-
 import { FiltroVentaI } from '../core/interfaces/filtro.venta.interface';
 
 import { Sucursal } from 'src/sucursal/schema/sucursal.schema';
-
 
 import { SucursalService } from 'src/sucursal/sucursal.service';
 
@@ -292,6 +285,7 @@ export class VentaService {
       empresa: {
         $in: ventaTodasDto.empresa.map((item) => new Types.ObjectId(item)),
       },
+      estadoTracking: { $ne: 'ANULADO' },
     };
 
     if (ventaTodasDto.flagVenta === FlagVentaE.finalizadas) {
@@ -326,7 +320,9 @@ export class VentaService {
     return filtrador;
   }
   private filterPorSucursal(ventaTodasDto: VentaTodasDto) {
-    const filtrador: FiltroVentaI = {};
+    const filtrador: FiltroVentaI = {
+      estadoTracking: { $ne: 'ANULADO' },
+    };
 
     if (ventaTodasDto.flagVenta === FlagVentaE.finalizadas) {
       filtrador.flagVenta = { $eq: FlagVentaE.finalizadas };

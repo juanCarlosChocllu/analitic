@@ -27,7 +27,7 @@ export class VentaAsesoresController {
   sucursalVentaInformacion(
     @Param('id', ValidacionIdPipe) id: string,
     @Body() informacionVentaDto: InformacionVentaDto,
-  ) {
+  ) {    
     return this.ventaAsesoresService.sucursalVentaInformacion(
       id,
       informacionVentaDto,

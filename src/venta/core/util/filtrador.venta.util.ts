@@ -6,7 +6,9 @@ import { VentaDto } from 'src/venta/core/dto/venta.dto';
 import { FlagVentaE } from '../enums/estado.enum';
 
 export function filtradorVenta(filtro: VentaDto | VentaTodasDto) {
-  let filtrador: FiltroVentaI = {};
+  let filtrador: FiltroVentaI = {
+   estadoTracking:{$ne:'ANULADO'}
+  };
   if (filtro.flagVenta === FlagVentaE.finalizadas) {
     filtrador.fecha = {
       $gte: new Date(new Date(filtro.fechaInicio).setUTCHours(0, 0, 0, 0)),

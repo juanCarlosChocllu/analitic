@@ -7,7 +7,9 @@ export function filtradorDeGestion( ventaDto: VentaDto){
         fecha:{
           $gte: new Date(new Date(ventaDto.fechaInicio).setUTCHours(0,0,0,0)),
         $lte: new Date(new Date(ventaDto.fechaFin).setUTCHours(23,59,59,999)),
-        }
+      
+        },
+           estadoTracking:{$ne:'ANULADO'}
       }
       if(ventaDto.comisiona != null){
         filtrador.comisiona = ventaDto.comisiona

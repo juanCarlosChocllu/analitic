@@ -5,7 +5,7 @@ import { FlagVentaE } from "../enums/estado.enum"
 
 export function filtradorKpiInformacionEmpresa(empresa:string,informacionVentaDto :InformacionVentaDto):FiltroVentaI{
     const filtrador:FiltroVentaI ={
-       
+          estadoTracking:{$ne:'ANULADO'},
         empresa:new Types.ObjectId(empresa)
       }
 

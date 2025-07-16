@@ -5,7 +5,9 @@ import { VentaMedicosDto } from 'src/venta/medicos/dto/venta.medicos.dto';
 import { FlagVentaE } from '../enums/estado.enum';
 
 export function filtradorMedicos(filtro: VentaMedicosDto) {
-  let filtrador: FiltroVentaI = {};
+  let filtrador: FiltroVentaI = {
+       estadoTracking:{$ne:'ANULADO'}
+  };
 
   if (filtro.flagVenta === FlagVentaE.finalizadas) {
     filtrador.fecha = {
