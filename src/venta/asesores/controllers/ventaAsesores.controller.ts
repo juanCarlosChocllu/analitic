@@ -14,8 +14,6 @@ export class VentaAsesoresController {
   async indicadoresPorAsesor(@Body() ventaTodasDto: VentaTodasDto) {
     return await this.ventaAsesoresService.indicadoresPorAsesor(ventaTodasDto);
   }
-
-  @Public()
   @Post('excel/indicadores/sucursal')
   async indicadoresPorSucursal(@Body() ventaTodasDto: VentaTodasDto) {
     return await this.ventaAsesoresService.indicadoresPorSucursal(

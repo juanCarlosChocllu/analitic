@@ -34,13 +34,13 @@ export class VentaService {
     const [venta, ventaSucursal, dataDiaria] = await Promise.all([
       this.ventaEmpresa(ventaTodasDto),
       this.ventaSucursal(ventaTodasDto),
-      this.ventaEmpresaDiaria(ventaTodasDto)
+      this.ventaSucursalDiaria(ventaTodasDto)
     ]);
     const total = venta.reduce((total, ve) => total + ve.importe, 0);
     const cantidad = venta.reduce((total, ve) => total + ve.cantidad, 0);
     const ticketPromedio = this.ticketPromedio(total, cantidad);
     const resultado = {
-      cantidadSucursal: ventaSucursal.cantidadSucursal,
+      cantidadSucursal: ventaSucursal.ventaSucursal.length,
       fechaInicio: ventaTodasDto.fechaInicio,
       fechaFin: ventaTodasDto.fechaFin,
       total,
@@ -103,7 +103,7 @@ export class VentaService {
     return venta;
   }
 
-  private  async ventaEmpresaDiaria(ventaTodasDto: VentaTodasDto){
+  private  async ventaSucursalDiaria(ventaTodasDto: VentaTodasDto){
     const filtrador: FiltroVentaI = this.filterPorEmpresa(ventaTodasDto);  
 
         const agrupacion =ventaTodasDto.flagVenta === FlagVentaE.finalizadas
@@ -116,10 +116,7 @@ export class VentaService {
             aqo: { $year: '$fechaVenta' },
             mes: { $month: '$fechaVenta' },
             dia: { $dayOfMonth: '$fechaVenta' },
-          };
-    
-
-      
+          };  
     const venta = await this.venta.aggregate([
       {
         $match: {
@@ -160,20 +157,38 @@ export class VentaService {
       {
         $project: {
           _id: 0,
-          producto: '$_id',
+          producto: '$_id.producto',
           cantidad: 1,
           ticket:1,
           importe: 1,
-          montoTotal: 1,
+        
           descuento: 1,
           ventas: 1,
+            ticketPromedio: {
+            $cond: {
+              if: { $ne: ['$ticket', 0] },
+              then: {
+                $round: [{ $divide: ['$importe', '$ticket'] }, 2],
+              },
+              else: 0,
+            },
+          },
+
+            fecha: {
+            $concat: [
+              { $toString: '$_id.aqo' },
+              '-',
+              { $toString: '$_id.mes' },
+              '-',
+              { $toString: '$_id.dia' },
+            ],
+          },
         },
+
+        
       },
     ]);
-    
-    console.log(venta);
-    
-    
+    return venta
   }
 
 
