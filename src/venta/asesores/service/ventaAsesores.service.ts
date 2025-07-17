@@ -169,8 +169,7 @@ export class VentaAsesoresService {
   public async indicadoresPorSucursal(VentaTodasDto: VentaTodasDto) {
     const filtrador = filtradorVenta(VentaTodasDto);
 
-    const sucursales = await  this.coreService.filtroParaTodasEmpresas(VentaTodasDto)
-    const  dataDiaria = await this.ventasSucursalDiaria(sucursales,filtrador, VentaTodasDto.flagVenta)
+    const  dataDiaria = await this.ventasSucursalDiaria(VentaTodasDto.sucursal,filtrador, VentaTodasDto.flagVenta)
 
 
     let dias: number = diasHAbiles(
@@ -189,7 +188,7 @@ export class VentaAsesoresService {
       tasaConversion: 0,
     };
     const dataSucursal = await Promise.all(
-      sucursales.map((item) => this.idicadorSucursal(item._id, filtrador)),
+      VentaTodasDto.sucursal.map((id) => this.idicadorSucursal(new Types.ObjectId(id), filtrador)),
     );
 
     const traficoCliente = dataSucursal.reduce(
@@ -208,7 +207,7 @@ export class VentaAsesoresService {
       (total, item) => total + item.ventaTotal,
       0,
     );
-    data.sucursales = sucursales.length;
+    data.sucursales = VentaTodasDto.sucursal.length;
     data.totalVentas = totalVenta;
 
     data.unidadPorTickect = parseFloat((cantidad / ticket).toFixed(2))
@@ -360,7 +359,7 @@ export class VentaAsesoresService {
     return data;
   }
 
-  private async ventasSucursalDiaria(sucursales:SucursalI[],filtrador:FiltroVentaI,flagVenta:string) {
+  private async ventasSucursalDiaria(sucursales:Types.ObjectId[],filtrador:FiltroVentaI,flagVenta:string) {
 
     const agrupacion =
       flagVenta === FlagVentaE.finalizadas
@@ -379,7 +378,7 @@ export class VentaAsesoresService {
       {
         $match: {
           sucursal: {
-            $in: sucursales.map((item) => new Types.ObjectId(item._id)),
+            $in: sucursales.map((id) => new Types.ObjectId(id)),
           },
           ...filtrador,
         },
