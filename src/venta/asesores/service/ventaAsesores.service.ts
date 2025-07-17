@@ -383,7 +383,7 @@ export class VentaAsesoresService {
           ...filtrador,
         },
       },
-
+  
       {
         $group: {
           _id: {
@@ -462,7 +462,8 @@ export class VentaAsesoresService {
         },
       },
     ]);
-
+    console.log(ventas);
+    
     return ventas;
   }
 

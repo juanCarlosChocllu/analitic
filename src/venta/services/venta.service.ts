@@ -34,7 +34,7 @@ export class VentaService {
     const [venta, ventaSucursal, dataDiaria] = await Promise.all([
       this.ventaEmpresa(ventaTodasDto),
       this.ventaSucursal(ventaTodasDto),
-      this.ventaSucursalDiaria(ventaTodasDto)
+      this.ventaSucursalDiaria(ventaTodasDto),
     ]);
     const total = venta.reduce((total, ve) => total + ve.importe, 0);
     const cantidad = venta.reduce((total, ve) => total + ve.cantidad, 0);
@@ -48,7 +48,7 @@ export class VentaService {
       ticketPromedio,
       venta,
       ventaSucursal,
-      dataDiaria
+      dataDiaria,
     };
 
     return resultado;
@@ -61,7 +61,9 @@ export class VentaService {
       {
         $match: {
           ...filtrador,
-          sucursal:{$in: ventaTodasDto.sucursal.map((id)=>new Types.ObjectId(id)) }
+          sucursal: {
+            $in: ventaTodasDto.sucursal.map((id) => new Types.ObjectId(id)),
+          },
         },
       },
       {
@@ -103,10 +105,11 @@ export class VentaService {
     return venta;
   }
 
-  private  async ventaSucursalDiaria(ventaTodasDto: VentaTodasDto){
-    const filtrador: FiltroVentaI = this.filterPorEmpresa(ventaTodasDto);  
+  private async ventaSucursalDiaria(ventaTodasDto: VentaTodasDto) {
+    const filtrador: FiltroVentaI = this.filterPorEmpresa(ventaTodasDto);
 
-        const agrupacion =ventaTodasDto.flagVenta === FlagVentaE.finalizadas
+    const agrupacion =
+      ventaTodasDto.flagVenta === FlagVentaE.finalizadas
         ? {
             aqo: { $year: '$fecha' },
             mes: { $month: '$fecha' },
@@ -116,12 +119,14 @@ export class VentaService {
             aqo: { $year: '$fechaVenta' },
             mes: { $month: '$fechaVenta' },
             dia: { $dayOfMonth: '$fechaVenta' },
-          };  
+          };
     const venta = await this.venta.aggregate([
       {
         $match: {
           ...filtrador,
-          sucursal:{$in: ventaTodasDto.sucursal.map((id)=>new Types.ObjectId(id)) }
+          sucursal: {
+            $in: ventaTodasDto.sucursal.map((id) => new Types.ObjectId(id)),
+          },
         },
       },
       {
@@ -138,12 +143,12 @@ export class VentaService {
       {
         $group: {
           _id: {
-            producto:'$producto',
-            ...agrupacion
+            producto: '$producto',
+            ...agrupacion,
           },
           cantidad: { $sum: '$cantidad' },
           importe: { $sum: '$importe' },
-           ticket: {
+          ticket: {
             $sum: {
               $cond: {
                 if: { $eq: ['$aperturaTicket', '1'] },
@@ -159,12 +164,12 @@ export class VentaService {
           _id: 0,
           producto: '$_id.producto',
           cantidad: 1,
-          ticket:1,
+          ticket: 1,
           importe: 1,
-        
+
           descuento: 1,
           ventas: 1,
-            ticketPromedio: {
+          ticketPromedio: {
             $cond: {
               if: { $ne: ['$ticket', 0] },
               then: {
@@ -174,7 +179,7 @@ export class VentaService {
             },
           },
 
-            fecha: {
+          fecha: {
             $concat: [
               { $toString: '$_id.aqo' },
               '-',
@@ -184,14 +189,10 @@ export class VentaService {
             ],
           },
         },
-
-        
       },
     ]);
-    return venta
+    return venta;
   }
-
-
 
   private async ventaSucursal(ventaTodasDto: VentaTodasDto) {
     const sucursales: Types.ObjectId[] = [];
