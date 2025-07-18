@@ -178,7 +178,15 @@ export class VentaService {
               else: 0,
             },
           },
-
+          precioPromedio: {
+                      $cond: {
+                        if: { $ne: ['$importe', 0] },
+                        then: {
+                          $round: [{ $divide: ['$importe', '$cantidad'] }, 2],
+                        },
+                        else: 0,
+                      },
+                    },
           fecha: {
             $concat: [
               { $toString: '$_id.aqo' },
