@@ -32,9 +32,7 @@ export class VentaMetasSucursalService {
     const filtrador = filtradorVenta(ventaDto);
     const resultados: DataMetaI[] = [];
 
-    let sucursales: SucursalI[] =
-      await this.coreService.filtroParaTodasEmpresas(ventaDto);
-
+  
     const dias = this.coreService.cantidadDias(
       ventaDto.fechaInicio,
       ventaDto.fechaFin,
@@ -45,10 +43,12 @@ export class VentaMetasSucursalService {
       ventaDto.fechaFin,
     );
 
-    for (const sucursal of sucursales) {
+    for (const sucursal of ventaDto.sucursal) {
+
+      
       let diasComerciales = 0;
       const meta = await this.metasSucursalService.listarMetasSucursal(
-        sucursal._id,
+        sucursal,
         ventaDto.fechaInicio,
         ventaDto.fechaFin,
       );
@@ -66,15 +66,25 @@ export class VentaMetasSucursalService {
       const venta = await this.venta.aggregate([
         {
           $match: {
-            sucursal: new Types.ObjectId(sucursal._id),
+            sucursal: new Types.ObjectId(sucursal),
             ...filtrador,
             flag: Flag.nuevo,
           },
         },
-
+        {
+          $lookup:{
+            from:'Sucursal',
+            foreignField:'_id',
+            localField:'sucursal',
+            as:'sucursal',
+          }
+        },
+        {
+          $unwind:{path:'$sucursal', preserveNullAndEmptyArrays:false} 
+        },
         {
           $group: {
-            _id: null,
+            _id:'sucursal.nombre' ,
             ticket: {
               $sum: {
                 $cond: {
@@ -85,23 +95,25 @@ export class VentaMetasSucursalService {
               },
             },
             importe: { $sum: '$importe' },
+            sucursal:{$first:'$sucursal.nombre'}
           },
         },
         {
           $project: {
             ticket: 1,
             importe: 1,
+            sucursal:1
           },
         },
       ]);
       const ticketVenta = venta[0] ? venta[0].ticket : 0;
       const importVenta = venta[0] ? venta[0].importe : 0;
-
+       const sucursalNombre = venta[0] ? venta[0].sucursal[0] : 'Sin sucursal';
+      
       const montoMeta = meta ? meta.monto : 0;
       const ticketMeta = meta ? meta.ticket : 0;
-
       const data: DataMetaI = {
-        sucursal: sucursal.nombre,
+        sucursal: sucursalNombre,
         montoMeta: montoMeta,
         ticketMeta: ticketMeta,
         ticketVenta: ticketVenta,
@@ -120,7 +132,7 @@ export class VentaMetasSucursalService {
 
   private async indiceDeAvanceComercial(
     dias: Date[],
-    sucursal: SucursalI,
+    sucursal: Types.ObjectId,
     diasComerciales: number,
     domingos: number,
   ) {
@@ -129,11 +141,11 @@ export class VentaMetasSucursalService {
     for (const dia of dias) {
       const diasHAbiles = await this.diasService.listarDiasHabiles(
         dia,
-        sucursal._id,
+        sucursal,
       );
       const diasInHAbiles = await this.diasService.listarDiasInhabiles(
         dia,
-        sucursal._id,
+        sucursal,
       );
       if (diasHAbiles) {
         cantidadDiasHabiles += 1;
