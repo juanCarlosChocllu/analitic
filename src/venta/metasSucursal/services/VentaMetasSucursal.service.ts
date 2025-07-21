@@ -44,7 +44,7 @@ export class VentaMetasSucursalService {
     );
 
     for (const sucursal of ventaDto.sucursal) {
-
+      const suc = await this.sucursalService.listarSucursalId(sucursal)
       
       let diasComerciales = 0;
       const meta = await this.metasSucursalService.listarMetasSucursal(
@@ -110,12 +110,11 @@ export class VentaMetasSucursalService {
       
       const ticketVenta = venta[0] ? venta[0].ticket : 0;
       const importVenta = venta[0] ? venta[0].importe : 0;
-       const sucursalNombre = venta[0] ? venta[0].sucursal : 'Sin sucursal';
-      
+    
       const montoMeta = meta ? meta.monto : 0;
       const ticketMeta = meta ? meta.ticket : 0;
       const data: DataMetaI = {
-        sucursal: sucursalNombre,
+        sucursal: suc.nombre,
         montoMeta: montoMeta,
         ticketMeta: ticketMeta,
         ticketVenta: ticketVenta,
