@@ -84,7 +84,7 @@ export class VentaMetasSucursalService {
         },
         {
           $group: {
-            _id:'sucursal.nombre' ,
+            _id:'$sucursal.nombre' ,
             ticket: {
               $sum: {
                 $cond: {
@@ -106,9 +106,11 @@ export class VentaMetasSucursalService {
           },
         },
       ]);
+   
+      
       const ticketVenta = venta[0] ? venta[0].ticket : 0;
       const importVenta = venta[0] ? venta[0].importe : 0;
-       const sucursalNombre = venta[0] ? venta[0].sucursal[0] : 'Sin sucursal';
+       const sucursalNombre = venta[0] ? venta[0].sucursal : 'Sin sucursal';
       
       const montoMeta = meta ? meta.monto : 0;
       const ticketMeta = meta ? meta.ticket : 0;
