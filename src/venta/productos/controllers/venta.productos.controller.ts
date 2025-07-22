@@ -5,6 +5,7 @@ import { VentaProductosService } from '../services/venta.productos.service';
 import { InformacionVentaDto } from '../../core/dto/informacion.venta.dto';
 import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
 import { VentaDto } from 'src/venta/core/dto/venta.dto';
+import { Types } from 'mongoose';
 
 @Controller('venta')
 export class VentaProductosController {
@@ -28,14 +29,14 @@ export class VentaProductosController {
  
 
  @Post('kpi/monturas/informacion/:sucursal')
- kipMonturasInformacion(@Param('sucursal', new ValidacionIdPipe) sucursal:string ,@Body() informacionVentaDto: InformacionVentaDto){
+ kipMonturasInformacion(@Param('sucursal', new ValidacionIdPipe) sucursal:Types.ObjectId ,@Body() informacionVentaDto: InformacionVentaDto){
   return this.ventaProductosService.kpiInformacionMonturas(informacionVentaDto, sucursal)
  }
 
 
  
  @Post('kpi/monturas/vip/:sucursal')
- kpiInformacionMonturasVip(@Param('sucursal', new ValidacionIdPipe) sucursal:string ,@Body() informacionVentaDto: InformacionVentaDto){
+ kpiInformacionMonturasVip(@Param('sucursal', new ValidacionIdPipe) sucursal:Types.ObjectId ,@Body() informacionVentaDto: InformacionVentaDto){
   return this.ventaProductosService.kpiInformacionMonturasVip(informacionVentaDto, sucursal)
  }
 
@@ -45,7 +46,7 @@ export class VentaProductosController {
 }
 
 @Post('kpi/lentes/contacto/informacion/:sucursal')
-kpiIformacionLentesDeContacto( @Param ('sucursal', new ValidacionIdPipe) sucursal:string ,  @Body() informacionVentaDto: InformacionVentaDto){
+kpiIformacionLentesDeContacto( @Param ('sucursal', new ValidacionIdPipe) sucursal:Types.ObjectId ,  @Body() informacionVentaDto: InformacionVentaDto){
 return this.ventaProductosService.kpiIformacionLentesDeContacto(informacionVentaDto, sucursal)
 }
 
@@ -55,7 +56,7 @@ kipiGafas(@Body() kpiDto: VentaDto){
 }
 
 @Post('kpi/gafa/informacion/:sucursal')
-kipGafaInformacion(@Param('sucursal', new ValidacionIdPipe) sucursal:string ,@Body() informacionVentaDto: InformacionVentaDto){
+kipGafaInformacion(@Param('sucursal', new ValidacionIdPipe) sucursal:Types.ObjectId ,@Body() informacionVentaDto: InformacionVentaDto){
  return this.ventaProductosService.kpiInformacionGafa(informacionVentaDto, sucursal)
 }
 

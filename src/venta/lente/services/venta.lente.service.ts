@@ -12,10 +12,10 @@ import { productos } from '../../core/enums/productos.enum';
 import { InformacionVentaDto } from '../../core/dto/informacion.venta.dto';
 
 import { filtradorVenta } from '../../core/util/filtrador.venta.util';
-import { filtradorKpiInformacion } from '../../core/util/filtrador.kpi.informacion.util';
+import { detallleVentaFilter } from '../../core/util/detalleVentaFilter.util';
 import { VentaTodasDto } from '../../core/dto/venta.todas.dto';
 import { filtradorKpiInformacionEmpresa } from '../../core/util/filtrador.kpi.informacion.empresa.util';
-import { InformacionEmpresasTodasVentaDto } from '../../core/dto/informacion.empresas.todas.dto';
+import { DetalleVentaFilter } from '../../core/dto/informacion.empresas.todas.dto';
 import { filtradorKpiInformacionTodasEmpresas } from '../../core/util/filtrador.infomacion.todas.empresas.util';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { VentaDto } from 'src/venta/core/dto/venta.dto';
@@ -35,7 +35,7 @@ export class VentaLenteService {
   ) {}
 
   async kpiInformacionTodasEmpresas(
-    informacionEmpresasTodasVentaDto: InformacionEmpresasTodasVentaDto,
+    informacionEmpresasTodasVentaDto: DetalleVentaFilter,
   ) {
     const filtrador = filtradorKpiInformacionTodasEmpresas(
       informacionEmpresasTodasVentaDto,
@@ -68,10 +68,10 @@ export class VentaLenteService {
   }
 
   async kpiInformacion(
-    sucursal: string,
+    sucursal: Types.ObjectId,
     informacionVentaDto: InformacionVentaDto,
   ) {
-    const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto);
+    const filtrador = detallleVentaFilter(sucursal, informacionVentaDto);
     const [antireflejo, progresivos, ocupacional, su] = await Promise.all([
       this.kpiAntireflejo(filtrador),
       this.kpiProgresivos(filtrador),

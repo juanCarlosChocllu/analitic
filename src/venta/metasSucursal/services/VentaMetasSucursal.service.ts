@@ -17,6 +17,9 @@ import { SucursalI } from 'src/core/interfaces/sucursalInterface';
 import { constants } from 'buffer';
 import { DiasService } from 'src/dias/services/dias.service';
 import { diasHAbiles } from 'src/venta/core/util/dias.habiles.util';
+import { DetalleVentaMetaDto } from '../dto/DetalleVentaMeta.dto';
+import { InformacionVentaDto } from 'src/venta/core/dto/informacion.venta.dto';
+import { detallleVentaFilter } from 'src/venta/core/util/detalleVentaFilter.util';
 
 @Injectable()
 export class VentaMetasSucursalService {
@@ -164,4 +167,45 @@ export class VentaMetasSucursalService {
     );
     return [avance, cantidadDias];
   }
+
+
+  async detalleVentaMetas(detalleVentaMetaDto:InformacionVentaDto, sucursal:Types.ObjectId){
+    
+      const filter = detallleVentaFilter(sucursal,detalleVentaMetaDto)
+      console.log(filter);
+      
+      const venta = await this.venta.aggregate([
+          {
+            $match:{
+              ...filter
+            }
+          },
+          {
+            $group:{
+              _id:'$numeroTicket',
+              detalle:{$push:{
+                producto:'$producto',
+                importe:'$importe',
+                tracking:'$estadoTracking',
+                fechaVenta:'$fechaVenta',
+                flagVenta:'$flagVenta',
+                fechaFinalizacion:'$fecha'
+
+              }}
+            }
+          },
+          {
+            $project:{
+              _id:0,
+              id_venta:'$_id',
+              detalle:1
+            }
+          }
+      ])
+
+    return venta
+  }
+
+  
+
 }

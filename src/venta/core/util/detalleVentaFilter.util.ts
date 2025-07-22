@@ -3,8 +3,8 @@ import { FiltroVentaI } from '../interfaces/filtro.venta.interface';
 import { InformacionVentaDto } from '../dto/informacion.venta.dto';
 import { FlagVentaE } from '../enums/estado.enum';
 
-export function filtradorKpiInformacion(
-  sucursal: string,
+export function detallleVentaFilter(
+  sucursal: Types.ObjectId,
   informacionVentaDto: InformacionVentaDto,
 ): FiltroVentaI {
   const filtrador: FiltroVentaI = {

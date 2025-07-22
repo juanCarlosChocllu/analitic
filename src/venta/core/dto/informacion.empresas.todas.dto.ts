@@ -2,10 +2,11 @@ import { IsBoolean, IsDateString, IsEnum, IsMongoId, IsOptional } from 'class-va
 import { FlagVentaE } from '../enums/estado.enum';
 import { Types } from 'mongoose';
 
-export class InformacionEmpresasTodasVentaDto {
+export class DetalleVentaFilter {
 
   @IsMongoId({each:true})
   empresa: Types.ObjectId[];
+
   @IsMongoId({each:true})
   @IsOptional()
   tipoVenta: Types.ObjectId[];
@@ -13,6 +14,7 @@ export class InformacionEmpresasTodasVentaDto {
   @IsEnum(FlagVentaE)
   flagVenta: string;
 
+  
   @IsOptional()
   @IsBoolean()
   comisiona:boolean | null

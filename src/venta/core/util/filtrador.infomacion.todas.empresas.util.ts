@@ -1,9 +1,9 @@
 import { Types } from "mongoose"
 import { FiltroVentaI } from "../interfaces/filtro.venta.interface"
-import { InformacionEmpresasTodasVentaDto } from "../dto/informacion.empresas.todas.dto"
 import { FlagVentaE } from "../enums/estado.enum"
+import { DetalleVentaFilter } from "../dto/informacion.empresas.todas.dto"
 
-export function filtradorKpiInformacionTodasEmpresas(informacionEmpresasTodasVentaDto :InformacionEmpresasTodasVentaDto):FiltroVentaI{
+export function filtradorKpiInformacionTodasEmpresas(informacionEmpresasTodasVentaDto :DetalleVentaFilter):FiltroVentaI{
    
       
   const filtrador:FiltroVentaI ={

@@ -3,9 +3,10 @@ import { VentaLenteService } from '../services/venta.lente.service';
 
 import { InformacionVentaDto } from '../../core/dto/informacion.venta.dto';
 import { VentaTodasDto } from '../../core/dto/venta.todas.dto';
-import { InformacionEmpresasTodasVentaDto } from '../../core/dto/informacion.empresas.todas.dto';
+import { DetalleVentaFilter } from '../../core/dto/informacion.empresas.todas.dto';
 import { ValidacionIdPipe } from 'src/core/util/validacion-id/validacion-id.pipe';
 import { VentaDto } from 'src/venta/core/dto/venta.dto';
+import { Types } from 'mongoose';
 
 
 @Controller('venta')
@@ -19,7 +20,7 @@ export class VentaLenteController {
 
   @Post('kpi/informacion/:sucursal')
   kpiInformacion(
-    @Param('sucursal', new ValidacionIdPipe()) sucursal: string,
+    @Param('sucursal', new ValidacionIdPipe()) sucursal: Types.ObjectId,
     @Body() informacionVentaDto: InformacionVentaDto,
   ) {
     return this.ventaLenteService.kpiInformacion(sucursal, informacionVentaDto);
@@ -38,7 +39,7 @@ export class VentaLenteController {
 
   @Post('kpi/informacion/empresas/todas')
   informacionTodasEmpresas(
-    @Body() InformacionEmpresasTodasVentaDto: InformacionEmpresasTodasVentaDto,
+    @Body() InformacionEmpresasTodasVentaDto: DetalleVentaFilter,
   ) {
     return this.ventaLenteService.kpiInformacionTodasEmpresas(
       InformacionEmpresasTodasVentaDto,

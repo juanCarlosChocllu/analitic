@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { Venta } from '../../schemas/venta.schema';
 import { Model, Types } from 'mongoose';
-import { filtradorKpiInformacion } from '../../core/util/filtrador.kpi.informacion.util';
+import { detallleVentaFilter } from '../../core/util/detalleVentaFilter.util';
 import { InformacionVentaDto } from '../../core/dto/informacion.venta.dto';
 import { productos } from '../../core/enums/productos.enum';
 import { filtradorVenta } from '../../core/util/filtrador.venta.util';
@@ -82,8 +82,8 @@ export class VentaProductosService {
           
        }
   
-       async kpiIformacionLentesDeContacto ( informacionVentaDto: InformacionVentaDto, sucursal:string){
-         const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto)
+       async kpiIformacionLentesDeContacto ( informacionVentaDto: InformacionVentaDto, sucursal:Types.ObjectId){
+         const filtrador = detallleVentaFilter(sucursal, informacionVentaDto)
             const lc = await this.VentaExcelSchema.aggregate([
                 {
                   $match:{
@@ -206,8 +206,8 @@ export class VentaProductosService {
       
         }
   
-        async kpiInformacionMonturas(informacionVentaDto:InformacionVentaDto, sucursal:string){
-          const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto)
+        async kpiInformacionMonturas(informacionVentaDto:InformacionVentaDto, sucursal:Types.ObjectId){
+          const filtrador = detallleVentaFilter(sucursal, informacionVentaDto)
           const monturas = await this.VentaExcelSchema.aggregate([
             {
               $match:{
@@ -326,8 +326,8 @@ export class VentaProductosService {
       
         }
   
-        async kpiInformacionGafa(informacionVentaDto:InformacionVentaDto, sucursal:string){
-          const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto)
+        async kpiInformacionGafa(informacionVentaDto:InformacionVentaDto, sucursal:Types.ObjectId){
+          const filtrador = detallleVentaFilter(sucursal, informacionVentaDto)
           const gafa = await this.VentaExcelSchema.aggregate([
             {
               $match:{
@@ -463,8 +463,8 @@ export class VentaProductosService {
         
           }
 
-          async kpiInformacionMonturasVip(informacionVentaDto:InformacionVentaDto, sucursal:string){
-            const filtrador = filtradorKpiInformacion(sucursal, informacionVentaDto)
+          async kpiInformacionMonturasVip(informacionVentaDto:InformacionVentaDto, sucursal:Types.ObjectId){
+            const filtrador = detallleVentaFilter(sucursal, informacionVentaDto)
             const monturasVip = await this.VentaExcelSchema.aggregate([
               {
                 $match:{
