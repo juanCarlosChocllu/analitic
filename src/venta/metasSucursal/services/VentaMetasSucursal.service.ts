@@ -117,6 +117,7 @@ export class VentaMetasSucursalService {
       const montoMeta = meta ? meta.monto : 0;
       const ticketMeta = meta ? meta.ticket : 0;
       const data: DataMetaI = {
+        _id:suc._id,
         sucursal: suc.nombre,
         montoMeta: montoMeta,
         ticketMeta: ticketMeta,
