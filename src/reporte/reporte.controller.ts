@@ -26,9 +26,23 @@ export class ReporteController {
   async actualizarFechas(@Body() fechaDto: DescargarDto) {
     return this.reporteService.actulizarFechas(fechaDto);
   }
+
   @Public()
   @Post('anular')
   async anularVenta(@Body() anularVentaDto: AnularVentaDto) {
     return this.reporteService.anularVenta(anularVentaDto);
   }
+
+
+  @Post('anular/ventas')
+  async anularVentas(@Body() fechaDto: DescargarDto) {
+    return this.reporteService.anularVentas(fechaDto);
+  }
+
+   @Public()
+  @Post('venta/finaliazar2')
+  async finalizarVentasMia(@Body() fechaDto: DescargarDto) {
+    return this.reporteService.finalizarVentasMia(fechaDto);
+  }
+
 }

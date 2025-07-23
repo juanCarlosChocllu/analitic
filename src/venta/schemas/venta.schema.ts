@@ -103,6 +103,7 @@ export class Venta {
 }
 export const VentaSchema = SchemaFactory.createForClass(Venta);
 VentaSchema.index({ numeroTicket: 1 });
+VentaSchema.index({ numeroTicket: 1, estadoTracking:1});
 VentaSchema.index({ numeroTicket: 1 ,producto:1 });
 VentaSchema.index({ sucursal: 1 });
 VentaSchema.index({ empresa: 1 });

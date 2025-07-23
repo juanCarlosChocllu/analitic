@@ -12,6 +12,8 @@ import {
 } from 'src/core/config/variables.entorno.config';
 import { VentaI } from './interface/Venta';
 import { RecetaResponseI } from 'src/receta/interface/receta';
+import { AnularVentaMiaI, FinalizarVentaMia } from './interface/VentasMia';
+
 
 @Injectable()
 export class HttpServiceAxios {
@@ -61,4 +63,39 @@ export class HttpServiceAxios {
         throw error
       }
   }
+
+  public async anularVentas(descargarDto: DescargarDto):Promise<AnularVentaMiaI[]>{
+    try {
+        const body: descargarData = {
+        fechaFin: descargarDto.fechaFin,
+        fechaInicio: descargarDto.fechaInicio,
+        token: tokenDescargas,
+      };
+          const response = await firstValueFrom(
+        this.httpService.post(`${apiMia}/api/ventas/anuladas`, body),
+      );
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  }
+
+
+   public async finalizarVentasMia(descargarDto: DescargarDto):Promise<FinalizarVentaMia[]>{
+    try {
+        const body: descargarData = {
+        fechaFin: descargarDto.fechaFin,
+        fechaInicio: descargarDto.fechaInicio,
+        token: tokenDescargas,
+      };
+          const response = await firstValueFrom(
+        this.httpService.post(`${apiMia}/api/ventas/finalizadas2`, body),
+      );
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  }
+
+
 }

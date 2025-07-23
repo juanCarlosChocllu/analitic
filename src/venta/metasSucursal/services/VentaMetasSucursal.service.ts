@@ -35,7 +35,6 @@ export class VentaMetasSucursalService {
     const filtrador = filtradorVenta(ventaDto);
     const resultados: DataMetaI[] = [];
 
-  
     const dias = this.coreService.cantidadDias(
       ventaDto.fechaInicio,
       ventaDto.fechaFin,
@@ -47,8 +46,8 @@ export class VentaMetasSucursalService {
     );
 
     for (const sucursal of ventaDto.sucursal) {
-      const suc = await this.sucursalService.listarSucursalId(sucursal)
-      
+      const suc = await this.sucursalService.listarSucursalId(sucursal);
+
       let diasComerciales = 0;
       const meta = await this.metasSucursalService.listarMetasSucursal(
         sucursal,
@@ -75,19 +74,19 @@ export class VentaMetasSucursalService {
           },
         },
         {
-          $lookup:{
-            from:'Sucursal',
-            foreignField:'_id',
-            localField:'sucursal',
-            as:'sucursal',
-          }
+          $lookup: {
+            from: 'Sucursal',
+            foreignField: '_id',
+            localField: 'sucursal',
+            as: 'sucursal',
+          },
         },
         {
-          $unwind:{path:'$sucursal', preserveNullAndEmptyArrays:false} 
+          $unwind: { path: '$sucursal', preserveNullAndEmptyArrays: false },
         },
         {
           $group: {
-            _id:'$sucursal.nombre' ,
+            _id: '$sucursal.nombre',
             ticket: {
               $sum: {
                 $cond: {
@@ -98,26 +97,25 @@ export class VentaMetasSucursalService {
               },
             },
             importe: { $sum: '$importe' },
-            sucursal:{$first:'$sucursal.nombre'}
+            sucursal: { $first: '$sucursal.nombre' },
           },
         },
         {
           $project: {
             ticket: 1,
             importe: 1,
-            sucursal:1
+            sucursal: 1,
           },
         },
       ]);
-   
-      
+
       const ticketVenta = venta[0] ? venta[0].ticket : 0;
       const importVenta = venta[0] ? venta[0].importe : 0;
-    
+
       const montoMeta = meta ? meta.monto : 0;
       const ticketMeta = meta ? meta.ticket : 0;
       const data: DataMetaI = {
-        _id:suc._id,
+        _id: suc._id,
         sucursal: suc.nombre,
         montoMeta: montoMeta,
         ticketMeta: ticketMeta,
@@ -169,43 +167,43 @@ export class VentaMetasSucursalService {
     return [avance, cantidadDias];
   }
 
+  async detalleVentaMetas(
+    detalleVentaMetaDto: InformacionVentaDto,
+    sucursal: Types.ObjectId,
+  ) {
+    const filter = detallleVentaFilter(sucursal, detalleVentaMetaDto);
+    console.log(filter);
 
-  async detalleVentaMetas(detalleVentaMetaDto:InformacionVentaDto, sucursal:Types.ObjectId){
-    
-      const filter = detallleVentaFilter(sucursal,detalleVentaMetaDto)
-      console.log(filter);
-      
-      const venta = await this.venta.aggregate([
-          {
-            $match:{
-              ...filter
-            }
+    const venta = await this.venta.aggregate([
+      {
+        $match: {
+          ...filter,
+        },
+      },
+      {
+        $group: {
+          _id: '$numeroTicket',
+          detalle: {
+            $push: {
+              producto: '$producto',
+              importe: '$importe',
+              tracking: '$estadoTracking',
+              fechaVenta: '$fechaVenta',
+              flagVenta: '$flagVenta',
+              fechaFinalizacion: '$fecha',
+            },
           },
-          {
-            $group:{
-              _id:'$numeroTicket',
-              detalle:{$push:{
-                producto:'$producto',
-                importe:'$importe',
-                tracking:'$estadoTracking',
-                fechaVenta:'$fechaVenta',
-                flagVenta:'$flagVenta',
-                fechaFinalizacion:'$fecha'
-              }}
-            }
-          },
-          {
-            $project:{
-              _id:0,
-              id_venta:'$_id',
-              detalle:1
-            }
-          }
-      ])
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id_venta: '$_id',
+          detalle: 1,
+        },
+      },
+    ]);
 
-    return venta
+    return venta;
   }
-
-  
-
 }

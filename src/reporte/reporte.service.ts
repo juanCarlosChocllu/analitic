@@ -161,7 +161,7 @@ export class ReporteService {
   private async guardaVenta(ventas: VentaI[]) {
     try {
       console.log(ventas);
-      
+
       for (let data of ventas) {
         const venta = await this.venta.exists({
           numeroTicket: data.idVenta.toUpperCase(),
@@ -380,38 +380,149 @@ export class ReporteService {
         .lean();
       if (ventaEncotrada) {
         const fecha = horaUtc(venta.fecha);
-        
+
         await this.venta.updateOne(
           { numeroTicket: venta.idVenta.trim(), producto: venta.rubro },
-          { $set: { fechaVenta: fecha , ...(venta.fecha_finalizacion) && {fecha:horaUtc(venta.fecha_finalizacion), flagVenta:venta.flag} } },
-       
+          {
+            $set: {
+              fechaVenta: fecha,
+              ...(venta.fecha_finalizacion && {
+                fecha: horaUtc(venta.fecha_finalizacion),
+                flagVenta: venta.flag,
+              }),
+            },
+          },
         );
-  
       } else {
         console.log(venta);
       }
     }
-
-  
   }
 
-    async anularVenta(anularVentaDto:AnularVentaDto){
-      console.log(anularVentaDto);
-      
-      const venta = await this.venta.find({numeroTicket:anularVentaDto.idVenta})
-      console.log(venta);
-      
-      if(venta.length > 0) {
-        await this.venta.updateMany({numeroTicket:anularVentaDto.idVenta}, {
-          estado:anularVentaDto.estado,
-          estadoTracking:anularVentaDto.estadoTracking,
-          fechaAnulacion:horaUtc(anularVentaDto.fechaAnulacion)
-        })
-        return {status:HttpStatus.OK}
+  async anularVenta(anularVentaDto: AnularVentaDto) {
+    console.log(anularVentaDto);
+
+    const venta = await this.venta.find({
+      numeroTicket: anularVentaDto.idVenta,
+    });
+    console.log(venta);
+
+    if (venta.length > 0) {
+      await this.venta.updateMany(
+        { numeroTicket: anularVentaDto.idVenta },
+        {
+          estado: anularVentaDto.estado,
+          estadoTracking: anularVentaDto.estadoTracking,
+          fechaAnulacion: horaUtc(anularVentaDto.fechaAnulacion),
+        },
+      );
+      return { status: HttpStatus.OK };
+    }
+    throw new NotFoundException();
+  }
+
+  async anularVentas(fechaDto: DescargarDto) {
+    const ventasMia = await this.httpServiceAxios.anularVentas(fechaDto);
+    for (const venta of ventasMia) {
+      const ventaAnalitycs = await this.venta.findOne({
+        numeroTicket: venta.id_venta,
+        estadoTracking: { $ne: 'ANULADO' },
+      });
+      if (ventaAnalitycs) {
+        await this.venta.updateMany(
+          { numeroTicket: venta.id_venta },
+          {
+            estado: venta.estado,
+            estadoTracking: venta.estadoTracking,
+            fechaAnulacion: horaUtc(venta.fechaAprobacionAnulacion),
+          },
+        );
       }
-       throw new NotFoundException()
-      
     }
 
- 
+    return { status: HttpStatus.OK };
+  }
+
+  async finalizarVentasMia(fechaDto: DescargarDto) {
+    const ventasMia = await this.httpServiceAxios.finalizarVentasMia(fechaDto);
+    for (const venta of ventasMia) {
+      const ventaAnalitycs = await this.venta.findOne({
+        numeroTicket: venta.id_venta,
+      });
+      if (ventaAnalitycs) {
+        await this.venta.updateMany(
+          {
+            numeroTicket: venta.id_venta,
+          },
+          {
+            estado: venta.estado,
+            estadoTracking: venta.estadoTracking,
+            flagVenta: venta.flaVenta,
+            fecha: horaUtc(venta.fecha_finalizacion),
+          },
+        );
+      }
+    }
+    return { status: HttpStatus.OK };
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async anularVentasCron() {
+    try {
+      const date = new Date();
+      const [añoFin, mesFin, diaFin] = [
+        date.getFullYear(),
+        (date.getMonth() + 1).toString().padStart(2, '0'),
+        (date.getDate() - 1).toString().padStart(2, '0'),
+      ];
+
+      const [añoInicio, mesInicio, diaInicio] = [
+        date.getFullYear(),
+        (date.getMonth() + 1).toString().padStart(2, '0'),
+        (date.getDate() - 5).toString().padStart(2, '0'),
+      ];
+
+      const fecha: DescargarDto = {
+        fechaInicio: `${añoInicio}-${mesInicio}-${diaInicio}`,
+        fechaFin: `${añoFin}-${mesFin}-${diaFin}`,
+      };
+
+      this.logger.debug('Iniciando la anulaciones');
+      const response = await this.anularVentas(fecha);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+   @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async finalizarVentasCron() {
+    try {
+      const date = new Date();
+      const [añoFin, mesFin, diaFin] = [
+        date.getFullYear(),
+        (date.getMonth() + 1).toString().padStart(2, '0'),
+        (date.getDate() - 1).toString().padStart(2, '0'),
+      ];
+
+      const [añoInicio, mesInicio, diaInicio] = [
+        date.getFullYear(),
+        (date.getMonth() + 1).toString().padStart(2, '0'),
+        (date.getDate() - 2).toString().padStart(2, '0'),
+      ];
+
+      const fecha: DescargarDto = {
+        fechaInicio: `${añoInicio}-${mesInicio}-${diaInicio}`,
+        fechaFin: `${añoFin}-${mesFin}-${diaFin}`,
+      };
+    
+      this.logger.debug('Iniciando finalizaciones');
+      const response = await this.finalizarVentasMia(fecha);
+     
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
 }
