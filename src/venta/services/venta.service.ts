@@ -67,22 +67,6 @@ export class VentaService {
         },
       },
       {
-        $lookup: {
-          from: 'Sucursal',
-          foreignField: '_id',
-          localField: 'sucursal',
-          as: 'sucursal',
-        },
-      },
-      {
-        $unwind: '$sucursal',
-      },
-      {
-        $match: {
-          'sucursal.nombre': { $ne: 'OPTICENTRO PARAGUAY' },
-        },
-      },
-      {
         $group: {
           _id: '$producto',
           cantidad: { $sum: '$cantidad' },
