@@ -91,7 +91,7 @@ export class VentaMetasSucursalService {
               $sum: {
                 $cond: {
                   if: { $eq: ['$aperturaTicket', '1'] },
-                  then: '$cantidad',
+                  then: 1,
                   else: 0,
                 },
               },
