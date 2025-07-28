@@ -14,8 +14,9 @@ export class TipoLenteService {
   public async guardarTipoLente(nombre: string) {
     const tipoLent = await this.TipoLenteSchema.findOne({ nombre: nombre });
     if (!tipoLent) {
-      await this.TipoLenteSchema.create({ nombre: nombre });
+      return this.TipoLenteSchema.create({ nombre: nombre });
     }
+    return tipoLent
   }
 
 

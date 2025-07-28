@@ -38,9 +38,10 @@ export class TipoVentaService {
   }
 
   public async verificarTipoVenta(nombre: string) {
-    const tipoVenta = await this.TipoVentaSchema.findOne({
-      nombre: nombre,
-    }).select('nombre');
+    const tipoVenta = await this.TipoVentaSchema.findOne({nombre: nombre});
+    if(!tipoVenta){
+      return await this.TipoVentaSchema.create({nombre:nombre})
+    }
     return tipoVenta;
   }
 

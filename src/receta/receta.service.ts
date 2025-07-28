@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateRecetaDto } from './dto/create-receta.dto';
-import { UpdateRecetaDto } from './dto/update-receta.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Receta } from './schema/receta.schema';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 import { Model } from 'mongoose';
 import { RecetaI, RecetaMedicoI } from './interface/receta';
-import { especialidad } from 'src/venta/core/enums/especialidad.enum';
+
 import { BuscadorRecetaDto } from 'src/venta/medicos/dto/BuscadorReceta.dto';
 
 @Injectable()
@@ -20,8 +18,8 @@ export class RecetaService {
   }
 
   public async registrarReceta(data: RecetaI) {
-    await this.receta.create(data);
-    return;
+   return  await this.receta.create(data);
+  
   }
 
   public async listarRecetaMedicos(
@@ -74,9 +72,6 @@ export class RecetaService {
         },
       },
     ]);
-
-
-      
     return recetas;
   }
 }

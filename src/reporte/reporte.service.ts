@@ -25,8 +25,6 @@ import { DescargarDto } from './dto/Descargar.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { VentaService } from 'src/venta/services/venta.service';
 
-import { SucursalService } from 'src/sucursal/sucursal.service';
-
 import { Venta } from 'src/venta/schemas/venta.schema';
 import { AsesoresService } from 'src/asesores/asesores.service';
 import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
@@ -36,9 +34,11 @@ import { ColorLenteService } from 'src/color-lente/color-lente.service';
 import { MedicoService } from 'src/medico/medico.service';
 import { LogService } from 'src/log/log.service';
 import { RecetaService } from 'src/receta/receta.service';
-import { RecetaI } from 'src/receta/interface/receta';
+import { RecetaI, RecetaResponseI } from 'src/receta/interface/receta';
 import { horaUtc } from 'src/core/util/fechas/horaUtc';
 import { AnularVentaDto } from './dto/AnularVenta.dto';
+import { RangosService } from 'src/rangos/rangos.service';
+import { log } from 'node:console';
 
 @Injectable()
 export class ReporteService {
@@ -74,15 +74,13 @@ export class ReporteService {
     private readonly colorLenteService: ColorLenteService,
     private readonly logService: LogService,
     private readonly recetaService: RecetaService,
+    private readonly rangoService: RangosService,
   ) {}
 
   async realizarDescarga(DescargarDto: DescargarDto) {
     try {
       const ventas = await this.httpServiceAxios.reporte(DescargarDto);
-
-      (await this.guardarAsesor(ventas),
-        await this.guardarAtrubutosDeVenta(ventas),
-        await this.guardaVenta(ventas));
+      await this.guardaVenta(ventas);
       await this.logService.registroLogDescarga('Venta', DescargarDto.fechaFin);
       return { status: HttpStatus.CREATED };
     } catch (error) {
@@ -90,78 +88,8 @@ export class ReporteService {
     }
   }
 
-  private async guardarMedico(nombre: string, especialidad: string) {
-    const medico = await this.medicoService.buscarMedico(
-      nombre.trim().toUpperCase(),
-    );
-    if (!medico) {
-      await this.medicoService.crearMedico(
-        nombre.toUpperCase().trim(),
-        especialidad.toUpperCase(),
-      );
-    }
-  }
-
-  private async guardarTipoVenta(tipo: string) {
-    const tipoVenta = await this.tipoVentaService.verificarTipoVenta(
-      tipo.trim().toUpperCase(),
-    );
-    if (!tipoVenta) {
-      await this.tipoVentaService.registrarTipoVenta(tipo.toUpperCase().trim());
-    }
-  }
-
-  private async guardarAtrubutosDeVenta(ventas: VentaI[]) {
-    try {
-      for (const venta of ventas) {
-        await this.guardarMedico(venta.medico, venta.especialidad);
-        await this.guardarTipoVenta(venta.tipoVenta);
-        if (venta.rubro === productos.lente) {
-          await this.guardarAtributosLente(
-            venta.atributo1,
-            venta.atributo2,
-            venta.atributo3,
-            venta.atributo4,
-            venta.atributo5,
-            venta.atributo6,
-          );
-        }
-        if (
-          venta.rubro != productos.lente &&
-          venta.rubro != productos.servicio
-        ) {
-          await this.marcaService.guardarMarcaProducto(
-            venta.atributo1.toUpperCase(),
-          );
-        }
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  private async guardarAtributosLente(
-    atributo1: string,
-    atributo2: string,
-    atributo3: string,
-    atributo4: string,
-    atributo5: string,
-    atributo6: string,
-  ) {
-    await Promise.all([
-      this.colorLenteService.guardarColorLente(atributo1.toUpperCase()),
-      this.tipoLenteService.guardarTipoLente(atributo2.toUpperCase()),
-      this.materialService.guardarMaterIal(atributo3.toUpperCase()),
-      this.tipoColorService.guardarTipoColor(atributo4.toUpperCase()),
-      this.marcaLenteService.guardarMarcaLente(atributo5.toUpperCase()),
-      this.tratamientoService.guardarTratamiento(atributo6.toUpperCase()),
-    ]);
-  }
-
   private async guardaVenta(ventas: VentaI[]) {
     try {
-      console.log(ventas);
-
       for (let data of ventas) {
         const venta = await this.venta.exists({
           numeroTicket: data.idVenta.toUpperCase(),
@@ -172,121 +100,185 @@ export class ReporteService {
           const sucursal = await this.sucursalExcelSchema.findOne({
             nombre: data.local,
           });
-          const medico = await this.medicoService.buscarMedico(
+          const medico = await this.medicoService.crearMedico(
             data.medico.trim().toUpperCase(),
+            data.especialidad,
           );
           const tipoVenta = await this.tipoVentaService.verificarTipoVenta(
             data.tipoVenta,
           );
           if (sucursal) {
-            const asesor = await this.asesorService.buscarAsesorPorScursal(
+            const asesor = await this.asesorService.crearAsesor(
               data.nombre_vendedor,
               sucursal._id,
             );
 
-            const tratamiento =
-              data.rubro === productos.lente
-                ? await this.tratamientoService.listarTratamiento(
-                    data.atributo6,
-                  )
-                : null;
-
-            const tipoLente =
-              data.rubro === productos.lente
-                ? await this.tipoLenteService.listarTipoLente(data.atributo2)
-                : null;
-            const material =
-              data.rubro === productos.lente
-                ? await this.materialService.listarMaterial(data.atributo3)
-                : null;
-            const tipoColor =
-              data.rubro === productos.lente
-                ? await this.tipoColorService.listarTipoColor(data.atributo4)
-                : null;
-
-            const marcaLente =
-              data.rubro === productos.lente
-                ? await this.marcaLenteService.listarMarcaLente(data.atributo5)
-                : null;
-            const colorLente =
-              data.rubro === productos.lente
-                ? await this.colorLenteService.listarColorLente(data.atributo1)
-                : null;
-            const marca =
+            if (data.rubro === productos.lente) {
+              await this.registarLente(
+                data,
+                sucursal._id,
+                sucursal.empresa,
+                asesor._id,
+                tipoVenta._id,
+                medico._id,
+              );
+            } else if (
+              data.rubro === productos.lenteDeContacto ||
               data.rubro === productos.montura ||
-              data.rubro === productos.gafa ||
-              data.rubro === productos.lenteDeContacto
-                ? await this.marcaService.listarMarcaProducto(data.atributo1)
-                : null;
-            const dataVenta = {
-              ...(data.fecha_finalizacion && {
-                fecha: horaUtc(data.fecha_finalizacion),
-              }),
-              fechaVenta: horaUtc(data.fecha),
-              tipoConversion: data.tipoConversion,
-              descuentoFicha: data.descuentoFicha,
-              comisiona: data.comisiona,
-              numeroCotizacion: data.numeroCotizacion,
-              cotizacion: data.cotizacion,
-              estadoTracking: data.estadoTracking,
-              sucursal: sucursal._id,
-              empresa: sucursal.empresa,
-              numeroTicket: data.idVenta.toUpperCase().trim(),
-              aperturaTicket: data.apertura_tkt,
-              producto: data.rubro,
-              importe: data.importe,
-              cantidad: data.cantidad,
-              montoTotal: data.monto_total,
-              asesor: asesor._id,
-              tipoVenta: tipoVenta._id,
-              medico: medico._id,
-              flagVenta: data.flag,
-
-              ...(data.rubro === productos.lente && { tratamiento }),
-              ...(data.rubro === productos.lente && { tipoLente }),
-              ...(data.rubro === productos.lente && { material }),
-              ...(data.rubro === productos.lente && { tipoColor }),
-              ...(data.rubro === productos.lente && { marcaLente }),
-              ...(data.rubro === productos.lente && { colorLente }),
-              ...(data.rubro === productos.montura && { marca }),
-              ...(data.rubro === productos.gafa && { marca }),
-              ...(data.rubro === productos.lenteDeContacto && { marca }),
-            };
-            await this.ventaService.crearVenta(dataVenta);
+              data.rubro === productos.gafa
+            ) {
+              await this.guardarProducto(
+                data,
+                sucursal._id,
+                sucursal.empresa,
+                asesor._id,
+                tipoVenta._id,
+                medico._id,
+              );
+            } else {
+              const dataVenta = {
+                ...(data.fecha_finalizacion && {
+                  fecha: horaUtc(data.fecha_finalizacion),
+                }),
+                fechaVenta: horaUtc(data.fecha),
+                tipoConversion: data.tipoConversion,
+                descuentoFicha: data.descuentoFicha,
+                comisiona: data.comisiona,
+                numeroCotizacion: data.numeroCotizacion,
+                cotizacion: data.cotizacion,
+                estadoTracking: data.estadoTracking,
+                sucursal: sucursal._id,
+                empresa: sucursal.empresa,
+                numeroTicket: data.idVenta.toUpperCase().trim(),
+                aperturaTicket: data.apertura_tkt,
+                producto: data.rubro,
+                importe: data.importe,
+                cantidad: data.cantidad,
+                montoTotal: data.monto_total,
+                asesor: asesor._id,
+                tipoVenta: tipoVenta._id,
+                medico: medico._id,
+                flagVenta: data.flag,
+                descripcion: data.descripcionProducto,
+              };
+              await this.ventaService.crearVenta(dataVenta);
+            }
           }
         }
       }
     } catch (error) {
+      console.log(error);
+
       throw new BadRequestException();
     }
   }
 
-  private async guardarAsesor(venta: VentaI[]) {
-    const data = venta.map((item) => ({
-      asesor: item.nombre_vendedor.toUpperCase(),
-      sucursal: item.local,
-    }));
+  private async guardarProducto(
+    data: VentaI,
+    sucursal: Types.ObjectId,
+    empresa: Types.ObjectId,
+    asesor: Types.ObjectId,
+    tipoVenta: Types.ObjectId,
+    medico: Types.ObjectId,
+  ) {
+    const marca = await this.marcaService.guardarMarcaProducto(data.atributo1);
+    console.log(data.atributo1);
+    
+    console.log(data.rubro);
+    console.log(marca);
+    
+    
+    const dataVenta = {
+      ...(data.fecha_finalizacion && {
+        fecha: horaUtc(data.fecha_finalizacion),
+      }),
+      fechaVenta: horaUtc(data.fecha),
+      tipoConversion: data.tipoConversion,
+      descuentoFicha: data.descuentoFicha,
+      comisiona: data.comisiona,
+      numeroCotizacion: data.numeroCotizacion,
+      cotizacion: data.cotizacion,
+      estadoTracking: data.estadoTracking,
+      sucursal: sucursal,
+      empresa: empresa,
+      numeroTicket: data.idVenta.toUpperCase().trim(),
+      aperturaTicket: data.apertura_tkt,
+      producto: data.rubro,
+      importe: data.importe,
+      cantidad: data.cantidad,
+      montoTotal: data.monto_total,
+      asesor: asesor._id,
+      tipoVenta: tipoVenta._id,
+      medico: medico._id,
+      flagVenta: data.flag,
+      marca: marca._id,
+      descripcion: data.descripcionProducto,
+    };
+    await this.ventaService.crearVenta(dataVenta);
+  }
 
-    const uniqueData = Array.from(
-      new Map(data.map((item) => [item.asesor + item.sucursal, item])).values(),
-    );
+  private async registarLente(
+    data: VentaI,
+    sucursal: Types.ObjectId,
+    empresa: Types.ObjectId,
+    asesor: Types.ObjectId,
+    tipoVenta: Types.ObjectId,
+    medico: Types.ObjectId,
+  ) {
+    const [
+      tratamiento,
+      tipoLente,
+      material,
+      tipoColor,
+      marcaLente,
+      colorLente,
+      rango,
+      receta,
+    ] = await Promise.all([
+      this.tratamientoService.guardarTratamiento(data.atributo6),
+      this.tipoLenteService.guardarTipoLente(data.atributo2),
+      this.materialService.guardarMaterIal(data.atributo3),
+      this.tipoColorService.guardarTipoColor(data.atributo4),
+      this.marcaLenteService.guardarMarcaLente(data.atributo5),
+      this.colorLenteService.guardarColorLente(data.atributo1),
+      this.rangoService.guardarRango(data.atributo7),
+      this.registrarReceta(data.receta, medico),
+    ]);
 
-    for (let data of uniqueData) {
-      const sucursal = await this.sucursalExcelSchema.findOne({
-        nombre: data.sucursal,
-      });
-
-      if (sucursal) {
-        const asesor = await this.asesorService.buscarAsesorPorScursal(
-          data.asesor,
-          sucursal._id,
-        );
-
-        if (!asesor) {
-          await this.asesorService.crearAsesor(data.asesor, sucursal._id);
-        }
-      }
-    }
+    const dataVenta = {
+      ...(data.fecha_finalizacion && {
+        fecha: horaUtc(data.fecha_finalizacion),
+      }),
+      fechaVenta: horaUtc(data.fecha),
+      tipoConversion: data.tipoConversion,
+      descuentoFicha: data.descuentoFicha,
+      comisiona: data.comisiona,
+      numeroCotizacion: data.numeroCotizacion,
+      cotizacion: data.cotizacion,
+      estadoTracking: data.estadoTracking,
+      sucursal: sucursal,
+      empresa: empresa,
+      numeroTicket: data.idVenta.toUpperCase().trim(),
+      aperturaTicket: data.apertura_tkt,
+      producto: data.rubro,
+      importe: data.importe,
+      cantidad: data.cantidad,
+      montoTotal: data.monto_total,
+      asesor: asesor,
+      tipoVenta: tipoVenta,
+      medico: medico,
+      flagVenta: data.flag,
+      descripcion: data.descripcionProducto,
+      tratamiento: tratamiento._id,
+      tipoLente: tipoLente._id,
+      material: material._id,
+      tipoColor: tipoColor._id,
+      marcaLente: marcaLente._id,
+      colorLente: colorLente._id,
+      rango: rango._id,
+      receta: receta._id,
+    };
+    await this.ventaService.crearVenta(dataVenta);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_5AM)
@@ -495,8 +487,7 @@ export class ReporteService {
     }
   }
 
-
-   @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async finalizarVentasCron() {
     try {
       const date = new Date();
@@ -516,13 +507,31 @@ export class ReporteService {
         fechaInicio: `${añoInicio}-${mesInicio}-${diaInicio}`,
         fechaFin: `${añoFin}-${mesFin}-${diaFin}`,
       };
-    
+
       this.logger.debug('Iniciando finalizaciones');
       const response = await this.finalizarVentasMia(fecha);
-     
     } catch (error) {
       console.log(error);
     }
   }
 
+  private async registrarReceta(
+    receta: RecetaResponseI,
+    medico: Types.ObjectId,
+  ) {
+    const recetaExistente = await this.recetaService.buscarReceta(
+      receta.codigoMia,
+    );
+
+    if (!recetaExistente) {
+      const nuevaReceta: RecetaI = {
+        ...receta,
+        fecha: horaUtc(receta.fecha),
+        medico: new Types.ObjectId(medico),
+      };
+
+      return this.recetaService.registrarReceta(nuevaReceta);
+    }
+    return recetaExistente;
+  }
 }

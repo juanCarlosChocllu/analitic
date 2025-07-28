@@ -9,11 +9,12 @@ import { NombreBdConexion } from 'src/core/enums/nombre.db.enum';
 export class RangosService {
     constructor (@InjectModel(Rango.name, NombreBdConexion.oc) private readonly rangoSchema:Model<Rango>){}
 
-    public async guardarRangos(rango:string){
+    public async guardarRango(rango:string){
         const rang = await this.rangoSchema.findOne({nombre:rango})
         if(!rang){
-            await this.rangoSchema.create({nombre:rango})
+           return await this.rangoSchema.create({nombre:rango})
         }
+        return rang
 
     }
 

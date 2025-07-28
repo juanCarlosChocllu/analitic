@@ -99,3 +99,4 @@ flag: flagVenta;
   fechaCreacion: Date;
 }
 export const recetaSchema = SchemaFactory.createForClass(Receta)
+recetaSchema.index({codigoMia:1})

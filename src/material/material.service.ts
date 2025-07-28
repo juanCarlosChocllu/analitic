@@ -14,8 +14,9 @@ export class MaterialService {
   public async guardarMaterIal(material:string){
    const mate = await this.materialSchema.findOne({nombre:material})
    if(!mate){
-    await this.materialSchema.create({nombre:material})
+    return this.materialSchema.create({nombre:material})
    } 
+   return mate
  }
 
  public async listarMaterial(material:string){

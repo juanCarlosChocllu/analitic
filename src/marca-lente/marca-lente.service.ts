@@ -12,9 +12,9 @@ export class MarcaLenteService {
   public async guardarMarcaLente(nombre:string){
       const marcaLente = await this.marcaLenteSchema.findOne({nombre:nombre})
       if(!marcaLente){
-          await this.marcaLenteSchema.create({nombre:nombre})
+          return this.marcaLenteSchema.create({nombre:nombre})
       }
-
+      return marcaLente
   }
 
   public async listarMarcaLente(nombre:string){

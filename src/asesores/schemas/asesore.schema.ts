@@ -11,3 +11,4 @@ export class Asesor {
 }
 
 export const AsesorSchema = SchemaFactory.createForClass(Asesor);
+AsesorSchema.index({usuario:1, sucursal:1})

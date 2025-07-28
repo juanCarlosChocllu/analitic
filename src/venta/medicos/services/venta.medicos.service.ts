@@ -198,9 +198,7 @@ export class VentaMedicosService {
     const data = await Promise.all(
       recetasMedico.map(async (item) => {
         const recetasMedico: resultadoRecetaI[] = [];
-        for (const data of item.data) {
-          console.log(data);
-          
+        for (const data of item.data) {  
           const ventas = await this.VentaExcelSchema.find(
             {
               numeroCotizacion: data.codigo,

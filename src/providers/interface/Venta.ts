@@ -1,3 +1,5 @@
+import { RecetaResponseI } from "src/receta/interface/receta";
+
 export interface VentaI {
     fecha: string;
     idVenta: string;
@@ -10,6 +12,7 @@ export interface VentaI {
     atributo4: string;
     atributo5: string;
     atributo6: string;
+      atributo7: string;
     rubro: string;
     descripcionProducto: string;
     cantidad: number;
@@ -28,4 +31,5 @@ export interface VentaI {
     fecha_finalizacion: string;
     flag: string;
     tipoConversion:string
+    receta:RecetaResponseI
 }

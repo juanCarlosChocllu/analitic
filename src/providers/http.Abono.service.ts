@@ -62,7 +62,7 @@ export class HttpAxiosAbonoService {
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-
+  
   private extracionDeInformacionValida(data: any) {    
     const lineas: any[] = data.trim().split('\n');    
     const abono = lineas.map((linea) => {

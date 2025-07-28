@@ -15,8 +15,9 @@ export class TratamientoService {
   public async guardarTratamiento(tratamiento: string) {
     const trata = await this.TratamientoSchema.findOne({ nombre: tratamiento });
     if (!trata) {
-      await this.TratamientoSchema.create({ nombre: tratamiento });
+      return this.TratamientoSchema.create({ nombre: tratamiento });
     }
+    return trata
   }
 
   public async listarTratamiento(tratamiento: string) {

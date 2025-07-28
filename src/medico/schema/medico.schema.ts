@@ -16,4 +16,5 @@ export class Medico {
 }
 
 export const medicoShema = SchemaFactory.createForClass(Medico)
+medicoShema.index({nombreCompleto:1, especialidad:1})
 

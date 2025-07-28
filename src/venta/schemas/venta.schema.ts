@@ -44,6 +44,9 @@ export class Venta {
   @Prop({ type: Types.ObjectId, ref: 'Medico' })
   medico: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Receta' })
+  receta: Types.ObjectId;
+
   @Prop()
   comisiona: Boolean
 
@@ -77,8 +80,11 @@ export class Venta {
   @Prop({ type: Number})
   descuentoFicha:number
 
-   @Prop({ type: String})
+  @Prop({ type: String})
   tipoConversion:string
+
+  @Prop({type:String})
+  descripcion:string
 
   @Prop({ type: Boolean})
   cotizacion:boolean
@@ -104,8 +110,10 @@ export class Venta {
 export const VentaSchema = SchemaFactory.createForClass(Venta);
 VentaSchema.index({ numeroTicket: 1 });
 VentaSchema.index({ numeroTicket: 1, estadoTracking:1});
-VentaSchema.index({ numeroTicket: 1 ,producto:1 });
 VentaSchema.index({ sucursal: 1 });
 VentaSchema.index({ empresa: 1 });
 VentaSchema.index({ asesor: 1 });
+
+//-------------------------------------/
 VentaSchema.index({estadoTracking:1, numeroCotizacion:1,producto:1, cotizacion:1})
+VentaSchema.index({numeroTicket:1, producto:1 })

@@ -67,7 +67,7 @@ import { RecetaModule } from './receta/receta.module';
     DiasModule,
     ColorLenteModule,
     MedicoModule,
-    RecetaModule
+    RecetaModule,
   ],
   controllers: [],
   providers: [

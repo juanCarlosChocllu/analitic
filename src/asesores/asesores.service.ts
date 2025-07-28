@@ -38,10 +38,18 @@ export class AsesoresService {
    } 
 
    async  crearAsesor (asesor:string ,sucursal:Types.ObjectId ){
-      await this.asesor.create({
+     
+   const a = await this.asesor.exists({
       usuario: asesor.toUpperCase().trim(),
       sucursal: sucursal._id,
     })
+    if(!a){
+      return this.asesor.create({
+      usuario: asesor.toUpperCase().trim(),
+      sucursal: sucursal._id,
+    })
+    }
+    return a
    
    } 
 

@@ -27,6 +27,7 @@ import { ColorLenteModule } from 'src/color-lente/color-lente.module';
 import { MedicoModule } from 'src/medico/medico.module';
 import { LogModule } from 'src/log/log.module';
 import { RecetaModule } from 'src/receta/receta.module';
+import { RangosModule } from 'src/rangos/rangos.module';
 
 @Module({
   imports:[
@@ -53,6 +54,7 @@ import { RecetaModule } from 'src/receta/receta.module';
     SucursalModule,
     AsesoresModule,
     ColorLenteModule,
+    RangosModule,
     LogModule,
     RecetaModule
   ],

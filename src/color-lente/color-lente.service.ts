@@ -30,10 +30,11 @@ export class ColorLenteService {
   }
 
   public async guardarColorLente(colorLente: string) {
-    const trata = await this.colorLente.findOne({ nombre: colorLente });
-    if (!trata) {
-      await this.colorLente.create({ nombre: colorLente });
+    const tipoColorLente = await this.colorLente.findOne({ nombre: colorLente });
+    if (!tipoColorLente) {
+      return this.colorLente.create({ nombre: colorLente });
     }
+    return tipoColorLente
   }
 
   public async listarColorLente(colorLente: string) {
