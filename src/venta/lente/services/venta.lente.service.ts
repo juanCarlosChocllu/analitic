@@ -468,6 +468,16 @@ export class VentaLenteService {
                 },
               },
             },
+            monturas :{
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$producto', 'MONTURA'] },
+                  then: '$cantidad',
+                  else: 0,
+                },
+              },
+            }
+            ,
 
             tickets: {
               $sum: {
@@ -521,7 +531,7 @@ export class VentaLenteService {
           $project: {
             lentes: 1,
             progresivos: 1,
-
+            monturas:1,
             ocupacional: 1,
             ocupacionalProgresivos: 1,
             antireflejo: 1,
@@ -605,7 +615,8 @@ export class VentaLenteService {
           },
         },
       ]);
-
+      console.log(dataKpi);
+      
       const resultado = {
         sucursal: su.nombre,
         id: su._id,
@@ -692,6 +703,15 @@ export class VentaLenteService {
                 },
               },
             },
+              monturas :{
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$producto', 'MONTURA'] },
+                  then: '$cantidad',
+                  else: 0,
+                },
+              },
+            },
             antireflejo: {
               $sum: {
                 $cond: {
@@ -759,6 +779,7 @@ export class VentaLenteService {
             lentes: 1,
             antireflejo: 1,
             tickets: 1,
+            monturas:1,
             porcentajeAntireflejo: {
               $cond: {
                 if: { $gt: ['$lentes', 0] },
@@ -942,6 +963,16 @@ export class VentaLenteService {
               },
             },
 
+              monturas :{
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$producto', 'MONTURA'] },
+                  then: '$cantidad',
+                  else: 0,
+                },
+              },
+            },
+
             antireflejo: {
               $sum: {
                 $cond: {
@@ -1010,6 +1041,7 @@ export class VentaLenteService {
             lentes: 1,
             antireflejo: 1,
             tickets: 1,
+            monturas:1,
             porcentajeAntireflejo: {
               $cond: {
                 if: { $gt: ['$lentes', 0] },
@@ -1205,7 +1237,15 @@ export class VentaLenteService {
                 },
               },
             },
-
+                monturas :{
+              $sum: {
+                $cond: {
+                  if: { $eq: ['$producto', 'MONTURA'] },
+                  then: '$cantidad',
+                  else: 0,
+                },
+              },
+            },
             tickets: {
               $sum: {
                 $cond: {
@@ -1268,6 +1308,7 @@ export class VentaLenteService {
 
         {
           $project: {
+            monturas:1,
             lentes: 1,
             antireflejo: 1,
             progresivos: 1,

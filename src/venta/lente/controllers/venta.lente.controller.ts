@@ -48,12 +48,15 @@ export class VentaLenteController {
 
   @Post('kpi/empresas/lentes')
   kpiLentes(@Body() kpiEmpresaDto: VentaTodasDto) {
+    console.log('hola');
+    
     return this.ventaLenteService.kpiEmpresas(kpiEmpresaDto);
   }
 
   @Post('lente/asesores/sucursal')
   ventasLenteAsesores(@Body() ventaTodasDto: VentaTodasDto) {
-
+  
+    
     
     return this.ventaLenteService.ventasLenteAsesores(ventaTodasDto);
   }
