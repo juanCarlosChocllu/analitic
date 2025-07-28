@@ -53,6 +53,8 @@ export class VentaLenteController {
 
   @Post('lente/asesores/sucursal')
   ventasLenteAsesores(@Body() ventaTodasDto: VentaTodasDto) {
+
+    
     return this.ventaLenteService.ventasLenteAsesores(ventaTodasDto);
   }
   @Post('lente/informacion/asesor/:asesor')
