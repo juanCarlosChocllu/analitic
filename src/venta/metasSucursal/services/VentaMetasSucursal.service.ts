@@ -191,6 +191,7 @@ export class VentaMetasSucursalService {
               fechaVenta: '$fechaVenta',
               flagVenta: '$flagVenta',
               fechaFinalizacion: '$fecha',
+              descripcion:'$descripcion'
             },
           },
         },
