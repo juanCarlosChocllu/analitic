@@ -194,7 +194,8 @@ export class VentaMedicosService {
   async listarRecetasMedico(buscadorRecetaDto: BuscadorRecetaDto) {
     const recetasMedico =
       await this.recetasService.listarRecetaMedicos(buscadorRecetaDto);
-   
+
+    
     const data = await Promise.all(
       recetasMedico.map(async (item) => {
         const recetasMedico: resultadoRecetaI[] = [];

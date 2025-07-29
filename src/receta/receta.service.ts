@@ -39,6 +39,11 @@ export class RecetaService {
         },
       },
       {
+        $match:{
+          'codigoReceta':{$ne:''}
+        }
+      },
+      {
         $lookup: {
           from: 'Medico',
           foreignField: '_id',
