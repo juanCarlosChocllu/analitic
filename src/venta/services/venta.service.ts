@@ -1,7 +1,7 @@
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Venta } from '../schemas/venta.schema';
-import { Model, Types } from 'mongoose';
+import { Model, PipelineStage, Types } from 'mongoose';
 
 import { VentaExcelI } from '../core/interfaces/ventaExcel.interface';
 
@@ -86,6 +86,8 @@ export class VentaService {
       },
     ]);
 
+    
+    
     return venta;
   }
 
@@ -193,7 +195,7 @@ export class VentaService {
 
     for (let sucursal of ventaTodasDto.sucursal) {
       filtrador.sucursal = new Types.ObjectId(sucursal);
-      const venta = await this.venta.aggregate([
+      const pipeline:PipelineStage[] = [
         {
           $match: {
             ...filtrador,
@@ -221,25 +223,25 @@ export class VentaService {
         },
         {
           $project: {
-            producto: '$_id.producto',
+            _id:0,
+            producto: '$_id',
             sucursal: '$_id.sucursal',
-            asesor: 1,
             cantidad: 1,
             montoTotal: 1,
-            totalImporte: 1,
+           
           },
         },
-      ]);
+      ]
+     const [venta, s] = await Promise.all([
+        this.venta.aggregate(pipeline),
+        this.extraerSucursal(sucursal)
+     ])    
       const resultado = {
-        sucursal: await this.extraerSucursal(sucursal),
-        data: venta.map((elemeto) => {
-          return {
-            producto: elemeto._id,
-            cantidad: elemeto.cantidad,
-            montoTotal: elemeto.montoTotal,
-          };
-        }),
+        sucursal: s,
+        data: venta,
       };
+   
+      
       ventaSucursal.push(resultado);
     }
 
@@ -249,6 +251,7 @@ export class VentaService {
       ventaSucursal,
       cantidadSucursal: sucursales.length,
     };
+
     return resultado;
   }
 
