@@ -32,35 +32,34 @@ export class VentaAsesoresService {
   ) {}
 
   public async indicadoresPorAsesor(VentaTodasDto: VentaTodasDto) {
-    const filtrador = filtradorVenta(VentaTodasDto);
-    let sucursales: SucursalI[] =
-      await this.coreService.filtroParaTodasEmpresas(VentaTodasDto);
-    const data = await Promise.all(
-      sucursales.map(async (sucursal) => {
-        const sucur = await this.sucursalService.listarSucursalId(sucursal._id);
-        if (sucur.nombre != sucursalesEnum.opticentroParaguay) {
-          const asesores: AsesorExcelI[] =
-            await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
-          return asesores;
-        } else if (sucur.nombre == sucursalesEnum.opticentroParaguay) {
-          const asesores: AsesorExcelI[] =
-            await this.asesoresService.listarAsesorPorSucursal(sucursal._id);
-          return asesores;
-        }
-      }),
-    );
+    
 
-    const ventaPorAsesor = await this.ventaPorAsesores(data.flat(), filtrador);
+    const ventaPorAsesor = await this.ventaPorAsesores(VentaTodasDto);
     return ventaPorAsesor;
   }
 
   private async ventaPorAsesores(
-    asesores: AsesorExcelI[],
-    filtrador: FiltroVentaI,
+  ventaTodasDto: VentaTodasDto
   ) {
+    const filtrador = filtradorVenta(ventaTodasDto);
+
+const asesores= (
+  await Promise.all(
+    ventaTodasDto.sucursal.map(item =>
+      this.asesoresService.listarAsesorPorSucursal(item)
+    )
+  )
+).flat()
+
+  console.log(asesores);
+  
     const venPorAsesor: any[] = [];
+
+
     for (let asesor of asesores) {
-      const pipline: PipelineStage[] = [
+      
+      
+    const pipline: PipelineStage[] = [
         {
           $match: {
             asesor: new Types.ObjectId(asesor.id),

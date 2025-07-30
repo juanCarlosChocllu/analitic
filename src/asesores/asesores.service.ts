@@ -26,6 +26,7 @@ export class AsesoresService {
     const asesores:AsesorExcelI[] =await this.asesor.find({
       sucursal: new Types.ObjectId(sucursal),
     });
+    
     return asesores
   }
 
