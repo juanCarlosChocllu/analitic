@@ -50,8 +50,6 @@ const asesores= (
     )
   )
 ).flat()
-
-  console.log(asesores);
   
     const venPorAsesor: any[] = [];
 
@@ -136,6 +134,7 @@ const asesores= (
         this.sucursalExcelSchema
           .findOne({ _id: asesor.sucursal })
           .select('nombre'),
+          
         this.VentaExcelSchema.aggregate(pipline),
       ]);
 

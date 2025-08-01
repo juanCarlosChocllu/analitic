@@ -183,11 +183,10 @@ export class ReporteService {
   ) {
     const marca = await this.marcaService.guardarMarcaProducto(data.atributo1);
     console.log(data.atributo1);
-    
+
     console.log(data.rubro);
     console.log(marca);
-    
-    
+
     const dataVenta = {
       ...(data.fecha_finalizacion && {
         fecha: horaUtc(data.fecha_finalizacion),
@@ -285,18 +284,21 @@ export class ReporteService {
   async descargaAutomaticaventas() {
     try {
       const date = new Date();
-      const [año, mes, dia] = [
-        date.getFullYear(),
-        (date.getMonth() + 1).toString().padStart(2, '0'),
-        (date.getDate() - 1).toString().padStart(2, '0'),
-      ];
+
+      const fechaAyer = new Date(date);
+      fechaAyer.setDate(date.getDate() - 1);
+
+      const año = fechaAyer.getFullYear();
+      const mes = (fechaAyer.getMonth() + 1).toString().padStart(2, '0');
+      const dia = fechaAyer.getDate().toString().padStart(2, '0');
+
       const fecha: DescargarDto = {
         fechaInicio: `${año}-${mes}-${dia}`,
         fechaFin: `${año}-${mes}-${dia}`,
       };
       this.logger.debug('Iniciando la descarga ventas');
       const response = await this.realizarDescarga(fecha);
-      console.log(response);
+      console.log(fecha);
     } catch (error) {}
   }
 
@@ -304,18 +306,22 @@ export class ReporteService {
   async descargaRecetas() {
     try {
       const date = new Date();
-      const [año, mes, dia] = [
-        date.getFullYear(),
-        (date.getMonth() + 1).toString().padStart(2, '0'),
-        (date.getDate() - 1).toString().padStart(2, '0'),
-      ];
+
+      const fechaAyer = new Date(date);
+      fechaAyer.setDate(date.getDate() - 1);
+
+      const año = fechaAyer.getFullYear();
+      const mes = (fechaAyer.getMonth() + 1).toString().padStart(2, '0');
+      const dia = fechaAyer.getDate().toString().padStart(2, '0');
+
       const fecha: DescargarDto = {
         fechaInicio: `${año}-${mes}-${dia}`,
         fechaFin: `${año}-${mes}-${dia}`,
       };
+
       this.logger.debug('Iniciando la descarga recetas');
       const response = await this.descargarReceta(fecha);
-      console.log(response);
+      console.log(fecha);
     } catch (error) {
       console.log(error);
     }
@@ -461,27 +467,28 @@ export class ReporteService {
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async anularVentasCron() {
     try {
-      const date = new Date();
-      const [añoFin, mesFin, diaFin] = [
-        date.getFullYear(),
-        (date.getMonth() + 1).toString().padStart(2, '0'),
-        (date.getDate() - 1).toString().padStart(2, '0'),
-      ];
+      const hoy = new Date();
+      const fechaFinDate = new Date(hoy);
+      fechaFinDate.setDate(hoy.getDate() - 1);
 
-      const [añoInicio, mesInicio, diaInicio] = [
-        date.getFullYear(),
-        (date.getMonth() + 1).toString().padStart(2, '0'),
-        (date.getDate() - 5).toString().padStart(2, '0'),
-      ];
+      const fechaInicioDate = new Date(hoy);
+      fechaInicioDate.setDate(hoy.getDate() - 5);
+
+      const formatearFecha = (fecha: Date): string => {
+        const año = fecha.getFullYear();
+        const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+        const dia = fecha.getDate().toString().padStart(2, '0');
+        return `${año}-${mes}-${dia}`;
+      };
 
       const fecha: DescargarDto = {
-        fechaInicio: `${añoInicio}-${mesInicio}-${diaInicio}`,
-        fechaFin: `${añoFin}-${mesFin}-${diaFin}`,
+        fechaInicio: formatearFecha(fechaInicioDate),
+        fechaFin: formatearFecha(fechaFinDate),
       };
 
       this.logger.debug('Iniciando la anulaciones');
       const response = await this.anularVentas(fecha);
-      console.log(response);
+      console.log(fecha);
     } catch (error) {
       console.log(error);
     }
@@ -490,25 +497,27 @@ export class ReporteService {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async finalizarVentasCron() {
     try {
-      const date = new Date();
-      const [añoFin, mesFin, diaFin] = [
-        date.getFullYear(),
-        (date.getMonth() + 1).toString().padStart(2, '0'),
-        (date.getDate() - 1).toString().padStart(2, '0'),
-      ];
+      const hoy = new Date();
+      const fechaFinDate = new Date(hoy);
+      fechaFinDate.setDate(hoy.getDate() - 1);
 
-      const [añoInicio, mesInicio, diaInicio] = [
-        date.getFullYear(),
-        (date.getMonth() + 1).toString().padStart(2, '0'),
-        (date.getDate() - 2).toString().padStart(2, '0'),
-      ];
+      const fechaInicioDate = new Date(hoy);
+      fechaInicioDate.setDate(hoy.getDate() - 2);
 
-      const fecha: DescargarDto = {
-        fechaInicio: `${añoInicio}-${mesInicio}-${diaInicio}`,
-        fechaFin: `${añoFin}-${mesFin}-${diaFin}`,
+      const formatearFecha = (fecha: Date): string => {
+        const año = fecha.getFullYear();
+        const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+        const dia = fecha.getDate().toString().padStart(2, '0');
+        return `${año}-${mes}-${dia}`;
       };
 
+      const fecha: DescargarDto = {
+        fechaInicio: formatearFecha(fechaInicioDate),
+        fechaFin: formatearFecha(fechaFinDate),
+      };
       this.logger.debug('Iniciando finalizaciones');
+      console.log(fecha);
+
       const response = await this.finalizarVentasMia(fecha);
     } catch (error) {
       console.log(error);
