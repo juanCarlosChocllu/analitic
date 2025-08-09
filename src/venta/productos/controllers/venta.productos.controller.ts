@@ -16,7 +16,7 @@ export class VentaProductosController {
  kpiMonturasPorEmpresa(@Body() kpiDto: VentaDto){
 
 
-  return this.ventaProductosService.kpiMonturasPorEmpresa(kpiDto)
+  return this.ventaProductosService.kpiMonturasVipOpticentro(kpiDto)
  }
 
  @Post('kpi/monturas')

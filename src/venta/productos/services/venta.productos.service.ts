@@ -379,21 +379,11 @@ export class VentaProductosService {
   
   
 
-        async kpiMonturasPorEmpresa(kpiDto:VentaDto){
-
-            const empresa = await this.empresaService.buscarEmpresa(kpiDto.empresa)
-            if(empresa && empresa.nombre === 'OPTICENTRO'){
-      
-              return  this.kpiMonturasVipOpticentro(kpiDto)
-            }else{
-              return new NotFoundException()
-            }
-      
-        }
         
         
         
-         private  async kpiMonturasVipOpticentro(kpiDto:VentaDto){
+        
+        async kpiMonturasVipOpticentro(kpiDto:VentaDto){
           const filtrador = filtradorVenta(kpiDto)
             const dataMonturasVip:any=[]
             for(let su of  kpiDto.sucursal){
