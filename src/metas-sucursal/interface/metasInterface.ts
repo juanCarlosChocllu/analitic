@@ -6,3 +6,18 @@ export interface MestasSucursalI{
     sucursal:Types.ObjectId,
     nombreSucursal:string
 }
+
+export  interface webhookMentasI {
+        monto: number;  
+        ticket: number;
+        
+        sucursal: string [];
+    
+        dias: number;
+      
+        fechaInicio: string;
+      
+ 
+        fechaFin: string;
+        codigo:string
+}

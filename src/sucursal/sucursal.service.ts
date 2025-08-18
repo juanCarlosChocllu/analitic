@@ -123,4 +123,8 @@ export class SucursalService {
   }
   
  
+  async listarSucursalesArray(id:Types.ObjectId[]){
+    const sucursales = await this.SucursalSchema.find({_id:{$in: id.map((i)=> new Types.ObjectId(i))}})
+    return sucursales
+  }
 }

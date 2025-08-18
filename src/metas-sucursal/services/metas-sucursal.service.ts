@@ -11,6 +11,9 @@ import { BuscadorMetasDto } from '../dto/BuscadorMetasDto';
 import { MetasSucursal } from '../schema/metas-sucursal.schema';
 import { DiasMetaService } from './diaMeta.service';
 import { CoreAppService } from 'src/core/services/core.service';
+import { HttpServiceAxios } from 'src/providers/httpService';
+import { SucursalService } from 'src/sucursal/sucursal.service';
+import { webhookMentasI } from '../interface/metasInterface';
 
 
 
@@ -19,13 +22,15 @@ export class MetasSucursalService {
   constructor(
     @InjectModel(MetasSucursal.name, NombreBdConexion.oc)
     private readonly metasSucursal: Model<MetasSucursal>,
-
     private readonly diaMetaService: DiasMetaService,
     private readonly coreService: CoreAppService,
+    private readonly httpService: HttpServiceAxios,
+    private readonly sucursalrService: SucursalService,
   ) {}
 
   async create(createMetasSucursalDto: CreateMetasSucursalDto) {
-    for (const sucursal of createMetasSucursalDto.sucursal) {  
+    for (const sucursal of createMetasSucursalDto.sucursal) {
+      
       const meta=  await this.metasSucursal.create({
         ticket: createMetasSucursalDto.ticket,
         fechaFin: createMetasSucursalDto.fechaFin,
@@ -34,10 +39,25 @@ export class MetasSucursalService {
         dias:createMetasSucursalDto.dias,
         sucursal: new Types.ObjectId(sucursal),
       })
+      await this.asyncWebHook(createMetasSucursalDto, sucursal, meta._id)   
     }
+  
     return { status: HttpStatus.CREATED };
   }
-  
+
+  async asyncWebHook(createMetasSucursalDto:CreateMetasSucursalDto, sucursal:Types.ObjectId, id:Types.ObjectId){
+      const sucursalData = await this.sucursalrService.listarSucursalesArray([sucursal])  
+       const data:webhookMentasI={
+        codigo:String(id),
+        ticket: createMetasSucursalDto.ticket,
+        fechaFin: createMetasSucursalDto.fechaFin,
+        fechaInicio: createMetasSucursalDto.fechaInicio,
+        monto: createMetasSucursalDto.monto,
+        dias:createMetasSucursalDto.dias,
+        sucursal: sucursalData.map((item)=> item.nombre),
+      }
+     const response= await this.httpService.webhookMetasSucursal(data)
+  }
  
   
     async findAll(buscadorMetasDto: BuscadorMetasDto) {
@@ -151,10 +171,7 @@ export class MetasSucursalService {
         (Number(buscadorMetasDto.pagina) - 1) * Number(buscadorMetasDto.limite),
       )
       .limit(Number(buscadorMetasDto.limite))
-      
-
-      console.log(metas);
-      
+            
     return { paginas: paginas == 0 ? 1 : paginas, data: metas };
   }
 
