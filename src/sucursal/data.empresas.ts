@@ -12,6 +12,7 @@ export function dataEmpresa() {
         'OPTICENTRO TARIJA 2',
         'OPTICENTRO LA PAZ 2',
         'OPTICENTRO PARAGUAY',
+         'OPTICENTRO SANTA CRUZ'
     
       ],
       'ECONOVISION': [

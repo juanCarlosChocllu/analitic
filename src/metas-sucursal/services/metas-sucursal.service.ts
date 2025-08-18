@@ -39,7 +39,7 @@ export class MetasSucursalService {
         dias:createMetasSucursalDto.dias,
         sucursal: new Types.ObjectId(sucursal),
       })
-      await this.asyncWebHook(createMetasSucursalDto, sucursal, meta._id)   
+     // await this.asyncWebHook(createMetasSucursalDto, sucursal, meta._id)   
     }
   
     return { status: HttpStatus.CREATED };
